@@ -157,7 +157,7 @@ const resolveGitBinary = () => {
     return resolvedGitBinary;
   }
 
-  const explicit = [process.env.GIT_BINARY, process.env.OPENCHAMBER_GIT_BINARY]
+  const explicit = [process.env.GIT_BINARY, process.env.AIYO_GIT_BINARY]
     .map((value) => (typeof value === 'string' ? value.trim() : ''))
     .filter(Boolean);
   for (const candidate of explicit) {
@@ -1057,7 +1057,7 @@ export async function computeIntegratePlan(input = {}) {
 }
 
 const createIntegrateTempWorktree = async (repoRoot, targetBranch) => {
-  const tmpParent = path.join(os.homedir(), '.config', 'openchamber', 'tmp');
+  const tmpParent = path.join(os.homedir(), '.config', 'aiyo', 'tmp');
   await fsp.mkdir(tmpParent, { recursive: true });
   const tmpDir = await fsp.mkdtemp(path.join(tmpParent, 'oc-integrate-'));
   try {
@@ -1370,7 +1370,7 @@ const resolveCandidateDirectory = async (worktreeRoot, preferredName, explicitBr
       return { name, directory, branch: explicitBranchName };
     }
 
-    const branch = `openchamber/${name}`;
+    const branch = `aiyo/${name}`;
     const branchRef = `refs/heads/${branch}`;
     const branchExists = await runGitCommand(primaryWorktree, ['show-ref', '--verify', '--quiet', branchRef]);
     if (branchExists.success) {
@@ -2609,7 +2609,7 @@ const extractPatchTargetPath = (patch) => {
 
 const writeTempPatchFile = async (patch) => {
   const tmpDir = os.tmpdir();
-  const tmpPath = path.join(tmpDir, `openchamber-hunk-${Date.now()}-${Math.random().toString(36).slice(2)}.patch`);
+  const tmpPath = path.join(tmpDir, `aiyo-hunk-${Date.now()}-${Math.random().toString(36).slice(2)}.patch`);
   await fsp.writeFile(tmpPath, patch, 'utf8');
   return tmpPath;
 };
@@ -2755,7 +2755,7 @@ export async function stashPush(directory, options = {}) {
   const { git } = await createRepositoryGitContext(directory);
   const message = typeof options.message === 'string' && options.message.trim()
     ? options.message.trim()
-    : `OpenChamber stash ${new Date().toISOString()}`;
+    : `AiYo stash ${new Date().toISOString()}`;
   const output = await git.raw(['stash', 'push', '--include-untracked', '-m', message]);
   return {
     success: true,

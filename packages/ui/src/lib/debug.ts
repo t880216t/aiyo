@@ -221,7 +221,7 @@ export const debugUtils = {
     })();
 
     const runtimeApis = getRegisteredRuntimeAPIs();
-    const isDesktopRuntime = typeof window !== 'undefined' && Boolean((window as { __OPENCHAMBER_ELECTRON__?: unknown }).__OPENCHAMBER_ELECTRON__);
+    const isDesktopRuntime = typeof window !== 'undefined' && Boolean((window as { __AIYO_ELECTRON__?: unknown }).__AIYO_ELECTRON__);
 
     const safeJson = async (resp: Response) => {
       try {
@@ -372,7 +372,7 @@ export const debugUtils = {
         projectInfo,
         health: opencodeHealth,
       },
-      openchamber: {
+      aiyo: {
         settingsInfo,
       },
     };

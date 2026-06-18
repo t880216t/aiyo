@@ -1,6 +1,6 @@
-# OpenChamber Docs Source
+# AiYo Docs Source
 
-This package is the source-of-truth for OpenChamber public docs content.
+This package is the source-of-truth for AiYo public docs content.
 
 ## Layout
 
@@ -28,6 +28,6 @@ This validates:
 
 This repo owns docs content.
 
-Website rendering/deployment happens in `openchamber-website` (`apps/docs`).
+Website rendering/deployment happens in `aiyo-website` (`apps/docs`).
 
 Use `.github/workflows/docs-source.yml` to package docs source on release or manual trigger.

@@ -12,10 +12,10 @@ describe('cli args', () => {
   });
 
   it('parses explicit connect-url server overrides', () => {
-    const parsed = parseArgs(['connect-url', '--server', 'https://openchamber.example.com', '--port', '3002']);
+    const parsed = parseArgs(['connect-url', '--server', 'https://aiyo.example.com', '--port', '3002']);
 
     expect(parsed.command).toBe('connect-url');
-    expect(parsed.options.server).toBe('https://openchamber.example.com');
+    expect(parsed.options.server).toBe('https://aiyo.example.com');
     expect(parsed.options.port).toBe(3002);
   });
 
@@ -91,26 +91,26 @@ describe('network-exposed auth validation', () => {
   });
 
   it('allows explicit unsafe LAN override from process env only', () => {
-    const previous = process.env.OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN;
-    process.env.OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN = 'true';
+    const previous = process.env.AIYO_ALLOW_UNAUTHENTICATED_LAN;
+    process.env.AIYO_ALLOW_UNAUTHENTICATED_LAN = 'true';
     try {
       expect(() => assertAuthenticatedNetworkExposure({ host: '0.0.0.0' })).not.toThrow();
     } finally {
       if (typeof previous === 'string') {
-        process.env.OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN = previous;
+        process.env.AIYO_ALLOW_UNAUTHENTICATED_LAN = previous;
       } else {
-        delete process.env.OPENCHAMBER_ALLOW_UNAUTHENTICATED_LAN;
+        delete process.env.AIYO_ALLOW_UNAUTHENTICATED_LAN;
       }
     }
   });
 });
 
 describe('cli entry detection', () => {
-  const modulePath = '/tmp/openchamber/bin/cli.js';
+  const modulePath = '/tmp/aiyo/bin/cli.js';
   const moduleUrl = pathToFileURL(modulePath).href;
 
   it('resolves symlinked entry paths before comparing', () => {
-    const symlinkPath = '/usr/local/bin/openchamber';
+    const symlinkPath = '/usr/local/bin/aiyo';
     const realpath = (filePath) => {
       if (filePath === path.resolve(symlinkPath)) {
         return modulePath;
@@ -142,8 +142,8 @@ describe('cli entry detection', () => {
   });
 
   it('accepts wrapper binary name fallback when requested', () => {
-    const wrapperPath = '/home/user/.local/bin/openchamber';
-    expect(isModuleCliExecution(wrapperPath, moduleUrl, undefined, 'openchamber')).toBe(true);
+    const wrapperPath = '/home/user/.local/bin/aiyo';
+    expect(isModuleCliExecution(wrapperPath, moduleUrl, undefined, 'aiyo')).toBe(true);
   });
 
   it('normalizes direct paths when realpath fails', () => {

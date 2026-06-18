@@ -60,7 +60,7 @@ export const createNotificationEmitterRuntime = (dependencies) => {
     }
 
     const syntheticPayload = {
-      type: 'openchamber:notification',
+      type: 'aiyo:notification',
       properties: {
         ...payload,
         // Tell the UI whether the stdout notification channel is active.

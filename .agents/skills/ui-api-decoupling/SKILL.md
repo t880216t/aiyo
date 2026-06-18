@@ -1,15 +1,15 @@
 ---
 name: ui-api-decoupling
-description: Use when creating or modifying OpenChamber UI data access, RuntimeAPIs, runtimeFetch/runtime-url auth, authenticated browser assets, OpenCode SDK calls, VS Code bridges, Electron runtime switching, or web server API endpoints.
+description: Use when creating or modifying AiYo UI data access, RuntimeAPIs, runtimeFetch/runtime-url auth, authenticated browser assets, OpenCode SDK calls, VS Code bridges, Electron runtime switching, or web server API endpoints.
 license: MIT
 compatibility: opencode
 ---
 
 ## Overview
 
-OpenChamber shared UI runs against web, Electron desktop, remote server URLs, and VS Code webviews. API code must preserve that runtime boundary.
+AiYo shared UI runs against web, Electron desktop, remote server URLs, and VS Code webviews. API code must preserve that runtime boundary.
 
-**Core principle:** official OpenCode API calls go through `@opencode-ai/sdk/v2` via `opencodeClient`; OpenChamber-owned capabilities go through `RuntimeAPIs` or explicit OpenChamber routes; runtime transport preserves SDK-generated requests exactly.
+**Core principle:** official OpenCode API calls go through `@opencode-ai/sdk/v2` via `opencodeClient`; AiYo-owned capabilities go through `RuntimeAPIs` or explicit AiYo routes; runtime transport preserves SDK-generated requests exactly.
 
 ## Scope
 
@@ -25,7 +25,7 @@ Before editing, classify every endpoint or capability involved:
 |------|--------------|
 | Official OpenCode endpoint | `opencodeClient` or `opencodeClient.getSdkClient()` |
 | SDK gap to official OpenCode | Central helper in `opencodeClient` using `runtimeFetch`, documented as SDK gap |
-| OpenChamber-owned feature route | `RuntimeAPIs` first, otherwise `runtimeFetch` to explicit OC route |
+| AiYo-owned feature route | `RuntimeAPIs` first, otherwise `runtimeFetch` to explicit OC route |
 | Native/runtime capability | Extend `RuntimeAPIs`, implement per runtime, consume via hook/registry |
 | Browser/realtime URL that cannot send headers (iframe, download/open link, SSE, WebSocket, preview subresource) | `getRuntimeUrlResolver()` helpers plus `oc_url_token` allowlist, not hardcoded URLs |
 | UI-controlled authenticated asset fetch (small icons/thumbnails where JS can fetch) | `runtimeFetch` with `Authorization`, then `URL.createObjectURL(blob)` |
@@ -46,11 +46,11 @@ Before editing, classify every endpoint or capability involved:
    - Files, git, terminal, settings, notifications, GitHub helpers, client auth, editor/VS Code actions, and tools belong in `RuntimeAPIs` when shared UI needs runtime-specific behavior.
    - React components use `useRuntimeAPIs()` or `useRuntimeAPI()`.
    - Non-React modules use `getRegisteredRuntimeAPIs()` only when a hook cannot be used.
-   - Direct `window.__OPENCHAMBER_RUNTIME_APIS__` reads are entrypoint/legacy escape hatches, not a new feature pattern.
+   - Direct `window.__AIYO_RUNTIME_APIS__` reads are entrypoint/legacy escape hatches, not a new feature pattern.
 
-4. **Keep OpenChamber routes explicit**
-   - Direct `runtimeFetch` is acceptable for OpenChamber-only routes such as `/api/config/settings`, `/api/config/skills`, `/api/config/commands`, `/api/fs`, `/api/git`, `/api/terminal`, `/api/preview`, `/api/magic-prompts`, `/api/tts`, and `/api/openchamber/tunnel`.
-   - Register OpenChamber routes before the generic OpenCode proxy, or the proxy will steal the path.
+4. **Keep AiYo routes explicit**
+   - Direct `runtimeFetch` is acceptable for AiYo-only routes such as `/api/config/settings`, `/api/config/skills`, `/api/config/commands`, `/api/fs`, `/api/git`, `/api/terminal`, `/api/preview`, `/api/magic-prompts`, `/api/tts`, and `/api/aiyo/tunnel`.
+   - Register AiYo routes before the generic OpenCode proxy, or the proxy will steal the path.
    - Shared UI depending on an OC route requires web and VS Code parity, or an explicit deterministic unsupported response.
 
 5. **Do not hardcode local runtime URLs**
@@ -79,7 +79,7 @@ Before editing, classify every endpoint or capability involved:
 
 ## HTTP Request Decision Rules
 
-For normal HTTP requests to the active OpenChamber runtime, use `runtimeFetch` with the route path. Let `runtimeFetch` resolve the current runtime base URL and auth at call time.
+For normal HTTP requests to the active AiYo runtime, use `runtimeFetch` with the route path. Let `runtimeFetch` resolve the current runtime base URL and auth at call time.
 
 ```ts
 // Good: runtimeFetch owns base URL, runtime auth, and runtime switching.
@@ -114,7 +114,7 @@ const eventUrl = getRuntimeUrlResolver().sse('/api/event');
 const socketUrl = getRuntimeUrlResolver().websocket('/api/terminal/ws');
 ```
 
-Plain `fetch` is acceptable only for intentional external network requests that do not target the OpenChamber runtime, such as npm registry, models.dev, or a user-provided `https://...` URL.
+Plain `fetch` is acceptable only for intentional external network requests that do not target the AiYo runtime, such as npm registry, models.dev, or a user-provided `https://...` URL.
 
 ## Authenticated Browser Assets
 
@@ -160,7 +160,7 @@ For any shared UI call to `/api/*`, decide the VS Code behavior explicitly:
 
 | Route type | VS Code handling |
 |------------|------------------|
-| OpenChamber local route | Handle in `packages/vscode/webview/main.tsx` and bridge to extension host when needed |
+| AiYo local route | Handle in `packages/vscode/webview/main.tsx` and bridge to extension host when needed |
 | Official OpenCode route | Let generic fetch proxy forward to OpenCode via `api:proxy` |
 | SSE route | Use `api:sse:start` / stream messages / `api:sse:stop`, never generic proxy |
 | Session message POST | Use `api:session:message` special proxy path |
@@ -170,8 +170,8 @@ For any shared UI call to `/api/*`, decide the VS Code behavior explicitly:
 
 Electron exposes API base and shell identity broadly, but privileged local capabilities stay local-only.
 
-- `__OPENCHAMBER_API_BASE_URL__` and `__OPENCHAMBER_LOCAL_ORIGIN__` route requests.
-- `__OPENCHAMBER_CLIENT_TOKEN__`, `__OPENCHAMBER_HOME__`, and privileged desktop IPC are local-page gated.
+- `__AIYO_API_BASE_URL__` and `__AIYO_LOCAL_ORIGIN__` route requests.
+- `__AIYO_CLIENT_TOKEN__`, `__AIYO_HOME__`, and privileged desktop IPC are local-page gated.
 - Do not expose filesystem, shell, or host secrets to remote pages for UI convenience.
 - Do not trust arbitrary loopback, `file://`, or `about:blank` origins as local UI. Gate privileged preload/IPC/token access to the packaged UI origin and exact runtime origins.
 - Deep-links that add or switch remote runtimes are trust-boundary changes. Confirm before storing tokens or switching hosts.
@@ -186,7 +186,7 @@ Electron exposes API base and shell identity broadly, but privileged local capab
 | `runtimeFetch(getRuntimeUrlResolver().api('/api/foo'))` | `runtimeFetch('/api/foo')` |
 | `runtimeFetch(getRuntimeUrlResolver().rawFile(path))` | `runtimeFetch('/api/fs/raw', { query: { path } })` |
 | New `/api/foo` only in web server | Web + VS Code route decision |
-| Component reads `window.__OPENCHAMBER_RUNTIME_APIS__` | `useRuntimeAPIs()` / `useRuntimeAPI()` |
+| Component reads `window.__AIYO_RUNTIME_APIS__` | `useRuntimeAPIs()` / `useRuntimeAPI()` |
 | Rebuilding `new Request(newUrl)` only | `new Request(newUrl, oldRequest)` plus merged headers |
 | Returning `[]` on authoritative SDK failure | Throw or return `null` and preserve state |
 | Caching `getRuntimeUrlResolver()` output forever | Read resolver/client at call time or reset on runtime switch |
@@ -200,7 +200,7 @@ Electron exposes API base and shell identity broadly, but privileged local capab
 Before finalizing a UI/API decoupling change:
 
 1. Official OpenCode routes use SDK wrappers or documented SDK-gap helpers.
-2. OpenChamber routes are registered before the generic proxy.
+2. AiYo routes are registered before the generic proxy.
 3. VS Code has parity, proxy fallback, or explicit unsupported behavior.
 4. Runtime transport preserves body, method, headers, query, auth, and abort signal.
 5. Runtime auth/token handling uses `runtime-auth` and `runtime-url`.
@@ -230,37 +230,37 @@ Before finalizing a UI/API decoupling change:
 
 `packages/ui/src/hooks/useRuntimeAPIs.ts` is the React consumption path. `packages/ui/src/contexts/runtimeAPIRegistry.ts` is the non-React escape hatch for modules that cannot use hooks.
 
-`packages/ui/src/App.tsx` and app variants register APIs and reset runtime-scoped stores on `openchamber:runtime-endpoint-changed`.
+`packages/ui/src/App.tsx` and app variants register APIs and reset runtime-scoped stores on `aiyo:runtime-endpoint-changed`.
 
 ### Web Runtime
 
 `packages/web/src/runtimeConfig.ts` reads injected globals, configures the runtime URL resolver, sets the runtime bearer token, installs the runtime fetch bridge, and creates web APIs.
 
-`packages/web/src/main.tsx`, `mobile-main.tsx`, and `mini-chat-main.tsx` assign `window.__OPENCHAMBER_RUNTIME_APIS__` before rendering shared UI.
+`packages/web/src/main.tsx`, `mobile-main.tsx`, and `mini-chat-main.tsx` assign `window.__AIYO_RUNTIME_APIS__` before rendering shared UI.
 
 `packages/web/src/api/index.ts` composes web `RuntimeAPIs` from implementations such as `files.ts`, `git.ts`, `terminal.ts`, `settings.ts`, `permissions.ts`, `github.ts`, `clientAuth.ts`, `push.ts`, and `tools.ts`.
 
-Web runtime API implementations are normally HTTP clients for OpenChamber-owned server routes. Use `runtimeFetch` for HTTP requests; use `getRuntimeUrlResolver()` only when producing browser/realtime URLs that will not be immediately fetched by code.
+Web runtime API implementations are normally HTTP clients for AiYo-owned server routes. Use `runtimeFetch` for HTTP requests; use `getRuntimeUrlResolver()` only when producing browser/realtime URLs that will not be immediately fetched by code.
 
 ### Server Routes And Proxy
 
-`packages/web/server/index.js` starts the OpenChamber web server. Electron imports this server in-process.
+`packages/web/server/index.js` starts the AiYo web server. Electron imports this server in-process.
 
-`packages/web/server/lib/opencode/core-routes.js` installs JSON parsing for OpenChamber-owned `/api/*` route families.
+`packages/web/server/lib/opencode/core-routes.js` installs JSON parsing for AiYo-owned `/api/*` route families.
 
-`packages/web/server/lib/opencode/feature-routes-runtime.js` registers OpenChamber feature routes before the generic OpenCode proxy: filesystem, git, GitHub, quota, config entities, skills/plugins, magic prompts, session folders, scheduled tasks, and related features.
+`packages/web/server/lib/opencode/feature-routes-runtime.js` registers AiYo feature routes before the generic OpenCode proxy: filesystem, git, GitHub, quota, config entities, skills/plugins, magic prompts, session folders, scheduled tasks, and related features.
 
 `packages/web/server/lib/opencode/proxy.js` is the generic `/api/*` proxy to upstream OpenCode. It strips the `/api` prefix, injects OpenCode auth headers, replays parsed bodies for non-GET requests, handles `/api/event` and `/api/global/event` as SSE, applies readiness gating, and canonicalizes directory query parameters.
 
-OpenChamber-owned routes must be explicit and registered before the proxy. If a route is shared UI contract, add VS Code parity or a deterministic unsupported response.
+AiYo-owned routes must be explicit and registered before the proxy. If a route is shared UI contract, add VS Code parity or a deterministic unsupported response.
 
-If an OpenChamber route is consumed directly by the browser with `oc_url_token`, update the readable/realtime allowlist in `packages/web/server/lib/ui-auth/ui-auth.js` and add tests in `ui-auth.test.js`. Do not use URL tokens as a blanket `/api/*` auth bypass.
+If an AiYo route is consumed directly by the browser with `oc_url_token`, update the readable/realtime allowlist in `packages/web/server/lib/ui-auth/ui-auth.js` and add tests in `ui-auth.test.js`. Do not use URL tokens as a blanket `/api/*` auth bypass.
 
 ### VS Code Runtime
 
 `packages/vscode/webview/api/index.ts` composes VS Code `RuntimeAPIs`. Terminal is a stub; files, git, settings, permissions, notifications, GitHub, tools, editor, and VS Code actions use the bridge.
 
-`packages/vscode/webview/main.tsx` installs `window.__OPENCHAMBER_RUNTIME_APIS__` and overrides `window.fetch`. It handles OpenChamber local routes, then proxies generic OpenCode `/api/*` calls to the extension host. It has special branches for SSE and session message POST.
+`packages/vscode/webview/main.tsx` installs `window.__AIYO_RUNTIME_APIS__` and overrides `window.fetch`. It handles AiYo local routes, then proxies generic OpenCode `/api/*` calls to the extension host. It has special branches for SSE and session message POST.
 
 `packages/vscode/webview/requestBodyTransport.ts` extracts request bodies from SDK-style `Request` objects and `init.body` without losing bytes.
 
@@ -268,7 +268,7 @@ If an OpenChamber route is consumed directly by the browser with `oc_url_token`,
 
 `packages/vscode/src/bridge-proxy-runtime.ts` forwards generic OpenCode proxy requests to the live OpenCode API URL, merges sanitized headers with OpenCode auth, forwards body bytes, and rejects SSE through the generic proxy.
 
-`packages/vscode/src/bridge-config-runtime.ts`, `bridge-fs-runtime.ts`, `bridge-git-runtime.ts`, and related bridge modules implement OpenChamber-owned route behavior in the extension host.
+`packages/vscode/src/bridge-config-runtime.ts`, `bridge-fs-runtime.ts`, `bridge-git-runtime.ts`, and related bridge modules implement AiYo-owned route behavior in the extension host.
 
 ### Electron Runtime
 
@@ -276,11 +276,11 @@ If an OpenChamber route is consumed directly by the browser with `oc_url_token`,
 
 `packages/electron/preload.mjs` exposes runtime globals. API base and local origin are broadly available for routing. Client token, home directory, and privileged desktop IPC stay local-page gated so remote pages cannot access local host capabilities.
 
-Shared UI should not branch on Electron for backend behavior. Prefer web runtime APIs and the `__OPENCHAMBER_DESKTOP__` bridge only for shell capabilities that already exist in the shared runtime contract.
+Shared UI should not branch on Electron for backend behavior. Prefer web runtime APIs and the `__AIYO_DESKTOP__` bridge only for shell capabilities that already exist in the shared runtime contract.
 
 ### Runtime Switch Flow
 
-`packages/ui/src/lib/runtime-switch.ts` updates `__OPENCHAMBER_API_BASE_URL__`, `__OPENCHAMBER_CLIENT_TOKEN__`, runtime URL resolver, bearer token, and dispatches `openchamber:runtime-endpoint-changed`.
+`packages/ui/src/lib/runtime-switch.ts` updates `__AIYO_API_BASE_URL__`, `__AIYO_CLIENT_TOKEN__`, runtime URL resolver, bearer token, and dispatches `aiyo:runtime-endpoint-changed`.
 
 `packages/ui/src/App.tsx` reacts by preparing/restoring runtime-keyed session and UI state, reconnecting `opencodeClient`, clearing provider/agent connection state, disposing terminal transports, resetting streaming state, and triggering re-bootstrap.
 

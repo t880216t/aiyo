@@ -37,8 +37,8 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       spawn,
       resolveGitBinaryForSpawn,
       createFsSearchRuntime,
-      openchamberDataDir,
-      openchamberUserConfigRoot,
+      aiyoDataDir,
+      aiyoUserConfigRoot,
       normalizeDirectoryPath,
       resolveProjectDirectory,
       resolveOptionalProjectDirectory,
@@ -59,7 +59,7 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       buildAugmentedPath,
       projectConfigRuntime,
       scheduledTasksRuntime,
-      getOpenChamberEventClients,
+      getAiYoEventClients,
       writeSseEvent,
     } = routeDependencies;
 
@@ -93,7 +93,7 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       fsPromises,
       path,
       crypto,
-      openchamberDataDir,
+      aiyoDataDir,
       sanitizeProjects,
       readSettingsFromDiskMigrated,
       persistSettings,
@@ -107,7 +107,7 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       sanitizeProjects,
       projectConfigRuntime,
       scheduledTasksRuntime,
-      getOpenChamberEventClients,
+      getAiYoEventClients,
       writeSseEvent,
     });
 
@@ -266,12 +266,12 @@ export const createFeatureRoutesRuntime = (dependencies) => {
     registerMagicPromptRoutes(app, {
       fsPromises,
       path,
-      openchamberDataDir,
+      aiyoDataDir,
     });
     registerSessionFoldersRoutes(app, {
       fsPromises,
       path,
-      openchamberDataDir,
+      aiyoDataDir,
     });
     registerFsRoutes(app, {
       os,
@@ -283,7 +283,7 @@ export const createFeatureRoutesRuntime = (dependencies) => {
       resolveProjectDirectory,
       buildAugmentedPath,
       resolveGitBinaryForSpawn,
-      openchamberUserConfigRoot,
+      aiyoUserConfigRoot,
     });
   };
 

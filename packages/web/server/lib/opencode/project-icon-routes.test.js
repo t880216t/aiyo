@@ -79,7 +79,7 @@ describe('project icon routes', () => {
       fsPromises,
       path,
       crypto,
-      openchamberDataDir: '/tmp/openchamber-test',
+      aiyoDataDir: '/tmp/aiyo-test',
       sanitizeProjects: (projects) => projects,
       readSettingsFromDiskMigrated: async () => ({
         projects: [{

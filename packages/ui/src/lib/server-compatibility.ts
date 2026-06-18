@@ -1,6 +1,6 @@
 import { runtimeFetch } from './runtime-fetch';
 
-export const OPENCHAMBER_CLIENT_API_VERSION = 1;
+export const AIYO_CLIENT_API_VERSION = 1;
 
 export const REQUIRED_SERVER_CAPABILITIES = [
   'api.health.v1',
@@ -21,7 +21,7 @@ export type ServerCompatibilityStatus =
 
 export interface ServerCompatibilityPayload {
   status?: unknown;
-  openchamberVersion?: unknown;
+  aiyoVersion?: unknown;
   runtime?: unknown;
   compatibility?: {
     apiVersion?: unknown;
@@ -32,7 +32,7 @@ export interface ServerCompatibilityPayload {
 
 export interface ServerCompatibilityResult {
   status: ServerCompatibilityStatus;
-  openchamberVersion: string | null;
+  aiyoVersion: string | null;
   runtime: string | null;
   apiVersion: number | null;
   minClientApiVersion: number | null;
@@ -62,16 +62,16 @@ export const evaluateServerCompatibility = (
     requiredCapabilities?: readonly string[];
   } = {},
 ): ServerCompatibilityResult => {
-  const clientApiVersion = options.clientApiVersion ?? OPENCHAMBER_CLIENT_API_VERSION;
+  const clientApiVersion = options.clientApiVersion ?? AIYO_CLIENT_API_VERSION;
   const requiredCapabilities = [...(options.requiredCapabilities ?? REQUIRED_SERVER_CAPABILITIES)];
   const compatibility = payload?.compatibility ?? null;
   const apiVersion = parsePositiveInteger(compatibility?.apiVersion);
   const minClientApiVersion = parsePositiveInteger(compatibility?.minClientApiVersion);
-  const openchamberVersion = parseString(payload?.openchamberVersion);
+  const aiyoVersion = parseString(payload?.aiyoVersion);
   const runtime = parseString(payload?.runtime);
 
   const base = {
-    openchamberVersion,
+    aiyoVersion,
     runtime,
     apiVersion,
     minClientApiVersion,
@@ -83,7 +83,7 @@ export const evaluateServerCompatibility = (
     return {
       ...base,
       status: 'invalid-response',
-      message: 'Server did not return OpenChamber compatibility metadata.',
+      message: 'Server did not return AiYo compatibility metadata.',
     };
   }
 
@@ -131,7 +131,7 @@ export const checkServerCompatibility = async (): Promise<ServerCompatibilityRes
   } catch (error) {
     return {
       status: 'unreachable',
-      openchamberVersion: null,
+      aiyoVersion: null,
       runtime: null,
       apiVersion: null,
       minClientApiVersion: null,
@@ -144,7 +144,7 @@ export const checkServerCompatibility = async (): Promise<ServerCompatibilityRes
   if (response.status === 401 || response.status === 403) {
     return {
       status: 'auth-required',
-      openchamberVersion: null,
+      aiyoVersion: null,
       runtime: null,
       apiVersion: null,
       minClientApiVersion: null,

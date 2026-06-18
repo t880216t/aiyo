@@ -3,7 +3,7 @@ import { evaluateServerCompatibility, REQUIRED_SERVER_CAPABILITIES } from './ser
 
 const compatiblePayload = () => ({
   status: 'ok',
-  openchamberVersion: '1.10.4',
+  aiyoVersion: '1.10.4',
   runtime: 'web',
   compatibility: {
     apiVersion: 1,
@@ -17,7 +17,7 @@ describe('evaluateServerCompatibility', () => {
     const result = evaluateServerCompatibility(compatiblePayload());
 
     expect(result.status).toBe('compatible');
-    expect(result.openchamberVersion).toBe('1.10.4');
+    expect(result.aiyoVersion).toBe('1.10.4');
     expect(result.runtime).toBe('web');
   });
 

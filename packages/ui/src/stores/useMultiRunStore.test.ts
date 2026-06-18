@@ -33,7 +33,7 @@ mock.module('@/sync/session-ui-store', () => ({
   routeMessage: mock(() => Promise.resolve()),
   useSessionUIStore: {
     getState: () => ({
-      markSessionAsOpenChamberCreated: mock(() => undefined),
+      markSessionAsAiYoCreated: mock(() => undefined),
       setWorktreeMetadata: (sessionId: string, metadata: { path: string }) => {
         worktreeMetadataCalls.push({ sessionId, path: metadata.path });
       },
@@ -74,7 +74,7 @@ mock.module('@/lib/worktrees/worktreeStatus', () => ({
   getRootBranch: mock(() => Promise.resolve('main')),
 }));
 
-mock.module('@/lib/openchamberConfig', () => ({
+mock.module('@/lib/aiyoConfig', () => ({
   saveWorktreeSetupCommands: mock(() => Promise.resolve()),
 }));
 

@@ -20,7 +20,7 @@ import { runtimeFetch } from "@/lib/runtime-fetch";
 import { markStartupTrace, measureStartupTrace } from "@/lib/startupTrace";
 
 const MODELS_DEV_API_URL = "https://models.dev/api.json";
-const MODELS_DEV_PROXY_URL = "/api/openchamber/models-metadata";
+const MODELS_DEV_PROXY_URL = "/api/aiyo/models-metadata";
 const STT_SILENCE_THRESHOLD_DB_MIN = -100;
 const STT_SILENCE_THRESHOLD_DB_MAX = 0;
 const STT_SILENCE_HOLD_MS_MIN = 250;
@@ -46,7 +46,7 @@ const normalizeSttSilenceHoldMs = (value: unknown): number | undefined => {
     return Math.max(STT_SILENCE_HOLD_MS_MIN, Math.min(STT_SILENCE_HOLD_MS_MAX, Math.round(value)));
 };
 
-interface OpenChamberDefaults {
+interface AiYoDefaults {
     defaultModel?: string;
     defaultVariant?: string;
     defaultAgent?: string;
@@ -64,10 +64,10 @@ interface OpenChamberDefaults {
     sttSilenceHoldMs?: number;
 }
 
-const fetchOpenChamberDefaults = async (): Promise<OpenChamberDefaults> => {
+const fetchAiYoDefaults = async (): Promise<AiYoDefaults> => {
     markStartupTrace('config.defaults:start');
     const started = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    const finish = (source: string, result: OpenChamberDefaults) => {
+    const finish = (source: string, result: AiYoDefaults) => {
         const ended = typeof performance !== 'undefined' ? performance.now() : Date.now();
         markStartupTrace('config.defaults:end', {
             source,
@@ -841,7 +841,7 @@ interface ConfigStore {
     lastDisconnectReason: string | null;
     isInitialized: boolean;
     modelsMetadata: Map<string, ModelMetadata>;
-    // OpenChamber settings-based defaults (take precedence over agent preferences)
+    // AiYo settings-based defaults (take precedence over agent preferences)
     settingsDefaultModel: string | undefined; // format: "provider/model"
     settingsDefaultVariant: string | undefined;
     settingsDefaultAgent: string | undefined;
@@ -1107,7 +1107,7 @@ export const useConfigStore = create<ConfigStore>()(
                         if (saved === 'browser' || saved === 'server' || saved === 'wasm') return saved;
                         // Electron/Chromium's Web Speech API requires Google API keys
                         // not available in Electron, so default to WASM local Whisper.
-                        const electron = (window as unknown as { __OPENCHAMBER_ELECTRON__?: { runtime?: string } }).__OPENCHAMBER_ELECTRON__;
+                        const electron = (window as unknown as { __AIYO_ELECTRON__?: { runtime?: string } }).__AIYO_ELECTRON__;
                         if (electron?.runtime === 'electron') return 'wasm' as const;
                     }
                     return 'browser' as const;
@@ -1800,16 +1800,16 @@ export const useConfigStore = create<ConfigStore>()(
 
                     for (let attempt = 0; attempt < 3; attempt++) {
                         try {
-                            // Fetch agents, OpenChamber settings, and the OpenCode config in parallel.
+                            // Fetch agents, AiYo settings, and the OpenCode config in parallel.
                             // The OpenCode config is best-effort: a failure should not block agent
                             // loading, it just means we won't honor its default_agent this round.
-                            const [agents, openChamberDefaults, opencodeConfig] = await Promise.all([
+                            const [agents, aiYoDefaults, opencodeConfig] = await Promise.all([
                                 measureStartupTrace(
                                     'loadAgents:api',
                                     () => opencodeClient.listAgents(fromDirectoryKey(directoryKey)),
                                     { directoryKey, source, requestedDirectory, effectiveDirectory, attempt: attempt + 1 },
                                 ),
-                                fetchOpenChamberDefaults(),
+                                fetchAiYoDefaults(),
                                 opencodeClient
                                     .withDirectory(fromDirectoryKey(directoryKey), () => opencodeClient.getConfig())
                                     .catch(() => null),
@@ -1831,7 +1831,7 @@ export const useConfigStore = create<ConfigStore>()(
 
                             const existingZenModel = normalizeOptionalString(get().settingsZenModel);
 
-                            const defaultZenModel = normalizeOptionalString(openChamberDefaults.zenModel);
+                            const defaultZenModel = normalizeOptionalString(aiYoDefaults.zenModel);
 
                             const resolvedExistingGitSelection = resolveGitGenerationModelSelection({
                                 providers,
@@ -1866,22 +1866,22 @@ export const useConfigStore = create<ConfigStore>()(
                                 };
 
                                 const nextState: Partial<ConfigStore> = {
-                                    settingsDefaultModel: openChamberDefaults.defaultModel,
-                                    settingsDefaultVariant: openChamberDefaults.defaultVariant,
-                                    settingsDefaultAgent: openChamberDefaults.defaultAgent,
+                                    settingsDefaultModel: aiYoDefaults.defaultModel,
+                                    settingsDefaultVariant: aiYoDefaults.defaultVariant,
+                                    settingsDefaultAgent: aiYoDefaults.defaultAgent,
                                     opencodeDefaultAgent,
                                     opencodeDefaultModel,
-                                    settingsAutoCreateWorktree: openChamberDefaults.autoCreateWorktree ?? false,
-                                    settingsGitmojiEnabled: openChamberDefaults.gitmojiEnabled ?? false,
-                                    settingsDefaultFileViewerPreview: openChamberDefaults.defaultFileViewerPreview ?? false,
+                                    settingsAutoCreateWorktree: aiYoDefaults.autoCreateWorktree ?? false,
+                                    settingsGitmojiEnabled: aiYoDefaults.gitmojiEnabled ?? false,
+                                    settingsDefaultFileViewerPreview: aiYoDefaults.defaultFileViewerPreview ?? false,
                                     settingsZenModel: resolvedZenModel,
-                                    settingsMessageStreamTransport: openChamberDefaults.messageStreamTransport ?? state.settingsMessageStreamTransport ?? 'auto',
-                                    sttProvider: openChamberDefaults.sttProvider ?? state.sttProvider,
-                                    sttServerUrl: openChamberDefaults.sttServerUrl ?? state.sttServerUrl,
-                                    sttModel: openChamberDefaults.sttModel ?? state.sttModel,
-                                    sttLanguage: openChamberDefaults.sttLanguage ?? state.sttLanguage,
-                                    sttSilenceThresholdDb: openChamberDefaults.sttSilenceThresholdDb ?? state.sttSilenceThresholdDb,
-                                    sttSilenceHoldMs: openChamberDefaults.sttSilenceHoldMs ?? state.sttSilenceHoldMs,
+                                    settingsMessageStreamTransport: aiYoDefaults.messageStreamTransport ?? state.settingsMessageStreamTransport ?? 'auto',
+                                    sttProvider: aiYoDefaults.sttProvider ?? state.sttProvider,
+                                    sttServerUrl: aiYoDefaults.sttServerUrl ?? state.sttServerUrl,
+                                    sttModel: aiYoDefaults.sttModel ?? state.sttModel,
+                                    sttLanguage: aiYoDefaults.sttLanguage ?? state.sttLanguage,
+                                    sttSilenceThresholdDb: aiYoDefaults.sttSilenceThresholdDb ?? state.sttSilenceThresholdDb,
+                                    sttSilenceHoldMs: aiYoDefaults.sttSilenceHoldMs ?? state.sttSilenceHoldMs,
                                     directoryScoped: {
                                         ...state.directoryScoped,
                                         [directoryKey]: nextSnapshot,
@@ -1964,23 +1964,23 @@ export const useConfigStore = create<ConfigStore>()(
                                 return provider.models.some((m) => m.id === modelId);
                             };
 
-                            // Detect invalid OpenChamber settings so we can clear them from storage.
+                            // Detect invalid AiYo settings so we can clear them from storage.
                             // This is independent of resolution: even though the cascade below falls
                             // back gracefully, stale settings pointing at removed agents/models/variants
                             // should be cleaned up.
                             const invalidSettings: { defaultModel?: string; defaultVariant?: string; defaultAgent?: string } = {};
-                            if (openChamberDefaults.defaultAgent && !safeAgents.some((agent) => agent.name === openChamberDefaults.defaultAgent)) {
+                            if (aiYoDefaults.defaultAgent && !safeAgents.some((agent) => agent.name === aiYoDefaults.defaultAgent)) {
                                 invalidSettings.defaultAgent = '';
                             }
-                            if (openChamberDefaults.defaultModel) {
-                                const parsed = parseModelString(openChamberDefaults.defaultModel);
+                            if (aiYoDefaults.defaultModel) {
+                                const parsed = parseModelString(aiYoDefaults.defaultModel);
                                 if (!parsed || !validateModel(parsed.providerId, parsed.modelId)) {
                                     invalidSettings.defaultModel = '';
-                                } else if (openChamberDefaults.defaultVariant) {
+                                } else if (aiYoDefaults.defaultVariant) {
                                     const provider = providers.find((p) => p.id === parsed.providerId);
                                     const model = provider?.models.find((m) => m.id === parsed.modelId) as { variants?: Record<string, unknown> } | undefined;
                                     const variants = model?.variants;
-                                    if (!(variants && Object.prototype.hasOwnProperty.call(variants, openChamberDefaults.defaultVariant))) {
+                                    if (!(variants && Object.prototype.hasOwnProperty.call(variants, aiYoDefaults.defaultVariant))) {
                                         invalidSettings.defaultVariant = '';
                                     }
                                 }
@@ -1992,9 +1992,9 @@ export const useConfigStore = create<ConfigStore>()(
                             const resolvedDefault = resolveDefaultAgentModelSelection({
                                 agents: safeAgents,
                                 providers,
-                                settingsDefaultAgent: openChamberDefaults.defaultAgent,
-                                settingsDefaultModel: openChamberDefaults.defaultModel,
-                                settingsDefaultVariant: openChamberDefaults.defaultVariant,
+                                settingsDefaultAgent: aiYoDefaults.defaultAgent,
+                                settingsDefaultModel: aiYoDefaults.defaultModel,
+                                settingsDefaultVariant: aiYoDefaults.defaultVariant,
                                 opencodeDefaultAgent,
                                 opencodeDefaultModel,
                             });
@@ -2185,10 +2185,10 @@ export const useConfigStore = create<ConfigStore>()(
                             selState.saveSessionAgentSelection(currentSessionId, agentName);
                         }
 
-                        if (currentSessionId && useSessionUIStore.getState().isOpenChamberCreatedSession(currentSessionId)) {
+                        if (currentSessionId && useSessionUIStore.getState().isAiYoCreatedSession(currentSessionId)) {
                             const existingAgentModel = selState.getAgentModelForSession(currentSessionId, agentName);
                             if (!existingAgentModel) {
-                                useSessionUIStore.getState().initializeNewOpenChamberSession(currentSessionId, agents);
+                                useSessionUIStore.getState().initializeNewAiYoSession(currentSessionId, agents);
                             }
                         }
                     }

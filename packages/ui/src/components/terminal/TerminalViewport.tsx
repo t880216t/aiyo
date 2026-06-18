@@ -470,9 +470,9 @@ const TerminalViewport = React.forwardRef<TerminalController, TerminalViewportPr
         void copySelectionToClipboard();
       };
 
-      window.addEventListener('openchamber:copy', handleMenuCopy);
+      window.addEventListener('aiyo:copy', handleMenuCopy);
       return () => {
-        window.removeEventListener('openchamber:copy', handleMenuCopy);
+        window.removeEventListener('aiyo:copy', handleMenuCopy);
       };
     }, [copySelectionToClipboard, hasCopyableSelectionInViewport]);
 

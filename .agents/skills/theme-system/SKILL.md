@@ -1,13 +1,13 @@
 ---
 name: theme-system
-description: Use when creating or modifying UI components, styling, visual elements, or icons in OpenChamber. All UI colors must use theme tokens - never hardcoded values or Tailwind color classes. All icons must use the shared Icon component from the SVG sprite system - never import from @remixicon/react directly.
+description: Use when creating or modifying UI components, styling, visual elements, or icons in AiYo. All UI colors must use theme tokens - never hardcoded values or Tailwind color classes. All icons must use the shared Icon component from the SVG sprite system - never import from @remixicon/react directly.
 license: MIT
 compatibility: opencode
 ---
 
 ## Overview
 
-OpenChamber uses a JSON-based theme system. Themes are defined in `packages/ui/src/lib/theme/themes/`. Users can also add custom themes via `~/.config/openchamber/themes/`.
+AiYo uses a JSON-based theme system. Themes are defined in `packages/ui/src/lib/theme/themes/`. Users can also add custom themes via `~/.config/aiyo/themes/`.
 
 **Core principle:** UI colors must use theme tokens - never hardcoded hex colors or Tailwind color classes.
 
@@ -191,7 +191,7 @@ const { currentTheme } = useThemeSystem();
 
 ## Icon System (MANDATORY)
 
-OpenChamber uses an SVG sprite-based icon system. **Never import from `@remixicon/react`.** Always use the shared `Icon` component.
+AiYo uses an SVG sprite-based icon system. **Never import from `@remixicon/react`.** Always use the shared `Icon` component.
 
 ### Import
 

@@ -168,7 +168,7 @@ export function registerGitHubRoutes(app) {
       const clientId = getGitHubClientId();
       if (!clientId) {
         return res.status(400).json({
-          error: 'GitHub OAuth client not configured. Set OPENCHAMBER_GITHUB_CLIENT_ID.',
+          error: 'GitHub OAuth client not configured. Set AIYO_GITHUB_CLIENT_ID.',
         });
       }
 
@@ -200,7 +200,7 @@ export function registerGitHubRoutes(app) {
       const clientId = getGitHubClientId();
       if (!clientId) {
         return res.status(400).json({
-          error: 'GitHub OAuth client not configured. Set OPENCHAMBER_GITHUB_CLIENT_ID.',
+          error: 'GitHub OAuth client not configured. Set AIYO_GITHUB_CLIENT_ID.',
         });
       }
 

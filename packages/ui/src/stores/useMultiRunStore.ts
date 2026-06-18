@@ -4,7 +4,7 @@ import { routeMessage, useSessionUIStore } from '@/sync/session-ui-store';
 import { devtools } from 'zustand/middleware';
 import type { CreateMultiRunParams, CreateMultiRunResult } from '@/types/multirun';
 import { opencodeClient } from '@/lib/opencode/client';
-import { saveWorktreeSetupCommands } from '@/lib/openchamberConfig';
+import { saveWorktreeSetupCommands } from '@/lib/aiyoConfig';
 import type { ProjectRef } from '@/lib/worktrees/worktreeManager';
 import { createWorktreeWithDefaults, resolveRootTrackingRemote } from '@/lib/worktrees/worktreeCreate';
 import { getRootBranch } from '@/lib/worktrees/worktreeStatus';
@@ -50,7 +50,7 @@ const registerCreatedSession = (session: Session, directory: string): Session =>
     : ({ ...session, directory: normalizedDirectory } as Session);
 
   registerSessionDirectory(session.id, normalizedDirectory);
-  useSessionUIStore.getState().markSessionAsOpenChamberCreated(session.id);
+  useSessionUIStore.getState().markSessionAsAiYoCreated(session.id);
   useGlobalSessionsStore.getState().upsertSession(sessionWithDirectory);
 
   try {

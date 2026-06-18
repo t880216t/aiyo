@@ -34,9 +34,9 @@ import { MagicPromptsPage } from '@/components/sections/magic-prompts/MagicPromp
 import { SnippetsSidebar } from '@/components/sections/snippets/SnippetsSidebar';
 import { SnippetsPage } from '@/components/sections/snippets/SnippetsPage';
 import { GitPage } from '@/components/sections/git-identities/GitPage';
-import type { OpenChamberSection } from '@/components/sections/openchamber/types';
-import { OpenChamberPage } from '@/components/sections/openchamber/OpenChamberPage';
-import { AboutSettings } from '@/components/sections/openchamber/AboutSettings';
+import type { AiYoSection } from '@/components/sections/aiyo/types';
+import { AiYoPage } from '@/components/sections/aiyo/AiYoPage';
+import { AboutSettings } from '@/components/sections/aiyo/AboutSettings';
 import { useDeviceInfo } from '@/lib/device';
 import { isDesktopLocalOriginActive, isDesktopShell, isVSCodeRuntime, isWebRuntime } from '@/lib/desktop';
 import { useI18n } from '@/lib/i18n';
@@ -58,7 +58,7 @@ import { buildSettingsSearchResults, type SettingsSearchResult } from '@/lib/set
 const SETTINGS_NAV_MIN_WIDTH = 176;
 const SETTINGS_NAV_MAX_WIDTH = 280;
 const SETTINGS_NAV_RESIZE_STEP = 8;
-const SETTINGS_DETAIL_HISTORY_KEY = '__openchamberSettingsDetail';
+const SETTINGS_DETAIL_HISTORY_KEY = '__aiyoSettingsDetail';
 
 function clampSettingsNavWidth(width: number): number {
   return Math.min(SETTINGS_NAV_MAX_WIDTH, Math.max(SETTINGS_NAV_MIN_WIDTH, width));
@@ -467,7 +467,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, forceMobile
 
   // Nav is always open (collapsed state removed)
 
-  const openChamberSectionBySlug: Partial<Record<SettingsPageSlug, OpenChamberSection>> = React.useMemo(() => ({
+  const aiYoSectionBySlug: Partial<Record<SettingsPageSlug, AiYoSection>> = React.useMemo(() => ({
     appearance: 'visual',
     chat: 'chat',
     shortcuts: 'shortcuts',
@@ -651,7 +651,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, forceMobile
     }
     if (result.id === 'plugins.create' && typeof window !== 'undefined') {
       window.setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('openchamber:settings-open-plugin-add'));
+        window.dispatchEvent(new CustomEvent('aiyo:settings-open-plugin-add'));
       }, 50);
     }
   }, [isMobile, openPage, prepareSettingsSearchTarget]);
@@ -811,13 +811,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, forceMobile
       case 'notifications':
       case 'voice':
       case 'tunnel': {
-        const section = openChamberSectionBySlug[slug] ?? 'visual';
-        return <OpenChamberPage section={section} />;
+        const section = aiYoSectionBySlug[slug] ?? 'visual';
+        return <AiYoPage section={section} />;
       }
       default:
         return <SettingsHome onOpen={openPage} />;
     }
-  }, [openChamberSectionBySlug, openPage, renderUnavailable, runtimeCtx]);
+  }, [aiYoSectionBySlug, openPage, renderUnavailable, runtimeCtx]);
 
   // Mobile: if opened via deep-link / palette to a non-home page, jump into it once.
   React.useEffect(() => {

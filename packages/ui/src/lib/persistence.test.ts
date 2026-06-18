@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, test } from 'bun:test';
 
 import { applyPersistedHomeDirectoryToWindow } from './persistence';
 
-type TestWindow = { __OPENCHAMBER_HOME__?: string };
+type TestWindow = { __AIYO_HOME__?: string };
 
 let createdWindow = false;
 
@@ -20,28 +20,28 @@ const getWindow = (): TestWindow => {
 
 describe('applyPersistedHomeDirectoryToWindow', () => {
   beforeEach(() => {
-    delete getWindow().__OPENCHAMBER_HOME__;
+    delete getWindow().__AIYO_HOME__;
   });
 
   afterAll(() => {
     if (createdWindow) {
       delete (globalThis as { window?: unknown }).window;
     } else {
-      delete getWindow().__OPENCHAMBER_HOME__;
+      delete getWindow().__AIYO_HOME__;
     }
   });
 
   test('does not overwrite an injected desktop home directory', () => {
-    getWindow().__OPENCHAMBER_HOME__ = '/Users/example';
+    getWindow().__AIYO_HOME__ = '/Users/example';
 
     applyPersistedHomeDirectoryToWindow('/Users/example/projects/app');
 
-    expect(getWindow().__OPENCHAMBER_HOME__).toBe('/Users/example');
+    expect(getWindow().__AIYO_HOME__).toBe('/Users/example');
   });
 
   test('uses persisted home when no runtime home was injected', () => {
     applyPersistedHomeDirectoryToWindow('/Users/example/projects/app');
 
-    expect(getWindow().__OPENCHAMBER_HOME__).toBe('/Users/example/projects/app');
+    expect(getWindow().__AIYO_HOME__).toBe('/Users/example/projects/app');
   });
 });

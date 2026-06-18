@@ -1,11 +1,11 @@
-import type { RuntimeAPIs } from '@openchamber/ui/lib/api/types';
+import type { RuntimeAPIs } from '@aiyo/ui/lib/api/types';
 import {
   createRuntimeUrlResolver,
   getRuntimeUrlResolver,
   setRuntimeUrlResolver,
   type RuntimeUrlResolver,
-} from '@openchamber/ui/lib/runtime-url';
-import { useDirectoryStore } from '@openchamber/ui/stores/useDirectoryStore';
+} from '@aiyo/ui/lib/runtime-url';
+import { useDirectoryStore } from '@aiyo/ui/stores/useDirectoryStore';
 import { createWebTerminalAPI } from './terminal';
 import { createWebGitAPI } from './git';
 import { createWebFilesAPI } from './files';

@@ -1,17 +1,17 @@
 import { createConfiguredWebAPIs } from './runtimeConfig';
-import type { RuntimeAPIs } from '@openchamber/ui/lib/api/types';
-import '@openchamber/ui/index.css';
-import '@openchamber/ui/styles/fonts';
+import type { RuntimeAPIs } from '@aiyo/ui/lib/api/types';
+import '@aiyo/ui/index.css';
+import '@aiyo/ui/styles/fonts';
 
 declare global {
   interface Window {
-    __OPENCHAMBER_RUNTIME_APIS__?: RuntimeAPIs;
+    __AIYO_RUNTIME_APIS__?: RuntimeAPIs;
   }
 }
 
-window.__OPENCHAMBER_RUNTIME_APIS__ = createConfiguredWebAPIs();
+window.__AIYO_RUNTIME_APIS__ = createConfiguredWebAPIs();
 
-void import('@openchamber/ui/apps/renderMobileApp')
+void import('@aiyo/ui/apps/renderMobileApp')
   .then(({ renderMobileApp }) => {
-    renderMobileApp(window.__OPENCHAMBER_RUNTIME_APIS__ ?? createConfiguredWebAPIs());
+    renderMobileApp(window.__AIYO_RUNTIME_APIS__ ?? createConfiguredWebAPIs());
   });

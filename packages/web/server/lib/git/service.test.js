@@ -29,7 +29,7 @@ const tempDirs = [];
 
 /** Create a temp dir and register it for afterEach cleanup. */
 const createTempDir = () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'openchamber-git-service-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aiyo-git-service-'));
   tempDirs.push(dir);
   return dir;
 };

@@ -4,7 +4,7 @@ import { Icon } from '@/components/icon/Icon';
 import type { IconName } from '@/components/icon/icons';
 import { McpIcon } from '@/components/icons/McpIcon';
 import { McpDropdownContent } from '@/components/mcp/McpDropdown';
-import { AboutSettings } from '@/components/sections/openchamber/AboutSettings';
+import { AboutSettings } from '@/components/sections/aiyo/AboutSettings';
 import { OpenCodeUpdateToast } from '@/components/update/OpenCodeUpdateToast';
 import { ConfigUpdateOverlay } from '@/components/ui/ConfigUpdateOverlay';
 import { ProviderLogo } from '@/components/ui/ProviderLogo';

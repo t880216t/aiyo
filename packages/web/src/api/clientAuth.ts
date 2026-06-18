@@ -4,8 +4,8 @@ import type {
   RemoteClientPurgeRevokedResult,
   RemoteClientRecord,
   RemoteClientRevokeResult,
-} from '@openchamber/ui/lib/api/types';
-import { runtimeFetch } from '@openchamber/ui/lib/runtime-fetch';
+} from '@aiyo/ui/lib/api/types';
+import { runtimeFetch } from '@aiyo/ui/lib/runtime-fetch';
 
 const jsonOrNull = async <T>(response: Response): Promise<T | null> => {
   return (await response.json().catch(() => null)) as T | null;

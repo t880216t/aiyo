@@ -151,7 +151,7 @@ const sendPlainMessage = async (
 
 const requestChatForceScrollBottom = (sessionId: string): void => {
   if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent('openchamber:chat-force-scroll-bottom', {
+  window.dispatchEvent(new CustomEvent('aiyo:chat-force-scroll-bottom', {
     detail: { sessionId },
   }));
 };
@@ -180,11 +180,11 @@ const createOrReuseReviewSession = async (originalSessionID: string, directory: 
     if (existing && isReviewSession(existing)) return existing;
     await patchSessionMetadata(originalSessionID, directory, (metadata) => {
       const next = { ...metadata };
-      const openchamber = next.openchamber;
-      if (openchamber && typeof openchamber === 'object' && !Array.isArray(openchamber)) {
-        const rest = { ...(openchamber as Record<string, unknown>) };
+      const aiyo = next.aiyo;
+      if (aiyo && typeof aiyo === 'object' && !Array.isArray(aiyo)) {
+        const rest = { ...(aiyo as Record<string, unknown>) };
         delete rest.reviewSessionID;
-        next.openchamber = rest;
+        next.aiyo = rest;
       }
       return next;
     });

@@ -1,8 +1,8 @@
-# OpenChamber - AI Agent Reference
+# AiYo - AI Agent Reference
 
 ## Core purpose
 
-OpenChamber provides UI runtimes (web/desktop/VS Code) for interacting with an OpenCode server (local auto-start or remote URL). Official OpenCode traffic goes through `@opencode-ai/sdk`; OpenChamber-owned runtime capabilities go through `RuntimeAPIs`, `runtimeFetch`, and browser/realtime URL helpers.
+AiYo provides UI runtimes (web/desktop/VS Code) for interacting with an OpenCode server (local auto-start or remote URL). Official OpenCode traffic goes through `@opencode-ai/sdk`; AiYo-owned runtime capabilities go through `RuntimeAPIs`, `runtimeFetch`, and browser/realtime URL helpers.
 
 ## Runtime architecture (IMPORTANT)
 
@@ -14,7 +14,7 @@ OpenChamber provides UI runtimes (web/desktop/VS Code) for interacting with an O
 
 - **Desktop work goes into `packages/electron/`.**
 - Desktop-side changes (IPC handlers, native integrations, window/quit/notification behavior) land in `packages/electron/main.mjs` + `packages/electron/preload.mjs`.
-- Electron imports the server via `@openchamber/web/server/index.js` (workspace dep) and calls `startWebUiServer({...})`. The returned handle has `getPort()` / `stop()`. Notifications flow via an `onDesktopNotification` callback injected at startup — no stdout-parsing IPC.
+- Electron imports the server via `@aiyo/web/server/index.js` (workspace dep) and calls `startWebUiServer({...})`. The returned handle has `getPort()` / `stop()`. Notifications flow via an `onDesktopNotification` callback injected at startup — no stdout-parsing IPC.
 - Windows OS integrations must avoid console-window flashes. Any non-user-visible `child_process` call on Windows (system probes, tool discovery, updater/install helpers, SSH/tunnel helpers, cleanup, etc.) should run the target executable directly with `windowsHide: true`; detached/background helpers usually also need `stdio: 'ignore'`. Avoid `cmd.exe /c` pipelines and wrappers that spawn console grandchildren (`taskkill`, `ping`, nested `powershell`, batch shims), because `windowsHide` only reliably applies to the first child. If a delayed/background operation must outlive the app process, use a single hidden first-level helper (for example `powershell.exe -WindowStyle Hidden -EncodedCommand ...`) or a native Node/Electron API. Only omit this for intentionally user-visible shells/apps.
 - Build/release: Electron is the desktop release target.
 
@@ -43,7 +43,7 @@ Before changing any mapped module, read its module documentation first.
 
 ### web
 
-Web runtime and server implementation for OpenChamber.
+Web runtime and server implementation for AiYo.
 
 #### lib
 
@@ -51,7 +51,7 @@ Server-side integration modules used by API routes and runtime services.
 
 ##### event-stream
 
-OpenChamber-owned event stream helpers for server-sent runtime events.
+AiYo-owned event stream helpers for server-sent runtime events.
 
 - Module docs: `packages/web/server/lib/event-stream/DOCUMENTATION.md`
 
@@ -117,7 +117,7 @@ Server-side text-to-speech services and summarization helpers for `/api/tts/*` e
 
 ##### tunnels
 
-Tunnel provider setup and runtime helpers for exposing OpenChamber over remote URLs.
+Tunnel provider setup and runtime helpers for exposing AiYo over remote URLs.
 
 - Module docs: `packages/web/server/lib/tunnels/DOCUMENTATION.md`
 

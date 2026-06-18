@@ -12,7 +12,7 @@ describe('core-routes', () => {
         shutdownOpts = opts;
       }),
       getHealthSnapshot: () => ({ status: 'ok' }),
-      openchamberVersion: '1.0.0',
+      aiyoVersion: '1.0.0',
       runtimeName: 'test',
       express,
     };
@@ -30,7 +30,7 @@ describe('core-routes', () => {
     const dependencies = {
       gracefulShutdown: vi.fn(async () => {}),
       getHealthSnapshot: () => ({ status: 'ok' }),
-      openchamberVersion: '1.0.0',
+      aiyoVersion: '1.0.0',
       runtimeName: 'test',
       express,
       tunnelAuthController: {
@@ -57,7 +57,7 @@ describe('core-routes', () => {
     const dependencies = {
       gracefulShutdown: vi.fn(async () => {}),
       getHealthSnapshot: () => ({ status: 'ok' }),
-      openchamberVersion: '1.0.0',
+      aiyoVersion: '1.0.0',
       runtimeName: 'test',
       express,
       tunnelAuthController: {
@@ -84,7 +84,7 @@ describe('core-routes', () => {
     const dependencies = {
       gracefulShutdown: vi.fn(async () => {}),
       getHealthSnapshot: () => ({ status: 'ok' }),
-      openchamberVersion: '1.0.0',
+      aiyoVersion: '1.0.0',
       runtimeName: 'test',
       express,
       tunnelAuthController: {
@@ -378,7 +378,7 @@ describe('client auth routes', () => {
 
     const current = await request(app)
       .post('/api/client-auth/clients')
-      .send({ label: 'OpenChamber Desktop', clientKind: 'desktop-local' });
+      .send({ label: 'AiYo Desktop', clientKind: 'desktop-local' });
     const other = await request(app)
       .post('/api/client-auth/clients')
       .send({ label: 'Other device' });

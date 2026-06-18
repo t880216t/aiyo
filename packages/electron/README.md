@@ -1,16 +1,16 @@
-# OpenChamber Desktop
+# AiYo Desktop
 
-Electron desktop runtime for OpenChamber on macOS and Windows.
+Electron desktop runtime for AiYo on macOS and Windows.
 
-This package owns the native shell: windows, menus, deep links, native notifications, auto-updates, host switching, SSH connections, tunnel helpers, and packaged desktop builds. The web UI and OpenChamber server logic still live in `packages/web` and shared React UI lives in `packages/ui`.
+This package owns the native shell: windows, menus, deep links, native notifications, auto-updates, host switching, SSH connections, tunnel helpers, and packaged desktop builds. The web UI and AiYo server logic still live in `packages/web` and shared React UI lives in `packages/ui`.
 
 ## How It Runs
 
-Desktop starts the OpenChamber web server in the same Electron main process. There is no separate sidecar subprocess for the OpenChamber server.
+Desktop starts the AiYo web server in the same Electron main process. There is no separate sidecar subprocess for the AiYo server.
 
-`main.mjs` imports `@openchamber/web/server/index.js` and calls `startWebUiServer()`. The Electron window then loads the UI from the local server in development, or from packaged `resources/web-dist` assets in packaged builds.
+`main.mjs` imports `@aiyo/web/server/index.js` and calls `startWebUiServer()`. The Electron window then loads the UI from the local server in development, or from packaged `resources/web-dist` assets in packaged builds.
 
-The preload bridge exposes desktop-only APIs to the web UI through `window.__OPENCHAMBER_DESKTOP__`. Privileged commands are checked in `main.mjs`, not only in the UI.
+The preload bridge exposes desktop-only APIs to the web UI through `window.__AIYO_DESKTOP__`. Privileged commands are checked in `main.mjs`, not only in the UI.
 
 ## Main Files
 
@@ -78,13 +78,13 @@ The package supports macOS and Windows desktop features. Some native discovery h
 
 | Variable | Use |
 |----------|-----|
-| `OPENCHAMBER_ELECTRON_DEV=1` | Marks the runtime as desktop development mode |
-| `OPENCHAMBER_ELECTRON_USE_BUNDLED_UI=1` | Uses staged web assets instead of the HMR dev server |
-| `OPENCHAMBER_HMR_UI_PORT` | Preferred Vite UI port for desktop dev, default `5173` |
-| `OPENCHAMBER_HMR_API_PORT` | Preferred API port for desktop dev, default `3901` |
-| `OPENCHAMBER_RUNTIME=desktop` | Set by Electron before starting the web server |
-| `OPENCHAMBER_DESKTOP_NOTIFY=true` | Enables desktop notification flow in the web server |
-| `OPENCHAMBER_SKIP_API_COMPRESSION=true` | Defaulted by Desktop to reduce local CPU overhead |
+| `AIYO_ELECTRON_DEV=1` | Marks the runtime as desktop development mode |
+| `AIYO_ELECTRON_USE_BUNDLED_UI=1` | Uses staged web assets instead of the HMR dev server |
+| `AIYO_HMR_UI_PORT` | Preferred Vite UI port for desktop dev, default `5173` |
+| `AIYO_HMR_API_PORT` | Preferred API port for desktop dev, default `3901` |
+| `AIYO_RUNTIME=desktop` | Set by Electron before starting the web server |
+| `AIYO_DESKTOP_NOTIFY=true` | Enables desktop notification flow in the web server |
+| `AIYO_SKIP_API_COMPRESSION=true` | Defaulted by Desktop to reduce local CPU overhead |
 | `OPENCODE_HOST` / `OPENCODE_PORT` / `OPENCODE_SKIP_START` | Connect Desktop to an external OpenCode server instead of starting one locally |
 
 ## Native Features Owned Here
@@ -106,21 +106,21 @@ Renderer code should call the desktop bridge exposed by `preload.mjs`. Do not im
 Add new native capabilities in this order:
 
 1. Add or update the `preload.mjs` bridge only if a new renderer-facing shape is needed.
-2. Add the real command handling in `main.mjs` under `openchamber:invoke`.
+2. Add the real command handling in `main.mjs` under `aiyo:invoke`.
 3. Gate privileged commands in main process logic so remote pages cannot access local filesystem or shell capabilities.
 4. Keep shared UI runtime contracts in `packages/ui` and server/runtime APIs in `packages/web` when the behavior is not inherently native.
 
 ## Logs And Data
 
-Electron uses `electron-log`. In development, console logs are also visible in the terminal. In packaged apps, logs are written through the platform log path for the `OpenChamber` app name.
+Electron uses `electron-log`. In development, console logs are also visible in the terminal. In packaged apps, logs are written through the platform log path for the `AiYo` app name.
 
-Development builds use a separate user data directory named `OpenChamber Dev`, so dev state does not overwrite normal packaged app state.
+Development builds use a separate user data directory named `AiYo Dev`, so dev state does not overwrite normal packaged app state.
 
 ## Things To Be Careful With
 
 - Keep desktop-specific code in this package. Do not move OpenCode feature backend logic into Electron.
 - Use hidden Windows process launches for background helpers. Avoid visible console flashes.
-- Keep `@openchamber/web`, `bun-pty`, `node-pty`, and native modules external in `bundle-main.mjs`; bundling them can break Electron startup.
+- Keep `@aiyo/web`, `bun-pty`, `node-pty`, and native modules external in `bundle-main.mjs`; bundling them can break Electron startup.
 - Rebuild native modules after dependency or Electron version changes.
 - Test both HMR dev mode and bundled UI mode when changing startup, preload, routing, or packaged asset behavior.
 

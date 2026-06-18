@@ -1,15 +1,15 @@
 ---
 title: Тунелі
-description: Безпечно відкрийте OpenChamber для віддаленого та мобільного доступу.
+description: Безпечно відкрийте AiYo для віддаленого та мобільного доступу.
 ---
 
 # Тунелі
 
-Тунель — це публічне посилання на ваш OpenChamber, щоб дістатися до нього з телефона чи з іншої мережі. Скористайтеся `openchamber tunnel`, щоб створити його для запущеного інстансу.
+Тунель — це публічне посилання на ваш AiYo, щоб дістатися до нього з телефона чи з іншої мережі. Скористайтеся `aiyo tunnel`, щоб створити його для запущеного інстансу.
 
 ## Передумови
 
-OpenChamber запускає CLI провайдера тунелю на вашій машині. Спочатку встановіть провайдера, який хочете використовувати:
+AiYo запускає CLI провайдера тунелю на вашій машині. Спочатку встановіть провайдера, який хочете використовувати:
 
 ```bash
 brew install cloudflared
@@ -24,35 +24,35 @@ ngrok config add-authtoken <your-ngrok-token>
 
 ## Швидкий старт
 
-1. Запустіть OpenChamber:
+1. Запустіть AiYo:
 
 ```bash
-openchamber
+aiyo
 ```
 
-Якщо пропустити цей крок, `openchamber tunnel start` може автоматично запустити CLI server. Під час auto-start можна передати server options: `--port`, `--host`, `--lan`, `--ui-password` і `--api-only`.
+Якщо пропустити цей крок, `aiyo tunnel start` може автоматично запустити CLI server. Під час auto-start можна передати server options: `--port`, `--host`, `--lan`, `--ui-password` і `--api-only`.
 
 2. Запустіть тунель Cloudflare:
 
 ```bash
-openchamber tunnel start --provider cloudflare --mode quick
+aiyo tunnel start --provider cloudflare --mode quick
 ```
 
 Або запустіть тунель Ngrok:
 
 ```bash
-openchamber tunnel start --provider ngrok --mode quick
+aiyo tunnel start --provider ngrok --mode quick
 ```
 
 3. Перевірте статус:
 
 ```bash
-openchamber tunnel status
+aiyo tunnel status
 ```
 
-Коли тунель піднято, `status` показує публічний URL. Відкрийте його або відскануйте QR-код, щоб дістатися до OpenChamber звідусіль.
+Коли тунель піднято, `status` показує публічний URL. Відкрийте його або відскануйте QR-код, щоб дістатися до AiYo звідусіль.
 
-Типово OpenChamber виводить QR-код в інтерактивних TTY-сесіях. Використовуйте `--qr`, щоб примусово вивести QR, або `--no-qr`, щоб вимкнути його.
+Типово AiYo виводить QR-код в інтерактивних TTY-сесіях. Використовуйте `--qr`, щоб примусово вивести QR, або `--no-qr`, щоб вимкнути його.
 
 ## Провайдери
 
@@ -66,7 +66,7 @@ openchamber tunnel status
 Використовуйте токен + хостнейм, керовані Cloudflare:
 
 ```bash
-openchamber tunnel start --provider cloudflare --mode managed-remote --token-file ~/.secrets/cf-token --hostname app.example.com
+aiyo tunnel start --provider cloudflare --mode managed-remote --token-file ~/.secrets/cf-token --hostname app.example.com
 ```
 
 ### Кероване локальне
@@ -74,7 +74,7 @@ openchamber tunnel start --provider cloudflare --mode managed-remote --token-fil
 Використовуйте локальний конфіг `cloudflared`:
 
 ```bash
-openchamber tunnel start --provider cloudflare --mode managed-local --config ~/.cloudflared/config.yml
+aiyo tunnel start --provider cloudflare --mode managed-local --config ~/.cloudflared/config.yml
 ```
 
 ## Профілі (managed-remote)
@@ -82,29 +82,29 @@ openchamber tunnel start --provider cloudflare --mode managed-local --config ~/.
 Збережіть багаторазовий профіль:
 
 ```bash
-openchamber tunnel profile add --provider cloudflare --mode managed-remote --name prod-main --hostname app.example.com --token-file ~/.secrets/cf-token
+aiyo tunnel profile add --provider cloudflare --mode managed-remote --name prod-main --hostname app.example.com --token-file ~/.secrets/cf-token
 ```
 
 Запуск зі збереженим профілем:
 
 ```bash
-openchamber tunnel start --profile prod-main
+aiyo tunnel start --profile prod-main
 ```
 
 ## Корисні команди
 
 ```bash
-openchamber tunnel providers
-openchamber tunnel ready --provider cloudflare
-openchamber tunnel ready --provider ngrok
-openchamber tunnel doctor --provider cloudflare
-openchamber tunnel doctor --provider ngrok
-openchamber tunnel stop --port 3000
+aiyo tunnel providers
+aiyo tunnel ready --provider cloudflare
+aiyo tunnel ready --provider ngrok
+aiyo tunnel doctor --provider cloudflare
+aiyo tunnel doctor --provider ngrok
+aiyo tunnel stop --port 3000
 ```
 
 ## Нотатки щодо поведінки
 
-- один активний тунель на інстанс OpenChamber (порт)
+- один активний тунель на інстанс AiYo (порт)
 - запуск нового режиму/провайдера на тому самому інстансі замінює попередній тунель
 - генерація нового посилання для підключення відкликає попереднє невикористане
 
@@ -112,5 +112,5 @@ openchamber tunnel stop --port 3000
 
 - [Безпека](/uk/security/) — захистіть інтерфейс перед відкриттям доступу
 - [Десктопні тунелі](/uk/desktop-tunnels/) — налаштування тунелю в десктопному застосунку без CLI-старту
-- [PWA та мобільний доступ](/uk/mobile/) — відкривайте OpenChamber з телефона
+- [PWA та мобільний доступ](/uk/mobile/) — відкривайте AiYo з телефона
 - [Усунення несправностей](/uk/troubleshooting/) — якщо посилання тунелю не працює

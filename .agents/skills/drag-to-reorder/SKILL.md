@@ -1,13 +1,13 @@
 ---
 name: drag-to-reorder
-description: Use when implementing drag-to-reorder / sortable lists or chips in OpenChamber with @dnd-kit — covers the correct setup for BOTH desktop and mobile (touch), the variable-width "stretch" fix, the wrapping multi-row strategy choice, and the pitfalls (infinite update loop, offset overlay) we already hit and fixed.
+description: Use when implementing drag-to-reorder / sortable lists or chips in AiYo with @dnd-kit — covers the correct setup for BOTH desktop and mobile (touch), the variable-width "stretch" fix, the wrapping multi-row strategy choice, and the pitfalls (infinite update loop, offset overlay) we already hit and fixed.
 license: MIT
 compatibility: opencode
 ---
 
 ## Overview
 
-OpenChamber uses **@dnd-kit** (`@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`) for drag-to-reorder. Getting it to feel right on both desktop and mobile — especially for chips/tags of **variable width that wrap onto multiple rows** — has several non-obvious gotchas. This skill captures the configuration that works, and the bugs to avoid.
+AiYo uses **@dnd-kit** (`@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`) for drag-to-reorder. Getting it to feel right on both desktop and mobile — especially for chips/tags of **variable width that wrap onto multiple rows** — has several non-obvious gotchas. This skill captures the configuration that works, and the bugs to avoid.
 
 **Reference implementations in this repo:**
 - `packages/ui/src/components/chat/DraftPresetChips.tsx` — variable-width chips that wrap (the hardest case; mobile long-press).

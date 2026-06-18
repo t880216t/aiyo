@@ -62,7 +62,7 @@ import {
   registerCommonRequestMiddleware,
   registerServerStatusRoutes,
 } from './lib/opencode/core-routes.js';
-import { registerOpenChamberRoutes } from './lib/opencode/openchamber-routes.js';
+import { registerAiYoRoutes } from './lib/opencode/aiyo-routes.js';
 import { createServerUtilsRuntime } from './lib/opencode/server-utils-runtime.js';
 import { createStaticRoutesRuntime } from './lib/opencode/static-routes-runtime.js';
 import { createSettingsRuntime } from './lib/opencode/settings-runtime.js';
@@ -91,10 +91,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DEFAULT_PORT = 3000;
-const DESKTOP_NOTIFY_PREFIX = '[OpenChamberDesktopNotify] ';
+const DESKTOP_NOTIFY_PREFIX = '[AiYoDesktopNotify] ';
 const uiNotificationClients = new Set();
 const uiNotificationWsClients = new Set();
-const uiOpenChamberEventClients = new Set();
+const uiAiYoEventClients = new Set();
 const HEALTH_CHECK_INTERVAL = 15000;
 const SHUTDOWN_TIMEOUT = 10000;
 const MODELS_DEV_API_URL = 'https://models.dev/api.json';
@@ -134,7 +134,7 @@ const SSE_PATH_PREFIXES = [
   '/api/event',
   '/api/global/event',
   '/api/notifications/stream',
-  '/api/openchamber/events',
+  '/api/aiyo/events',
 ];
 
 function shouldSkipCompression(req, res) {
@@ -159,7 +159,7 @@ function shouldSkipCompression(req, res) {
   return headerIncludesEventStream(res.getHeader('Content-Type'));
 }
 
-const OPENCHAMBER_VERSION = (() => {
+const AIYO_VERSION = (() => {
   try {
     const packagePath = path.resolve(__dirname, '..', 'package.json');
     const raw = fs.readFileSync(packagePath, 'utf8');
@@ -187,13 +187,13 @@ const isEnvFlagDisabled = (value) => {
 };
 
 const shouldSkipApiCompression = () => {
-  if (isEnvFlagEnabled(process.env.OPENCHAMBER_SKIP_API_COMPRESSION)) return true;
-  if (isEnvFlagEnabled(process.env.OPENCHAMBER_COMPRESS_API)) return false;
-  if (isEnvFlagDisabled(process.env.OPENCHAMBER_COMPRESS_API)) return true;
-  return process.env.OPENCHAMBER_RUNTIME === 'desktop';
+  if (isEnvFlagEnabled(process.env.AIYO_SKIP_API_COMPRESSION)) return true;
+  if (isEnvFlagEnabled(process.env.AIYO_COMPRESS_API)) return false;
+  if (isEnvFlagDisabled(process.env.AIYO_COMPRESS_API)) return true;
+  return process.env.AIYO_RUNTIME === 'desktop';
 };
 
-const OPENCHAMBER_VERBOSE_REQUEST_LOGS = isEnvFlagEnabled(process.env.OPENCHAMBER_VERBOSE_REQUEST_LOGS);
+const AIYO_VERBOSE_REQUEST_LOGS = isEnvFlagEnabled(process.env.AIYO_VERBOSE_REQUEST_LOGS);
 
 const PLAN_MODE_EXPERIMENT_ENABLED =
   isEnvFlagEnabled(process.env.OPENCODE_EXPERIMENTAL_PLAN_MODE)
@@ -233,9 +233,9 @@ const sanitizeModelRefs = (...args) => settingsNormalizationRuntime.sanitizeMode
 const sanitizeSkillCatalogs = (...args) => settingsNormalizationRuntime.sanitizeSkillCatalogs(...args);
 const sanitizeProjects = (...args) => settingsNormalizationRuntime.sanitizeProjects(...args);
 
-const OPENCHAMBER_USER_CONFIG_ROOT = path.join(os.homedir(), '.config', 'openchamber');
-const OPENCHAMBER_USER_THEMES_DIR = path.join(OPENCHAMBER_USER_CONFIG_ROOT, 'themes');
-const OPENCHAMBER_PROJECTS_CONFIG_DIR = path.join(OPENCHAMBER_USER_CONFIG_ROOT, 'projects');
+const AIYO_USER_CONFIG_ROOT = path.join(os.homedir(), '.config', 'aiyo');
+const AIYO_USER_THEMES_DIR = path.join(AIYO_USER_CONFIG_ROOT, 'themes');
+const AIYO_PROJECTS_CONFIG_DIR = path.join(AIYO_USER_CONFIG_ROOT, 'projects');
 
 const MAX_THEME_JSON_BYTES = 512 * 1024;
 
@@ -243,7 +243,7 @@ const MAX_THEME_JSON_BYTES = 512 * 1024;
 const themeRuntime = createThemeRuntime({
   fsPromises,
   path,
-  themesDir: OPENCHAMBER_USER_THEMES_DIR,
+  themesDir: AIYO_USER_THEMES_DIR,
   maxThemeJsonBytes: MAX_THEME_JSON_BYTES,
   logger: console,
 });
@@ -264,14 +264,14 @@ const maybeCacheSessionInfoFromEvent = (...args) => notificationTemplateRuntime.
 const buildTemplateVariables = (...args) => notificationTemplateRuntime.buildTemplateVariables(...args);
 const getCachedZenModels = (...args) => notificationTemplateRuntime.getCachedZenModels(...args);
 
-const OPENCHAMBER_DATA_DIR = process.env.OPENCHAMBER_DATA_DIR
-  ? path.resolve(process.env.OPENCHAMBER_DATA_DIR)
-  : path.join(os.homedir(), '.config', 'openchamber');
-const SETTINGS_FILE_PATH = path.join(OPENCHAMBER_DATA_DIR, 'settings.json');
-const PUSH_SUBSCRIPTIONS_FILE_PATH = path.join(OPENCHAMBER_DATA_DIR, 'push-subscriptions.json');
-const REMOTE_CLIENTS_FILE_PATH = path.join(OPENCHAMBER_DATA_DIR, 'remote-clients.json');
-const CLOUDFLARE_MANAGED_REMOTE_TUNNELS_FILE_PATH = path.join(OPENCHAMBER_DATA_DIR, 'cloudflare-managed-remote-tunnels.json');
-const CLOUDFLARE_LEGACY_NAMED_TUNNELS_FILE_PATH = path.join(OPENCHAMBER_DATA_DIR, 'cloudflare-named-tunnels.json');
+const AIYO_DATA_DIR = process.env.AIYO_DATA_DIR
+  ? path.resolve(process.env.AIYO_DATA_DIR)
+  : path.join(os.homedir(), '.config', 'aiyo');
+const SETTINGS_FILE_PATH = path.join(AIYO_DATA_DIR, 'settings.json');
+const PUSH_SUBSCRIPTIONS_FILE_PATH = path.join(AIYO_DATA_DIR, 'push-subscriptions.json');
+const REMOTE_CLIENTS_FILE_PATH = path.join(AIYO_DATA_DIR, 'remote-clients.json');
+const CLOUDFLARE_MANAGED_REMOTE_TUNNELS_FILE_PATH = path.join(AIYO_DATA_DIR, 'cloudflare-managed-remote-tunnels.json');
+const CLOUDFLARE_LEGACY_NAMED_TUNNELS_FILE_PATH = path.join(AIYO_DATA_DIR, 'cloudflare-named-tunnels.json');
 const CLOUDFLARE_MANAGED_REMOTE_TUNNELS_VERSION = 1;
 
 const managedTunnelConfigRuntime = createManagedTunnelConfigRuntime({
@@ -423,7 +423,7 @@ const getUpstreamStallTimeoutMs = () => (
 const projectConfigRuntime = createProjectConfigRuntime({
   fsPromises,
   path,
-  projectsDirPath: OPENCHAMBER_PROJECTS_CONFIG_DIR,
+  projectsDirPath: AIYO_PROJECTS_CONFIG_DIR,
 });
 
 // HMR-persistent state via globalThis
@@ -432,7 +432,7 @@ const hmrStateRuntime = createHmrStateRuntime({
   globalThisLike: globalThis,
   os,
   processLike: process,
-  stateKey: '__openchamberHmrState',
+  stateKey: '__aiyoHmrState',
 });
 const hmrState = hmrStateRuntime.getOrCreateHmrState();
 hmrStateRuntime.ensureUserProvidedOpenCodePassword(hmrState);
@@ -523,19 +523,19 @@ const {
 });
 
 const ENV_SKIP_OPENCODE_START = process.env.OPENCODE_SKIP_START === 'true' ||
-                                    process.env.OPENCHAMBER_SKIP_OPENCODE_START === 'true';
+                                    process.env.AIYO_SKIP_OPENCODE_START === 'true';
 const ENV_DESKTOP_NOTIFY = (() => {
-  if (process.env.OPENCHAMBER_DESKTOP_NOTIFY === 'true') {
+  if (process.env.AIYO_DESKTOP_NOTIFY === 'true') {
     return true;
   }
 
-  if (process.env.OPENCHAMBER_RUNTIME === 'desktop') {
+  if (process.env.AIYO_RUNTIME === 'desktop') {
     return true;
   }
 
   const argv0 = typeof process.argv?.[0] === 'string' ? process.argv[0] : '';
   const argv1 = typeof process.argv?.[1] === 'string' ? process.argv[1] : '';
-  return /openchamber-server/i.test(argv0) || /openchamber-server/i.test(argv1);
+  return /aiyo-server/i.test(argv0) || /aiyo-server/i.test(argv1);
 })();
 const openCodeAuthStateRuntime = createOpenCodeAuthStateRuntime({
   crypto,
@@ -578,7 +578,7 @@ const ensureOpenCodeApiPrefix = (...args) => openCodeNetworkRuntime.ensureOpenCo
 const scheduleOpenCodeApiDetection = (...args) => openCodeNetworkRuntime.scheduleOpenCodeApiDetection(...args);
 
 const ENV_CONFIGURED_API_PREFIX = normalizeApiPrefix(
-  process.env.OPENCODE_API_PREFIX || process.env.OPENCHAMBER_API_PREFIX || ''
+  process.env.OPENCODE_API_PREFIX || process.env.AIYO_API_PREFIX || ''
 );
 
   if (ENV_CONFIGURED_API_PREFIX && ENV_CONFIGURED_API_PREFIX !== '') {
@@ -720,7 +720,7 @@ const processForwardedEventPayload = (payload, emitSyntheticEvent) => {
   }
 
   emitSyntheticEvent({
-    type: 'openchamber:session-status',
+    type: 'aiyo:session-status',
     properties: {
       sessionID: sessionId,
       status,
@@ -741,7 +741,7 @@ const processForwardedEventPayload = (payload, emitSyntheticEvent) => {
   });
 
   emitSyntheticEvent({
-    type: 'openchamber:session-activity',
+    type: 'aiyo:session-activity',
     properties: {
       sessionId,
       phase: status === 'busy' || status === 'retry' ? 'busy' : 'idle',
@@ -825,7 +825,7 @@ const bootstrapRuntime = createBootstrapRuntime({
   registerAuthAndAccessRoutes,
   registerTtsRoutes,
   registerNotificationRoutes,
-  registerOpenChamberRoutes,
+  registerAiYoRoutes,
   express,
 });
 const tunnelWiringRuntime = createTunnelWiringRuntime({
@@ -939,10 +939,10 @@ const scheduledTasksRuntime = createScheduledTasksRuntime({
   getOpenCodeAuthHeaders,
   waitForOpenCodeReady,
   emitTaskRunEvent: (event) => {
-    for (const client of uiOpenChamberEventClients) {
+    for (const client of uiAiYoEventClients) {
       try {
         writeSseEvent(client, {
-          type: 'openchamber:scheduled-task-ran',
+          type: 'aiyo:scheduled-task-ran',
           properties: {
             projectId: event.projectID,
             taskId: event.taskID,
@@ -952,7 +952,7 @@ const scheduledTasksRuntime = createScheduledTasksRuntime({
           },
         });
       } catch {
-        uiOpenChamberEventClients.delete(client);
+        uiAiYoEventClients.delete(client);
       }
     }
   },
@@ -1038,12 +1038,12 @@ async function main(options = {}) {
   const port = Number.isFinite(options.port) && options.port >= 0 ? Math.trunc(options.port) : DEFAULT_PORT;
   const host = typeof options.host === 'string' && options.host.length > 0 ? options.host : undefined;
   const effectiveBindHost = host
-    || (typeof process.env.OPENCHAMBER_HOST === 'string' && process.env.OPENCHAMBER_HOST.trim().length > 0
-      ? process.env.OPENCHAMBER_HOST.trim()
+    || (typeof process.env.AIYO_HOST === 'string' && process.env.AIYO_HOST.trim().length > 0
+      ? process.env.AIYO_HOST.trim()
       : '127.0.0.1');
   const uiPassword = typeof options.uiPassword === 'string'
     ? options.uiPassword
-    : (typeof process.env.OPENCHAMBER_UI_PASSWORD === 'string' ? process.env.OPENCHAMBER_UI_PASSWORD : null);
+    : (typeof process.env.AIYO_UI_PASSWORD === 'string' ? process.env.AIYO_UI_PASSWORD : null);
   if (
     isNetworkExposedBindHost(effectiveBindHost)
     && !(typeof uiPassword === 'string' && uiPassword.trim().length > 0)
@@ -1052,7 +1052,7 @@ async function main(options = {}) {
     throw new Error(getUnauthenticatedLanErrorMessage(effectiveBindHost));
   }
   const tryCfTunnel = options.tryCfTunnel === true;
-  const apiOnly = options.apiOnly === true || isEnvFlagEnabled(process.env.OPENCHAMBER_API_ONLY);
+  const apiOnly = options.apiOnly === true || isEnvFlagEnabled(process.env.AIYO_API_ONLY);
   const shouldUseCanonicalTunnelConfig = typeof options.tunnelMode === 'string'
     || typeof options.tunnelProvider === 'string'
     || options.tunnelConfigPath === null
@@ -1088,13 +1088,13 @@ async function main(options = {}) {
     notificationTriggerRuntime.setGetIsWindowFocused(options.getIsWindowFocused);
   }
 
-  console.log(`Starting OpenChamber on port ${port === 0 ? 'auto' : port}`);
+  console.log(`Starting AiYo on port ${port === 0 ? 'auto' : port}`);
 
   const sayTTSCapability = await detectSayTtsCapability(process);
 
   const app = express();
   const serverStartedAt = new Date().toISOString();
-  const packagedClientOrigins = new Set(['openchamber-ui://app']);
+  const packagedClientOrigins = new Set(['aiyo-ui://app']);
   app.set('trust proxy', true);
   app.use((req, res, next) => {
     const origin = typeof req.headers.origin === 'string' ? req.headers.origin : '';
@@ -1124,8 +1124,8 @@ async function main(options = {}) {
 
   const bootstrapResult = bootstrapRuntime.setupBaseRoutes(app, {
     process,
-    openchamberVersion: OPENCHAMBER_VERSION,
-    runtimeName: process.env.OPENCHAMBER_RUNTIME || 'web',
+    aiyoVersion: AIYO_VERSION,
+    runtimeName: process.env.AIYO_RUNTIME || 'web',
     serverStartedAt,
     gracefulShutdown,
     getHealthSnapshot: () => {
@@ -1158,7 +1158,7 @@ async function main(options = {}) {
         apiOnly,
       };
     },
-    verboseRequestLogs: OPENCHAMBER_VERBOSE_REQUEST_LOGS,
+    verboseRequestLogs: AIYO_VERBOSE_REQUEST_LOGS,
     uiPassword,
     tunnelAuthController,
     remoteClientAuthRuntime,
@@ -1183,7 +1183,7 @@ async function main(options = {}) {
     path,
     server,
     __dirname,
-    openchamberDataDir: OPENCHAMBER_DATA_DIR,
+    aiyoDataDir: AIYO_DATA_DIR,
     modelsDevApiUrl: MODELS_DEV_API_URL,
     modelsMetadataCacheTtl: MODELS_METADATA_CACHE_TTL,
     fetchFreeZenModels,
@@ -1204,8 +1204,8 @@ async function main(options = {}) {
     spawn,
     resolveGitBinaryForSpawn,
     createFsSearchRuntime: createFsSearchRuntimeFactory,
-    openchamberDataDir: OPENCHAMBER_DATA_DIR,
-    openchamberUserConfigRoot: OPENCHAMBER_USER_CONFIG_ROOT,
+    aiyoDataDir: AIYO_DATA_DIR,
+    aiyoUserConfigRoot: AIYO_USER_CONFIG_ROOT,
     normalizeDirectoryPath,
     resolveProjectDirectory,
     resolveOptionalProjectDirectory,
@@ -1226,7 +1226,7 @@ async function main(options = {}) {
     buildAugmentedPath,
     projectConfigRuntime,
     scheduledTasksRuntime,
-    getOpenChamberEventClients: () => uiOpenChamberEventClients,
+    getAiYoEventClients: () => uiAiYoEventClients,
     writeSseEvent,
   });
 

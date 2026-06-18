@@ -282,7 +282,7 @@ export const ProvidersPage: React.FC = () => {
 
     const loadSources = async () => {
       try {
-        // OpenChamber-only metadata endpoint: the SDK exposes provider data but
+        // AiYo-only metadata endpoint: the SDK exposes provider data but
         // not local auth/source-file provenance used by this settings UI.
         const response = await runtimeFetch(`/api/provider/${encodeURIComponent(selectedProviderId)}/source`, {
           method: 'GET',

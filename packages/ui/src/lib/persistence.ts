@@ -15,12 +15,12 @@ export const applyPersistedHomeDirectoryToWindow = (homeDirectory: string): void
   if (typeof window === 'undefined') {
     return;
   }
-  if (typeof window.__OPENCHAMBER_HOME__ === 'string' && window.__OPENCHAMBER_HOME__.length > 0) {
+  if (typeof window.__AIYO_HOME__ === 'string' && window.__AIYO_HOME__.length > 0) {
     return;
   }
 
   try {
-    window.__OPENCHAMBER_HOME__ = homeDirectory;
+    window.__AIYO_HOME__ = homeDirectory;
   } catch {
     /* read-only contextBridge property — leave preload-seeded value */
   }
@@ -97,9 +97,9 @@ const persistToLocalStorage = (settings: DesktopSettings) => {
   if (typeof settings.pwaAppName === 'string') {
     const normalized = settings.pwaAppName.trim().replace(/\s+/g, ' ').slice(0, 64);
     if (normalized.length > 0) {
-      localStorage.setItem('openchamber.pwaName', normalized);
+      localStorage.setItem('aiyo.pwaName', normalized);
     } else {
-      localStorage.removeItem('openchamber.pwaName');
+      localStorage.removeItem('aiyo.pwaName');
     }
   }
   if (typeof settings.mobileKeyboardMode === 'string') {
@@ -140,7 +140,7 @@ const dispatchSettingsSynced = (settings: DesktopSettings): void => {
   if (typeof window === 'undefined') {
     return;
   }
-  window.dispatchEvent(new CustomEvent<DesktopSettings>('openchamber:settings-synced', { detail: settings }));
+  window.dispatchEvent(new CustomEvent<DesktopSettings>('aiyo:settings-synced', { detail: settings }));
 };
 
 type PersistApi = {

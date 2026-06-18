@@ -16,7 +16,7 @@ const MAX_LOG_LINES_PER_INSTANCE = 1200;
 const MONITOR_INITIAL_POLL_MS = 2000;
 const MONITOR_STEADY_POLL_MS = 10000;
 const MONITOR_STABILIZE_TICKS = 5;
-const SSH_STATUS_EVENT = 'openchamber:ssh-instance-status';
+const SSH_STATUS_EVENT = 'aiyo:ssh-instance-status';
 const WINDOWS_HIDDEN_SPAWN_OPTIONS = process.platform === 'win32' ? { windowsHide: true } : {};
 
 const nowMillis = () => Date.now();
@@ -286,9 +286,9 @@ const stopControlMasterBestEffort = async (parsed, controlPath) => {
 const askpassScriptContent = () => `#!/bin/bash
 PROMPT="$1"
 
-if [[ -n "$OPENCHAMBER_SSH_ASKPASS_VALUE" ]]; then
+if [[ -n "$AIYO_SSH_ASKPASS_VALUE" ]]; then
   if [[ "$PROMPT" == *"assword"* || "$PROMPT" == *"passphrase"* ]]; then
-    printf '%s\\n' "$OPENCHAMBER_SSH_ASKPASS_VALUE"
+    printf '%s\\n' "$AIYO_SSH_ASKPASS_VALUE"
     exit 0
   fi
 fi
@@ -391,7 +391,7 @@ const waitLocalForwardReady = async (localPort) => {
     await new Promise((resolve) => setTimeout(resolve, pollMs));
     pollMs = Math.min(pollMs * 2, 2000);
   }
-  throw new Error('Timed out waiting for forwarded OpenChamber health');
+  throw new Error('Timed out waiting for forwarded AiYo health');
 };
 
 const parseVersionToken = (raw) => {
@@ -678,14 +678,14 @@ export class ElectronSshManager {
       connectionTimeoutSec: Number.isFinite(instance?.connectionTimeoutSec) && Number(instance.connectionTimeoutSec) > 0
         ? Number(instance.connectionTimeoutSec)
         : DEFAULT_CONNECTION_TIMEOUT_SEC,
-      remoteOpenchamber: {
-        mode: instance?.remoteOpenchamber?.mode === 'external' ? 'external' : 'managed',
-        keepRunning: instance?.remoteOpenchamber?.keepRunning !== false,
-        ...(Number.isFinite(instance?.remoteOpenchamber?.preferredPort) ? { preferredPort: Number(instance.remoteOpenchamber.preferredPort) } : {}),
-        installMethod: ['npm', 'bun', 'download_release', 'upload_bundle'].includes(instance?.remoteOpenchamber?.installMethod)
-          ? instance.remoteOpenchamber.installMethod
+      remoteAiyo: {
+        mode: instance?.remoteAiyo?.mode === 'external' ? 'external' : 'managed',
+        keepRunning: instance?.remoteAiyo?.keepRunning !== false,
+        ...(Number.isFinite(instance?.remoteAiyo?.preferredPort) ? { preferredPort: Number(instance.remoteAiyo.preferredPort) } : {}),
+        installMethod: ['npm', 'bun', 'download_release', 'upload_bundle'].includes(instance?.remoteAiyo?.installMethod)
+          ? instance.remoteAiyo.installMethod
           : 'bun',
-        uploadBundleOverSsh: Boolean(instance?.remoteOpenchamber?.uploadBundleOverSsh),
+        uploadBundleOverSsh: Boolean(instance?.remoteAiyo?.uploadBundleOverSsh),
       },
       localForward: {
         bindHost: sanitizeBindHost(instance?.localForward?.bindHost),
@@ -693,7 +693,7 @@ export class ElectronSshManager {
       },
       auth: {
         ...(this.sanitizeStoredSecret(instance?.auth?.sshPassword) ? { sshPassword: this.sanitizeStoredSecret(instance.auth.sshPassword) } : {}),
-        ...(this.sanitizeStoredSecret(instance?.auth?.openchamberPassword) ? { openchamberPassword: this.sanitizeStoredSecret(instance.auth.openchamberPassword) } : {}),
+        ...(this.sanitizeStoredSecret(instance?.auth?.aiyoPassword) ? { aiyoPassword: this.sanitizeStoredSecret(instance.auth.aiyoPassword) } : {}),
       },
       portForwards,
     };
@@ -769,7 +769,7 @@ export class ElectronSshManager {
         SSH_ASKPASS_REQUIRE: 'force',
         SSH_ASKPASS: askpassPath,
         DISPLAY: '1',
-        ...(sshPassword ? { OPENCHAMBER_SSH_ASKPASS_VALUE: sshPassword.trim() } : {}),
+        ...(sshPassword ? { AIYO_SSH_ASKPASS_VALUE: sshPassword.trim() } : {}),
       },
     });
     return child;
@@ -796,8 +796,8 @@ export class ElectronSshManager {
     throw new Error('SSH ControlMaster connection timed out');
   }
 
-  configuredOpenChamberPassword(instance) {
-    const secret = instance?.auth?.openchamberPassword;
+  configuredAiYoPassword(instance) {
+    const secret = instance?.auth?.aiyoPassword;
     return secret?.enabled && typeof secret.value === 'string' && secret.value.trim() ? secret.value.trim() : null;
   }
 
@@ -810,29 +810,29 @@ export class ElectronSshManager {
     }
   }
 
-  async currentRemoteOpenChamberVersion(parsed, controlPath) {
+  async currentRemoteAiYoVersion(parsed, controlPath) {
     try {
-      const output = await runRemoteCommand(parsed, controlPath, 'openchamber --version 2>/dev/null || true');
+      const output = await runRemoteCommand(parsed, controlPath, 'aiyo --version 2>/dev/null || true');
       return parseVersionToken(output);
     } catch {
       return null;
     }
   }
 
-  async installOpenChamberManaged(parsed, controlPath, version, preferred) {
+  async installAiYoManaged(parsed, controlPath, version, preferred) {
     const hasBun = await this.remoteCommandExists(parsed, controlPath, 'bun');
     const hasNpm = await this.remoteCommandExists(parsed, controlPath, 'npm');
     const commands = [];
 
     if (preferred === 'bun') {
-      if (hasBun) commands.push(`bun add -g @openchamber/web@${version}`);
-      if (hasNpm) commands.push(`npm install -g @openchamber/web@${version}`);
+      if (hasBun) commands.push(`bun add -g @aiyo/web@${version}`);
+      if (hasNpm) commands.push(`npm install -g @aiyo/web@${version}`);
     } else if (preferred === 'npm') {
-      if (hasNpm) commands.push(`npm install -g @openchamber/web@${version}`);
-      if (hasBun) commands.push(`bun add -g @openchamber/web@${version}`);
+      if (hasNpm) commands.push(`npm install -g @aiyo/web@${version}`);
+      if (hasBun) commands.push(`bun add -g @aiyo/web@${version}`);
     } else {
-      if (hasBun) commands.push(`bun add -g @openchamber/web@${version}`);
-      if (hasNpm) commands.push(`npm install -g @openchamber/web@${version}`);
+      if (hasBun) commands.push(`bun add -g @aiyo/web@${version}`);
+      if (hasNpm) commands.push(`npm install -g @aiyo/web@${version}`);
     }
 
     if (commands.length === 0) {
@@ -848,12 +848,12 @@ export class ElectronSshManager {
         lastError = error;
       }
     }
-    throw lastError || new Error('Failed to install OpenChamber on remote host');
+    throw lastError || new Error('Failed to install AiYo on remote host');
   }
 
-  async probeRemoteSystemInfo(parsed, controlPath, port, openchamberPassword) {
-    const authPayload = openchamberPassword ? JSON.stringify({ password: openchamberPassword }) : '{}';
-    const authEnabled = openchamberPassword ? '1' : '0';
+  async probeRemoteSystemInfo(parsed, controlPath, port, aiyoPassword) {
+    const authPayload = aiyoPassword ? JSON.stringify({ password: aiyoPassword }) : '{}';
+    const authEnabled = aiyoPassword ? '1' : '0';
     const script = `AUTH_STATUS=0; INFO_STATUS=0; HEALTH_STATUS=0; BODY_FILE="$(mktemp)"; COOKIE_FILE="$(mktemp)"; cleanup(){ rm -f "$BODY_FILE" "$COOKIE_FILE"; }; trap cleanup EXIT; if command -v curl >/dev/null 2>&1; then if [ "${authEnabled}" = "1" ]; then AUTH_STATUS="$(curl -sS --max-time 3 -o /dev/null -w '%{http_code}' -c "$COOKIE_FILE" -H 'content-type: application/json' --data ${shellQuote(authPayload)} http://127.0.0.1:${port}/auth/session || true)"; if [ "$AUTH_STATUS" = "200" ]; then INFO_STATUS="$(curl -sS --max-time 3 -b "$COOKIE_FILE" -o "$BODY_FILE" -w '%{http_code}' http://127.0.0.1:${port}/api/system/info || true)"; else INFO_STATUS="$(curl -sS --max-time 3 -o "$BODY_FILE" -w '%{http_code}' http://127.0.0.1:${port}/api/system/info || true)"; fi; else INFO_STATUS="$(curl -sS --max-time 3 -o "$BODY_FILE" -w '%{http_code}' http://127.0.0.1:${port}/api/system/info || true)"; fi; HEALTH_STATUS="$(curl -sS --max-time 3 -o /dev/null -w '%{http_code}' http://127.0.0.1:${port}/health || true)"; elif command -v wget >/dev/null 2>&1; then wget -qO "$BODY_FILE" http://127.0.0.1:${port}/api/system/info >/dev/null 2>&1; if [ $? -eq 0 ]; then INFO_STATUS=200; fi; wget -qO- http://127.0.0.1:${port}/health >/dev/null 2>&1; if [ $? -eq 0 ]; then HEALTH_STATUS=200; fi; else exit 127; fi; printf 'INFO_STATUS=%s\\nAUTH_STATUS=%s\\nHEALTH_STATUS=%s\\n' "$INFO_STATUS" "$AUTH_STATUS" "$HEALTH_STATUS"; cat "$BODY_FILE" 2>/dev/null || true`;
     const output = await runRemoteCommand(parsed, controlPath, script);
     const lines = output.split(/\r?\n/);
@@ -864,16 +864,16 @@ export class ElectronSshManager {
 
     if (isLivenessHttpStatus(infoStatus)) {
       if (isAuthHttpStatus(infoStatus)) {
-        if (openchamberPassword && authStatus !== 200) {
-          throw new Error(`Remote OpenChamber requires UI authentication and configured password was rejected (auth status ${authStatus})`);
+        if (aiyoPassword && authStatus !== 200) {
+          throw new Error(`Remote AiYo requires UI authentication and configured password was rejected (auth status ${authStatus})`);
         }
         if (isLivenessHttpStatus(healthStatus)) return {};
-        throw new Error('Remote OpenChamber requires UI authentication on /api/system/info; configure OpenChamber UI password');
+        throw new Error('Remote AiYo requires UI authentication on /api/system/info; configure AiYo UI password');
       }
     } else if (isLivenessHttpStatus(healthStatus)) {
       return {};
     } else {
-      throw new Error(`Remote OpenChamber probe failed (info status ${infoStatus}, health status ${healthStatus})`);
+      throw new Error(`Remote AiYo probe failed (info status ${infoStatus}, health status ${healthStatus})`);
     }
 
     try {
@@ -883,9 +883,9 @@ export class ElectronSshManager {
     }
   }
 
-  async remoteServerRunning(parsed, controlPath, port, openchamberPassword) {
+  async remoteServerRunning(parsed, controlPath, port, aiyoPassword) {
     try {
-      await this.probeRemoteSystemInfo(parsed, controlPath, port, openchamberPassword);
+      await this.probeRemoteSystemInfo(parsed, controlPath, port, aiyoPassword);
       return true;
     } catch {
       return false;
@@ -893,12 +893,12 @@ export class ElectronSshManager {
   }
 
   async startRemoteServerManaged(parsed, controlPath, instance, desiredPort) {
-    let envPrefix = 'OPENCHAMBER_RUNTIME=ssh-remote';
-    const secret = this.configuredOpenChamberPassword(instance);
+    let envPrefix = 'AIYO_RUNTIME=ssh-remote';
+    const secret = this.configuredAiYoPassword(instance);
     if (secret) {
-      envPrefix += ` OPENCHAMBER_UI_PASSWORD=${shellQuote(secret)}`;
+      envPrefix += ` AIYO_UI_PASSWORD=${shellQuote(secret)}`;
     }
-    const output = await runRemoteCommand(parsed, controlPath, `${envPrefix} openchamber serve --hostname 127.0.0.1 --port ${desiredPort}`);
+    const output = await runRemoteCommand(parsed, controlPath, `${envPrefix} aiyo serve --hostname 127.0.0.1 --port ${desiredPort}`);
     const port = output.split(/\s+/).map((token) => Number.parseInt(token, 10)).find((value) => Number.isFinite(value));
     return port || desiredPort;
   }
@@ -946,40 +946,40 @@ export class ElectronSshManager {
   }
 
   async ensureRemoteServer(instance, parsed, controlPath) {
-    if (instance.remoteOpenchamber.mode === 'external') {
-      if (!instance.remoteOpenchamber.preferredPort) {
-        throw new Error('External mode requires a preferred remote OpenChamber port');
+    if (instance.remoteAiyo.mode === 'external') {
+      if (!instance.remoteAiyo.preferredPort) {
+        throw new Error('External mode requires a preferred remote AiYo port');
       }
-      const port = instance.remoteOpenchamber.preferredPort;
-      this.setStatus(instance.id, 'server_detecting', 'Probing external OpenChamber server', null, null, port, false, 0, false);
-      await this.probeRemoteSystemInfo(parsed, controlPath, port, this.configuredOpenChamberPassword(instance));
+      const port = instance.remoteAiyo.preferredPort;
+      this.setStatus(instance.id, 'server_detecting', 'Probing external AiYo server', null, null, port, false, 0, false);
+      await this.probeRemoteSystemInfo(parsed, controlPath, port, this.configuredAiYoPassword(instance));
       return { remotePort: port, startedByUs: false };
     }
 
-    this.setStatus(instance.id, 'remote_probe', 'Checking remote OpenChamber installation');
-    const installedVersion = await this.currentRemoteOpenChamberVersion(parsed, controlPath);
+    this.setStatus(instance.id, 'remote_probe', 'Checking remote AiYo installation');
+    const installedVersion = await this.currentRemoteAiYoVersion(parsed, controlPath);
     if (!installedVersion) {
-      this.setStatus(instance.id, 'installing', 'Installing OpenChamber on remote host');
-      await this.installOpenChamberManaged(parsed, controlPath, this.appVersion, instance.remoteOpenchamber.installMethod);
+      this.setStatus(instance.id, 'installing', 'Installing AiYo on remote host');
+      await this.installAiYoManaged(parsed, controlPath, this.appVersion, instance.remoteAiyo.installMethod);
     } else if (installedVersion !== this.appVersion) {
-      this.setStatus(instance.id, 'updating', `Updating remote OpenChamber from ${installedVersion} to ${this.appVersion}`);
-      await this.installOpenChamberManaged(parsed, controlPath, this.appVersion, instance.remoteOpenchamber.installMethod);
+      this.setStatus(instance.id, 'updating', `Updating remote AiYo from ${installedVersion} to ${this.appVersion}`);
+      await this.installAiYoManaged(parsed, controlPath, this.appVersion, instance.remoteAiyo.installMethod);
     }
 
-    this.setStatus(instance.id, 'server_detecting', 'Detecting managed OpenChamber server');
-    let remotePort = instance.remoteOpenchamber.preferredPort || null;
+    this.setStatus(instance.id, 'server_detecting', 'Detecting managed AiYo server');
+    let remotePort = instance.remoteAiyo.preferredPort || null;
     let startedByUs = false;
-    if (remotePort && !(await this.remoteServerRunning(parsed, controlPath, remotePort, this.configuredOpenChamberPassword(instance)))) {
+    if (remotePort && !(await this.remoteServerRunning(parsed, controlPath, remotePort, this.configuredAiYoPassword(instance)))) {
       remotePort = null;
     }
     if (!remotePort) {
-      this.setStatus(instance.id, 'server_starting', 'Starting managed OpenChamber server');
-      const desiredPort = instance.remoteOpenchamber.preferredPort || randomPortCandidate(instance.id);
+      this.setStatus(instance.id, 'server_starting', 'Starting managed AiYo server');
+      const desiredPort = instance.remoteAiyo.preferredPort || randomPortCandidate(instance.id);
       remotePort = await this.startRemoteServerManaged(parsed, controlPath, instance, desiredPort);
       startedByUs = true;
     }
-    if (!(await this.remoteServerRunning(parsed, controlPath, remotePort, this.configuredOpenChamberPassword(instance)))) {
-      throw new Error('Managed OpenChamber server failed to become reachable');
+    if (!(await this.remoteServerRunning(parsed, controlPath, remotePort, this.configuredAiYoPassword(instance)))) {
+      throw new Error('Managed AiYo server failed to become reachable');
     }
     return { remotePort, startedByUs };
   }
@@ -995,7 +995,7 @@ export class ElectronSshManager {
     this.sessions.delete(id);
 
     if (session) {
-      if (session.startedByUs && session.instance.remoteOpenchamber.mode === 'managed' && !session.instance.remoteOpenchamber.keepRunning) {
+      if (session.startedByUs && session.instance.remoteAiyo.mode === 'managed' && !session.instance.remoteAiyo.keepRunning) {
         await this.stopRemoteServerBestEffort(session.parsed, session.controlPath, session.remotePort);
       }
       await stopControlMasterBestEffort(session.parsed, session.controlPath);

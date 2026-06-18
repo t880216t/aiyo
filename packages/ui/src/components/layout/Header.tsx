@@ -792,7 +792,7 @@ export const Header: React.FC<HeaderProps> = ({
     if (typeof window === 'undefined') {
       return false;
     }
-    return Boolean(window.__OPENCHAMBER_ELECTRON__) && window.__OPENCHAMBER_PLATFORM__ === 'win32';
+    return Boolean(window.__AIYO_ELECTRON__) && window.__AIYO_PLATFORM__ === 'win32';
   }, []);
 
   const macosMajorVersion = React.useMemo(() => {
@@ -800,7 +800,7 @@ export const Header: React.FC<HeaderProps> = ({
       return null;
     }
 
-    const injected = (window as unknown as { __OPENCHAMBER_MACOS_MAJOR__?: unknown }).__OPENCHAMBER_MACOS_MAJOR__;
+    const injected = (window as unknown as { __AIYO_MACOS_MAJOR__?: unknown }).__AIYO_MACOS_MAJOR__;
     if (typeof injected === 'number' && Number.isFinite(injected) && injected > 0) {
       return injected;
     }
@@ -899,7 +899,7 @@ export const Header: React.FC<HeaderProps> = ({
       setCurrentInstanceIsLocal(false);
 
       const cfg = await desktopHostsGet();
-      const localOrigin = window.__OPENCHAMBER_LOCAL_ORIGIN__ || window.location.origin;
+      const localOrigin = window.__AIYO_LOCAL_ORIGIN__ || window.location.origin;
       const runtimeApiBaseUrl = getRuntimeApiBaseUrl();
 
       if (runtimeApiBaseUrl && locationMatchesHost(runtimeApiBaseUrl, localOrigin)) {
@@ -939,7 +939,7 @@ export const Header: React.FC<HeaderProps> = ({
     setRemoteUpdateError(null);
     try {
       const params = new URLSearchParams({ appType: 'web', instanceMode: 'remote' });
-      const response = await runtimeFetch(`/api/openchamber/update-check?${params.toString()}`, {
+      const response = await runtimeFetch(`/api/aiyo/update-check?${params.toString()}`, {
         method: 'GET',
         headers: { Accept: 'application/json' },
       });
@@ -1283,7 +1283,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const currentSessionTitle = React.useMemo(() => {
     if (!currentSessionId) {
-      return activeProjectLabel ?? 'OpenChamber';
+      return activeProjectLabel ?? 'AiYo';
     }
     const trimmedTitle = currentSession?.title?.trim();
     return trimmedTitle && trimmedTitle.length > 0 ? trimmedTitle : 'Untitled Session';
@@ -1648,11 +1648,11 @@ export const Header: React.FC<HeaderProps> = ({
     };
 
     void syncFullscreenState();
-    window.addEventListener('openchamber:window-resized', onResize);
+    window.addEventListener('aiyo:window-resized', onResize);
 
     return () => {
       disposed = true;
-      window.removeEventListener('openchamber:window-resized', onResize);
+      window.removeEventListener('aiyo:window-resized', onResize);
     };
   }, [isDesktopApp, isMacPlatform]);
 

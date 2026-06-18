@@ -1,7 +1,7 @@
 import type {
-  OpenChamberProjectAction,
-  OpenChamberProjectActionPlatform,
-} from '@/lib/openchamberConfig';
+  AiYoProjectAction,
+  AiYoProjectActionPlatform,
+} from '@/lib/aiyoConfig';
 import type {
   DesktopSshInstance,
   DesktopSshPortForward,
@@ -57,7 +57,7 @@ export const PROJECT_ACTION_ICON_MAP = Object.fromEntries(
   PROJECT_ACTION_ICONS.map((entry) => [entry.key, entry.Icon])
 ) as Record<ProjectActionIconKey, IconName>;
 
-export const PROJECT_ACTIONS_UPDATED_EVENT = 'openchamber:project-actions-updated';
+export const PROJECT_ACTIONS_UPDATED_EVENT = 'aiyo:project-actions-updated';
 
 export const normalizeProjectActionDirectory = (value: string): string => {
   const trimmed = (value || '').trim().replace(/\\/g, '/');
@@ -70,7 +70,7 @@ export const normalizeProjectActionDirectory = (value: string): string => {
   return trimmed.length > 1 ? trimmed.replace(/\/+$/, '') : trimmed;
 };
 
-export const getCurrentProjectActionPlatform = (): OpenChamberProjectActionPlatform => {
+export const getCurrentProjectActionPlatform = (): AiYoProjectActionPlatform => {
   if (typeof navigator === 'undefined') {
     return 'macos';
   }
@@ -85,8 +85,8 @@ export const getCurrentProjectActionPlatform = (): OpenChamberProjectActionPlatf
 };
 
 export const isProjectActionEnabledOnPlatform = (
-  action: OpenChamberProjectAction,
-  platform: OpenChamberProjectActionPlatform
+  action: AiYoProjectAction,
+  platform: AiYoProjectActionPlatform
 ): boolean => {
   if (!Array.isArray(action.platforms) || action.platforms.length === 0) {
     return true;

@@ -33,7 +33,7 @@ import * as sessionActions from '@/sync/session-actions';
 import { useConfigStore } from '@/stores/useConfigStore';
 import { validateWorktreeCreate, createWorktree } from '@/lib/worktrees/worktreeManager';
 import { withWorktreeUpstreamDefaults } from '@/lib/worktrees/worktreeCreate';
-import { getWorktreeSetupCommands } from '@/lib/openchamberConfig';
+import { getWorktreeSetupCommands } from '@/lib/aiyoConfig';
 import { getRootBranch } from '@/lib/worktrees/worktreeStatus';
 import { generateBranchSlug } from '@/lib/git/branchNameGenerator';
 import { renderMagicPrompt } from '@/lib/magicPrompts';
@@ -875,7 +875,7 @@ export function NewWorktreeDialog({
         void sessionActions.updateSessionTitle(session.id, sessionTitle).catch(() => undefined);
 
         try {
-          useSessionUIStore.getState().initializeNewOpenChamberSession(session.id, useConfigStore.getState().agents);
+          useSessionUIStore.getState().initializeNewAiYoSession(session.id, useConfigStore.getState().agents);
         } catch {
           // ignore
         }

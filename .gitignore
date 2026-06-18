@@ -18,7 +18,7 @@ changelog-*.png
 *.vsix
 /npm
 /tsc
-/openchamber@*
+/aiyo@*
 local-dev*
 .tmp/
 # Editor directories and files

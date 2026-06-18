@@ -30,7 +30,7 @@ interface UpdateDialogProps {
   runtimeType?: 'desktop' | 'web' | 'vscode' | null;
 }
 
-const GITHUB_RELEASES_URL = 'https://github.com/btriapitsyn/openchamber/releases';
+const GITHUB_RELEASES_URL = 'https://github.com/t880216t/aiyo/releases';
 
 type ChangelogSection = {
   version: string;
@@ -121,7 +121,7 @@ const WEB_UPDATE_MAX_WAIT_MS = 10 * 60 * 1000;
 
 async function installWebUpdate(): Promise<InstallWebUpdateResult> {
   try {
-    const response = await runtimeFetch('/api/openchamber/update-install', {
+    const response = await runtimeFetch('/api/aiyo/update-install', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -160,7 +160,7 @@ async function waitForUpdateApplied(
 ): Promise<boolean> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const response = await runtimeFetch('/api/openchamber/update-check', {
+      const response = await runtimeFetch('/api/aiyo/update-check', {
         method: 'GET',
         headers: { Accept: 'application/json' },
       });
@@ -214,7 +214,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
     : 0;
 
   const isWebRuntime = runtimeType === 'web';
-  const updateCommand = info?.updateCommand || 'openchamber update';
+  const updateCommand = info?.updateCommand || 'aiyo update';
 
   // Reset state when dialog closes
   useEffect(() => {

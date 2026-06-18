@@ -1,15 +1,15 @@
 ---
 title: Túneis
-description: Exponha o OpenChamber com segurança para acesso remoto e móvel.
+description: Exponha o AiYo com segurança para acesso remoto e móvel.
 ---
 
 # Túneis
 
-Um túnel é um link público para o seu OpenChamber, para que você possa acessá-lo pelo celular ou de outra rede. Use `openchamber tunnel` para criar um para uma instância em execução.
+Um túnel é um link público para o seu AiYo, para que você possa acessá-lo pelo celular ou de outra rede. Use `aiyo tunnel` para criar um para uma instância em execução.
 
 ## Pré-requisitos
 
-O OpenChamber inicia o CLI do provedor de túnel na sua máquina. Instale primeiro o provedor que você quer usar:
+O AiYo inicia o CLI do provedor de túnel na sua máquina. Instale primeiro o provedor que você quer usar:
 
 ```bash
 brew install cloudflared
@@ -24,35 +24,35 @@ ngrok config add-authtoken <your-ngrok-token>
 
 ## Início rápido
 
-1. Inicie o OpenChamber:
+1. Inicie o AiYo:
 
 ```bash
-openchamber
+aiyo
 ```
 
-Se você pular esta etapa, `openchamber tunnel start` pode iniciar automaticamente um servidor CLI. Ao iniciar automaticamente, você pode passar opções do servidor como `--port`, `--host`, `--lan`, `--ui-password` e `--api-only`.
+Se você pular esta etapa, `aiyo tunnel start` pode iniciar automaticamente um servidor CLI. Ao iniciar automaticamente, você pode passar opções do servidor como `--port`, `--host`, `--lan`, `--ui-password` e `--api-only`.
 
 2. Inicie um túnel da Cloudflare:
 
 ```bash
-openchamber tunnel start --provider cloudflare --mode quick
+aiyo tunnel start --provider cloudflare --mode quick
 ```
 
 Ou inicie um túnel do Ngrok:
 
 ```bash
-openchamber tunnel start --provider ngrok --mode quick
+aiyo tunnel start --provider ngrok --mode quick
 ```
 
 3. Verifique o status:
 
 ```bash
-openchamber tunnel status
+aiyo tunnel status
 ```
 
-Quando o túnel estiver no ar, o `status` mostra uma URL pública. Abra-a, ou escaneie o QR code, para acessar o OpenChamber de qualquer lugar.
+Quando o túnel estiver no ar, o `status` mostra uma URL pública. Abra-a, ou escaneie o QR code, para acessar o AiYo de qualquer lugar.
 
-Por padrão, o OpenChamber imprime um QR code em sessões TTY interativas. Use `--qr` para forçar a saída do QR, ou `--no-qr` para desativá-la.
+Por padrão, o AiYo imprime um QR code em sessões TTY interativas. Use `--qr` para forçar a saída do QR, ou `--no-qr` para desativá-la.
 
 ## Provedores
 
@@ -66,7 +66,7 @@ Por padrão, o OpenChamber imprime um QR code em sessões TTY interativas. Use `
 Use um token + nome de host gerenciados pela Cloudflare:
 
 ```bash
-openchamber tunnel start --provider cloudflare --mode managed-remote --token-file ~/.secrets/cf-token --hostname app.example.com
+aiyo tunnel start --provider cloudflare --mode managed-remote --token-file ~/.secrets/cf-token --hostname app.example.com
 ```
 
 ### Gerenciado local
@@ -74,7 +74,7 @@ openchamber tunnel start --provider cloudflare --mode managed-remote --token-fil
 Use uma configuração local do `cloudflared`:
 
 ```bash
-openchamber tunnel start --provider cloudflare --mode managed-local --config ~/.cloudflared/config.yml
+aiyo tunnel start --provider cloudflare --mode managed-local --config ~/.cloudflared/config.yml
 ```
 
 ## Perfis (managed-remote)
@@ -82,29 +82,29 @@ openchamber tunnel start --provider cloudflare --mode managed-local --config ~/.
 Salve um perfil reutilizável:
 
 ```bash
-openchamber tunnel profile add --provider cloudflare --mode managed-remote --name prod-main --hostname app.example.com --token-file ~/.secrets/cf-token
+aiyo tunnel profile add --provider cloudflare --mode managed-remote --name prod-main --hostname app.example.com --token-file ~/.secrets/cf-token
 ```
 
 Inicie usando o perfil salvo:
 
 ```bash
-openchamber tunnel start --profile prod-main
+aiyo tunnel start --profile prod-main
 ```
 
 ## Comandos úteis
 
 ```bash
-openchamber tunnel providers
-openchamber tunnel ready --provider cloudflare
-openchamber tunnel ready --provider ngrok
-openchamber tunnel doctor --provider cloudflare
-openchamber tunnel doctor --provider ngrok
-openchamber tunnel stop --port 3000
+aiyo tunnel providers
+aiyo tunnel ready --provider cloudflare
+aiyo tunnel ready --provider ngrok
+aiyo tunnel doctor --provider cloudflare
+aiyo tunnel doctor --provider ngrok
+aiyo tunnel stop --port 3000
 ```
 
 ## Notas de comportamento
 
-- um único túnel ativo por instância do OpenChamber (porta)
+- um único túnel ativo por instância do AiYo (porta)
 - iniciar um novo modo/provedor na mesma instância substitui o túnel anterior
 - gerar um novo link de conexão revoga o anterior não utilizado
 - o auto-start do túnel preserva flags do servidor como `--ui-password` e `--api-only` nas configurações da instância usadas por reinícios e atualizações
@@ -113,5 +113,5 @@ openchamber tunnel stop --port 3000
 
 - [Segurança](/pt-br/security/) — proteja a interface antes de expô-la
 - [Túneis no desktop](/pt-br/desktop-tunnels/) — configuração de túnel no app desktop sem iniciar pelo CLI
-- [PWA e Acesso Móvel](/pt-br/mobile/) — acesse o OpenChamber pelo celular
+- [PWA e Acesso Móvel](/pt-br/mobile/) — acesse o AiYo pelo celular
 - [Solução de problemas](/pt-br/troubleshooting/) — se o link do túnel não funcionar

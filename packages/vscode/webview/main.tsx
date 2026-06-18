@@ -2,25 +2,25 @@ import { createVSCodeAPIs } from './api';
 import { onCommand, onThemeChange, proxyApiRequest, proxySessionMessageRequest, sendBridgeMessage, startSseProxy, stopSseProxy } from './api/bridge';
 import { vscodeStreamPerfCount, vscodeStreamPerfMeasure, vscodeStreamPerfObserve } from './api/streamPerf';
 import { extractBodyBase64, extractBodyText, extractJsonBody, hasInitBody } from './requestBodyTransport';
-import type { RuntimeAPIs } from '@openchamber/ui/lib/api/types';
-import { opencodeClient } from '@openchamber/ui/lib/opencode/client';
+import type { RuntimeAPIs } from '@aiyo/ui/lib/api/types';
+import { opencodeClient } from '@aiyo/ui/lib/opencode/client';
 import {
   buildVSCodeThemeFromPalette,
   readVSCodeThemePalette,
   type VSCodeThemeKind,
   type VSCodeThemePayload,
-} from '@openchamber/ui/lib/theme/vscode/adapter';
-import { getBootstrapMessages, readStoredLocaleForBootstrap } from '@openchamber/ui/lib/i18n';
+} from '@aiyo/ui/lib/theme/vscode/adapter';
+import { getBootstrapMessages, readStoredLocaleForBootstrap } from '@aiyo/ui/lib/i18n';
 import type { VSCodeActiveEditorFile } from '@/sync/input-store';
 
 type ConnectionStatus = 'connecting' | 'connected' | 'error' | 'disconnected';
 type PanelType = 'chat' | 'agentManager';
 
-declare const __OPENCHAMBER_WEBVIEW_BUILD_TIME__: string;
+declare const __AIYO_WEBVIEW_BUILD_TIME__: string;
 
 declare global {
   interface Window {
-    __OPENCHAMBER_RUNTIME_APIS__?: RuntimeAPIs;
+    __AIYO_RUNTIME_APIS__?: RuntimeAPIs;
     __VSCODE_CONFIG__?: {
       apiUrl?: string;
       workspaceFolder: string;
@@ -35,27 +35,27 @@ declare global {
       viewMode?: 'sidebar' | 'editor';
       initialSessionId?: string | null;
     };
-    __OPENCHAMBER_VSCODE_THEME__?: VSCodeThemePayload['theme'];
-    __OPENCHAMBER_VSCODE_SHIKI_THEMES__?: { light?: Record<string, unknown>; dark?: Record<string, unknown> } | null;
-    __OPENCHAMBER_CONNECTION__?: { status: ConnectionStatus; error?: string; cliAvailable?: boolean };
-    __OPENCHAMBER_HOME__?: string;
-    __OPENCHAMBER_PANEL_TYPE__?: PanelType;
-    __OPENCHAMBER_VSCODE_WINDOW_FOCUSED__?: boolean;
+    __AIYO_VSCODE_THEME__?: VSCodeThemePayload['theme'];
+    __AIYO_VSCODE_SHIKI_THEMES__?: { light?: Record<string, unknown>; dark?: Record<string, unknown> } | null;
+    __AIYO_CONNECTION__?: { status: ConnectionStatus; error?: string; cliAvailable?: boolean };
+    __AIYO_HOME__?: string;
+    __AIYO_PANEL_TYPE__?: PanelType;
+    __AIYO_VSCODE_WINDOW_FOCUSED__?: boolean;
   }
 }
 
-console.log('[OpenChamber] VS Code webview starting...');
-console.log('[OpenChamber] VS Code webview build:', __OPENCHAMBER_WEBVIEW_BUILD_TIME__);
-console.log('[OpenChamber] Config:', window.__VSCODE_CONFIG__);
+console.log('[AiYo] VS Code webview starting...');
+console.log('[AiYo] VS Code webview build:', __AIYO_WEBVIEW_BUILD_TIME__);
+console.log('[AiYo] Config:', window.__VSCODE_CONFIG__);
 try {
-  if (window.localStorage.getItem('openchamber_stream_debug') === '1') {
-    console.log('[OpenChamber] Debug: openchamber_stream_debug=1');
+  if (window.localStorage.getItem('aiyo_stream_debug') === '1') {
+    console.log('[AiYo] Debug: aiyo_stream_debug=1');
   }
 } catch {
   // ignore
 }
 
-window.__OPENCHAMBER_RUNTIME_APIS__ = createVSCodeAPIs();
+window.__AIYO_RUNTIME_APIS__ = createVSCodeAPIs();
 
 const bootstrapLocale = readStoredLocaleForBootstrap();
 const bootstrapMessages = getBootstrapMessages(bootstrapLocale);
@@ -63,27 +63,27 @@ const bootstrapMessages = getBootstrapMessages(bootstrapLocale);
 const bootstrapConnectionStatus = () => {
   const initialStatus = (window.__VSCODE_CONFIG__?.connectionStatus as ConnectionStatus | undefined) || 'connecting';
   const cliAvailable = window.__VSCODE_CONFIG__?.cliAvailable ?? true;
-  window.__OPENCHAMBER_CONNECTION__ = { status: initialStatus, cliAvailable };
+  window.__AIYO_CONNECTION__ = { status: initialStatus, cliAvailable };
 };
 
 bootstrapConnectionStatus();
 
 // Expose panel type globally for the VS Code app root to conditionally render.
-window.__OPENCHAMBER_PANEL_TYPE__ = (window.__VSCODE_CONFIG__?.panelType as PanelType) || 'chat';
+window.__AIYO_PANEL_TYPE__ = (window.__VSCODE_CONFIG__?.panelType as PanelType) || 'chat';
 
 const handleConnectionMessage = (event: MessageEvent) => {
   const msg = event.data;
   if (msg?.type === 'connectionStatus') {
     const payload: ConnectionStatus = msg.status;
     const error: string | undefined = msg.error;
-    const prevCliAvailable = window.__OPENCHAMBER_CONNECTION__?.cliAvailable ?? true;
-    window.__OPENCHAMBER_CONNECTION__ = { status: payload, error, cliAvailable: prevCliAvailable };
-    window.dispatchEvent(new CustomEvent('openchamber:connection-status', { detail: { status: payload, error } }));
+    const prevCliAvailable = window.__AIYO_CONNECTION__?.cliAvailable ?? true;
+    window.__AIYO_CONNECTION__ = { status: payload, error, cliAvailable: prevCliAvailable };
+    window.dispatchEvent(new CustomEvent('aiyo:connection-status', { detail: { status: payload, error } }));
   }
 };
 
 window.addEventListener('message', handleConnectionMessage);
-window.addEventListener('openchamber:connection-status', () => {
+window.addEventListener('aiyo:connection-status', () => {
   maybeHideLoadingOverlay();
 });
 
@@ -140,7 +140,7 @@ const waitForUiMount = (timeoutMs = 8000): Promise<boolean> => {
 let uiMounted = false;
 
 const maybeHideLoadingOverlay = () => {
-  const connectionStatus = window.__OPENCHAMBER_CONNECTION__?.status ?? 'connecting';
+  const connectionStatus = window.__AIYO_CONNECTION__?.status ?? 'connecting';
 
   if (!uiMounted) {
     return;
@@ -159,7 +159,7 @@ const maybeHideLoadingOverlay = () => {
   }
 
   if (connectionStatus === 'error') {
-    const error = window.__OPENCHAMBER_CONNECTION__?.error;
+    const error = window.__AIYO_CONNECTION__?.error;
     setLoadingStatusText(error || bootstrapMessages.connectionError, 'error');
     fadeOutLoadingScreen();
     return;
@@ -201,9 +201,9 @@ const emitVSCodeTheme = (preferredKind?: VSCodeThemeKind) => {
     return;
   }
   const theme = buildVSCodeThemeFromPalette(palette);
-  window.__OPENCHAMBER_VSCODE_THEME__ = theme;
+  window.__AIYO_VSCODE_THEME__ = theme;
    applyInitialTheme(theme);
-  window.dispatchEvent(new CustomEvent<VSCodeThemePayload>('openchamber:vscode-theme', {
+  window.dispatchEvent(new CustomEvent<VSCodeThemePayload>('aiyo:vscode-theme', {
     detail: { theme, palette },
   }));
 };
@@ -227,9 +227,9 @@ onThemeChange((payload) => {
       : undefined) as VSCodeThemeKind | undefined;
 
   if (typeof payload === 'object' && payload?.shikiThemes !== undefined) {
-    window.__OPENCHAMBER_VSCODE_SHIKI_THEMES__ = payload.shikiThemes;
+    window.__AIYO_VSCODE_SHIKI_THEMES__ = payload.shikiThemes;
     window.dispatchEvent(
-      new CustomEvent('openchamber:vscode-shiki-themes', {
+      new CustomEvent('aiyo:vscode-shiki-themes', {
         detail: { shikiThemes: payload.shikiThemes },
       }),
     );
@@ -252,7 +252,7 @@ if (workspaceFolder) {
   };
 
   const normalizedWorkspaceFolder = normalizeWorkspacePath(workspaceFolder);
-  window.__OPENCHAMBER_HOME__ = normalizedWorkspaceFolder;
+  window.__AIYO_HOME__ = normalizedWorkspaceFolder;
   try {
     window.localStorage.setItem('lastDirectory', normalizedWorkspaceFolder);
     window.localStorage.setItem('homeDirectory', normalizedWorkspaceFolder);
@@ -358,7 +358,7 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
   if (normalizedPathname === '/api/system/info' && method === 'GET') {
     const config = window.__VSCODE_CONFIG__;
     return jsonResponse({
-      openchamberVersion: config?.extensionVersion || 'VS Code Extension',
+      aiyoVersion: config?.extensionVersion || 'VS Code Extension',
       runtime: 'vscode',
       platform: config?.platform || '',
       arch: config?.arch || '',
@@ -369,7 +369,7 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
     return unsupportedWebRouteResponse('Preview proxy');
   }
 
-  if (normalizedPathname.startsWith('/api/openchamber/tunnel/')) {
+  if (normalizedPathname.startsWith('/api/aiyo/tunnel/')) {
     return unsupportedWebRouteResponse('Remote tunnel settings');
   }
 
@@ -515,9 +515,9 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
 
   // Health endpoints: reflect actual connection status
   if (pathname === '/health' || pathname === '/api/health') {
-    const connectionStatus = window.__OPENCHAMBER_CONNECTION__?.status;
+    const connectionStatus = window.__AIYO_CONNECTION__?.status;
     const isReady = connectionStatus === 'connected';
-    const cliAvailable = window.__OPENCHAMBER_CONNECTION__?.cliAvailable ?? true;
+    const cliAvailable = window.__AIYO_CONNECTION__?.cliAvailable ?? true;
     return new Response(JSON.stringify({ 
       status: isReady ? 'ok' : 'connecting', 
       isOpenCodeReady: isReady,
@@ -929,12 +929,12 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
     }
   }
 
-  if (pathname.startsWith('/api/openchamber/models-metadata')) {
+  if (pathname.startsWith('/api/aiyo/models-metadata')) {
     try {
       const data = await sendBridgeMessage('api:models/metadata');
       return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
     } catch (error) {
-      console.warn('[OpenChamber] Failed to fetch models metadata via bridge, returning empty set:', error);
+      console.warn('[AiYo] Failed to fetch models metadata via bridge, returning empty set:', error);
       return new Response(JSON.stringify({}), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
   }
@@ -950,7 +950,7 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
   }
 
   if (pathname === '/api/opencode/health' && method === 'GET') {
-    const connectionStatus = window.__OPENCHAMBER_CONNECTION__?.status;
+    const connectionStatus = window.__AIYO_CONNECTION__?.status;
     return new Response(JSON.stringify({ healthy: connectionStatus === 'connected' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -967,7 +967,7 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
     }
   }
 
-  if (pathname.startsWith('/api/openchamber/update-check')) {
+  if (pathname.startsWith('/api/aiyo/update-check')) {
     try {
       const currentVersion = url.searchParams.get('currentVersion') || undefined;
       const instanceMode = url.searchParams.get('instanceMode') || 'local';
@@ -976,7 +976,7 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
       const arch = url.searchParams.get('arch') || window.__VSCODE_CONFIG__?.arch || undefined;
       const reportUsageRaw = (url.searchParams.get('reportUsage') || 'true').toLowerCase();
       const reportUsage = !(reportUsageRaw === 'false' || reportUsageRaw === '0' || reportUsageRaw === 'no');
-      const data = await sendBridgeMessage('api:openchamber:update-check', {
+      const data = await sendBridgeMessage('api:aiyo:update-check', {
         currentVersion,
         instanceMode,
         deviceClass,
@@ -1069,9 +1069,9 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   const pathname = targetUrl?.pathname || '';
   const normalizedPathname = pathname.replace(/\/{2,}/g, '/');
   if (targetUrl && normalizedPathname === '/health') {
-    const connectionStatus = window.__OPENCHAMBER_CONNECTION__?.status;
+    const connectionStatus = window.__AIYO_CONNECTION__?.status;
     const isReady = connectionStatus === 'connected';
-    const cliAvailable = window.__OPENCHAMBER_CONNECTION__?.cliAvailable ?? true;
+    const cliAvailable = window.__AIYO_CONNECTION__?.cliAvailable ?? true;
     return new Response(JSON.stringify({ 
       status: isReady ? 'ok' : 'connecting', 
       isOpenCodeReady: isReady,
@@ -1189,7 +1189,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const data = await sendBridgeMessage('api:models/metadata');
       return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
     } catch (error) {
-      console.warn('[OpenChamber] models.dev request failed via bridge, returning empty metadata:', error);
+      console.warn('[AiYo] models.dev request failed via bridge, returning empty metadata:', error);
       return new Response(JSON.stringify({}), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
   }
@@ -1292,7 +1292,7 @@ onCommand('createSessionWithPrompt', (payload) => {
         undefined, // agentMentionName
         undefined  // additionalParts
       ).catch((error: unknown) => {
-        console.error('[OpenChamber] Failed to send prompt:', error);
+        console.error('[AiYo] Failed to send prompt:', error);
       });
     } else {
       // If no provider/model configured, just set the text and let user send manually
@@ -1351,20 +1351,20 @@ onCommand('newSession', (payload) => {
   });
 
   // Also dispatch event to navigate to chat view in VSCodeLayout
-  window.dispatchEvent(new CustomEvent('openchamber:navigate', { detail: { view: 'chat' } }));
+  window.dispatchEvent(new CustomEvent('aiyo:navigate', { detail: { view: 'chat' } }));
 });
 
 // Listen for showSettings command from extension title bar button
 onCommand('showSettings', () => {
   // Dispatch event to navigate to settings view in VSCodeLayout
-  window.dispatchEvent(new CustomEvent('openchamber:navigate', { detail: { view: 'settings' } }));
+  window.dispatchEvent(new CustomEvent('aiyo:navigate', { detail: { view: 'settings' } }));
 });
 
 // Run the same full OpenCode reload flow the app uses after an update: shows the
 // reload overlay, restarts the managed OpenCode (via the bridge's /api/config/reload),
 // and refreshes config/data. Triggered by the "Restart API Connection" command.
 onCommand('reloadOpenCode', () => {
-  void import('@openchamber/ui/stores/useAgentsStore').then(({ reloadOpenCodeConfiguration }) => {
+  void import('@aiyo/ui/stores/useAgentsStore').then(({ reloadOpenCodeConfiguration }) => {
     void reloadOpenCodeConfiguration().catch(() => undefined);
   });
 });
@@ -1378,7 +1378,7 @@ const getNotificationClaimKey = (payload: { title?: unknown; body?: unknown; ses
     .join('|');
 };
 
-const claimOpenChamberNotification = async (payload: { title?: unknown; body?: unknown; sessionId?: unknown; tag?: unknown } | undefined): Promise<boolean> => {
+const claimAiYoNotification = async (payload: { title?: unknown; body?: unknown; sessionId?: unknown; tag?: unknown } | undefined): Promise<boolean> => {
   const key = getNotificationClaimKey(payload);
   if (!key) return true;
   try {
@@ -1389,13 +1389,13 @@ const claimOpenChamberNotification = async (payload: { title?: unknown; body?: u
   }
 };
 
-const showOpenChamberNotification = (payload: { title?: unknown; body?: unknown; sessionId?: unknown; tag?: unknown; requireHidden?: unknown } | undefined) => {
+const showAiYoNotification = (payload: { title?: unknown; body?: unknown; sessionId?: unknown; tag?: unknown; requireHidden?: unknown } | undefined) => {
   if (typeof Notification === 'undefined') {
     return false;
   }
 
   const show = async () => {
-    const isVSCodeWindowFocused = window.__OPENCHAMBER_VSCODE_WINDOW_FOCUSED__ ?? document.hasFocus();
+    const isVSCodeWindowFocused = window.__AIYO_VSCODE_WINDOW_FOCUSED__ ?? document.hasFocus();
     if (payload?.requireHidden === true && isVSCodeWindowFocused) {
       return false;
     }
@@ -1405,12 +1405,12 @@ const showOpenChamberNotification = (payload: { title?: unknown; body?: unknown;
 
     const title = typeof payload?.title === 'string' && payload.title.trim().length > 0
       ? payload.title.trim()
-      : 'OpenChamber';
+      : 'AiYo';
     const body = typeof payload?.body === 'string' ? payload.body : '';
     const sessionId = typeof payload?.sessionId === 'string' && payload.sessionId.trim().length > 0
       ? payload.sessionId.trim()
       : '';
-    if (!await claimOpenChamberNotification({ ...payload, title, body, sessionId })) {
+    if (!await claimAiYoNotification({ ...payload, title, body, sessionId })) {
       return false;
     }
 
@@ -1421,7 +1421,7 @@ const showOpenChamberNotification = (payload: { title?: unknown; body?: unknown;
           useSessionUIStore.getState().setCurrentSession(sessionId);
         });
       }
-      window.dispatchEvent(new CustomEvent('openchamber:navigate', { detail: { view: 'chat' } }));
+      window.dispatchEvent(new CustomEvent('aiyo:navigate', { detail: { view: 'chat' } }));
     };
     return true;
   };
@@ -1440,12 +1440,12 @@ const showOpenChamberNotification = (payload: { title?: unknown; body?: unknown;
 };
 
 onCommand('showNotification', (payload) => {
-  showOpenChamberNotification(payload as { title?: unknown; body?: unknown; sessionId?: unknown; requireHidden?: unknown } | undefined);
+  showAiYoNotification(payload as { title?: unknown; body?: unknown; sessionId?: unknown; requireHidden?: unknown } | undefined);
 });
 
 onCommand('windowFocusChanged', (payload) => {
   if (typeof payload === 'object' && payload && typeof (payload as { focused?: unknown }).focused === 'boolean') {
-    window.__OPENCHAMBER_VSCODE_WINDOW_FOCUSED__ = (payload as { focused: boolean }).focused;
+    window.__AIYO_VSCODE_WINDOW_FOCUSED__ = (payload as { focused: boolean }).focused;
   }
 });
 
@@ -1483,7 +1483,7 @@ const ensureNotificationSettingsSynced = async () => {
     notificationSettingsSyncPromise = import('@/lib/persistence')
       .then(({ syncDesktopSettings }) => syncDesktopSettings())
       .catch((error) => {
-        console.warn('[OpenChamber] Failed to sync notification settings:', error);
+        console.warn('[AiYo] Failed to sync notification settings:', error);
       });
   }
   await notificationSettingsSyncPromise;
@@ -1611,7 +1611,7 @@ const getNotificationSessionId = (payload: Record<string, unknown>): string => {
   return getPayloadString(info?.sessionID ?? info?.sessionId ?? properties.sessionID ?? properties.sessionId ?? properties.session);
 };
 
-window.addEventListener('openchamber:vscode-notification-event', (event) => {
+window.addEventListener('aiyo:vscode-notification-event', (event) => {
   const detail = (event as CustomEvent<{ payload?: unknown }>).detail;
   const payload = detail?.payload;
   if (!payload || typeof payload !== 'object') {
@@ -1670,7 +1670,7 @@ window.addEventListener('openchamber:vscode-notification-event', (event) => {
         const template = getNotificationTemplate(settings, 'completion', { title: '{agent_name} is ready', message: '{model_name} completed the task' });
         const title = resolveTemplate(template.title, variables) || 'Agent is ready';
         const body = resolveTemplate(template.message, variables);
-        showOpenChamberNotification({
+        showAiYoNotification({
           title,
           body: shouldApplyTemplateMessage(template.message, body, variables) ? body : `${variables.model_name} completed the task`,
           sessionId,
@@ -1684,7 +1684,7 @@ window.addEventListener('openchamber:vscode-notification-event', (event) => {
         const template = getNotificationTemplate(settings, 'error', { title: 'Tool error', message: '{last_message}' });
         const title = resolveTemplate(template.title, variables) || 'Tool error';
         const body = resolveTemplate(template.message, variables);
-        showOpenChamberNotification({
+        showAiYoNotification({
           title,
           body: shouldApplyTemplateMessage(template.message, body, variables) ? body : 'An error occurred',
           sessionId,
@@ -1703,7 +1703,7 @@ window.addEventListener('openchamber:vscode-notification-event', (event) => {
       const template = getNotificationTemplate(settings, 'question', { title: 'Input needed', message: '{last_message}' });
       const title = resolveTemplate(template.title, questionVariables) || (/plan\s*mode/i.test(header) ? 'Switch to plan mode' : /build\s*agent/i.test(header) ? 'Switch to build mode' : header || 'Input needed');
       const body = resolveTemplate(template.message, questionVariables);
-      showOpenChamberNotification({
+      showAiYoNotification({
         title,
         body: shouldApplyTemplateMessage(template.message, body, questionVariables) ? body : questionText || 'Agent is waiting for your response',
         sessionId,
@@ -1722,7 +1722,7 @@ window.addEventListener('openchamber:vscode-notification-event', (event) => {
       const template = getNotificationTemplate(settings, 'question', { title: 'Permission required', message: '{last_message}' });
       const title = resolveTemplate(template.title, permissionVariables) || 'Permission required';
       const body = resolveTemplate(template.message, permissionVariables);
-      showOpenChamberNotification({
+      showAiYoNotification({
         title,
         body: shouldApplyTemplateMessage(template.message, body, permissionVariables) ? body : fallbackMessage,
         sessionId,
@@ -1734,7 +1734,7 @@ window.addEventListener('openchamber:vscode-notification-event', (event) => {
 
 // Listen for settings sync command from extension (broadcast to all VS Code webviews)
 onCommand('settingsSynced', () => {
-  import('@openchamber/ui/lib/persistence').then(({ syncDesktopSettings }) => {
+  import('@aiyo/ui/lib/persistence').then(({ syncDesktopSettings }) => {
     void syncDesktopSettings();
   });
 });
@@ -1746,15 +1746,15 @@ onCommand('activeEditorFile', (payload) => {
   });
 });
 
-import('@openchamber/ui/apps/renderVSCodeApp')
+import('@aiyo/ui/apps/renderVSCodeApp')
   .then(async ({ renderVSCodeApp }) => {
-    renderVSCodeApp(window.__OPENCHAMBER_RUNTIME_APIS__ ?? createVSCodeAPIs());
+    renderVSCodeApp(window.__AIYO_RUNTIME_APIS__ ?? createVSCodeAPIs());
     await waitForUiMount();
     uiMounted = true;
     maybeHideLoadingOverlay();
   })
   .catch((error) => {
-    console.error('[OpenChamber] Failed to bootstrap UI:', error);
+    console.error('[AiYo] Failed to bootstrap UI:', error);
     // If the UI bundle fails to load, remove the overlay so the user at least sees errors in the root.
     uiMounted = true;
     fadeOutLoadingScreen();

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Build an end-to-end OpenChamber review handoff flow that lets one session implement changes and another normal session review them, with OpenChamber metadata connecting the two sessions invisibly.
+Build an end-to-end AiYo review handoff flow that lets one session implement changes and another normal session review them, with AiYo metadata connecting the two sessions invisibly.
 
 The agents must not see session IDs, metadata, linked-session wording, or routing details. They should only receive natural prompts:
 
@@ -130,7 +130,7 @@ The new handoff prompt should keep those ideas and make intent explicit:
 - Validation/test status if known from the session
 - Anything the reviewer should pay special attention to
 
-This is an implementation detail, not a risk. The prompt should be specific enough that the review agent can judge intent and implementation without needing private OpenChamber routing context.
+This is an implementation detail, not a risk. The prompt should be specific enough that the review agent can judge intent and implementation without needing private AiYo routing context.
 
 ### Active Session Generation Concept
 
@@ -171,7 +171,7 @@ Relevant files:
 Current behavior:
 
 - `opencodeClient.createSession(...)` calls `client.session.create(...)` using the legacy OpenCode session API.
-- OpenCode supports `metadata` on that API, but OpenChamber currently only forwards `parentID` and `title`.
+- OpenCode supports `metadata` on that API, but AiYo currently only forwards `parentID` and `title`.
 - `opencodeClient.updateSession(...)` currently only forwards `title` and `time.archived`.
 - OpenCode `metadata` update replaces the whole metadata object. It does not deep-merge.
 - `deleteSession(...)` and `deleteSessionInDirectory(...)` optimistically remove the session, then call `opencodeClient.deleteSession(...)`, and restore snapshots on failure.
@@ -228,7 +228,7 @@ Original session metadata:
 
 ```ts
 {
-  openchamber: {
+  aiyo: {
     reviewSessionID: string
   }
 }
@@ -238,7 +238,7 @@ Review session metadata:
 
 ```ts
 {
-  openchamber: {
+  aiyo: {
     kind: 'review'
     originalSessionID: string
   }
@@ -248,7 +248,7 @@ Review session metadata:
 Rules:
 
 - Only one review session per original session.
-- If original metadata already has `openchamber.reviewSessionID`, reuse that session instead of creating a new review session.
+- If original metadata already has `aiyo.reviewSessionID`, reuse that session instead of creating a new review session.
 - The review session must not have `parentID` set to the original session.
 - Both sessions must stay in the same directory.
 - Metadata is internal routing state only. Never include it in prompts.
@@ -257,8 +257,8 @@ Rules:
 Recommended helpers:
 
 ```ts
-type OpenChamberSessionMetadata = {
-  openchamber?: {
+type AiYoSessionMetadata = {
+  aiyo?: {
     kind?: 'review'
     originalSessionID?: string
     reviewSessionID?: string
@@ -273,7 +273,7 @@ Helper functions should live in a focused module, for example:
 
 Functions:
 
-- `getOpenChamberMetadata(session)`
+- `getAiYoMetadata(session)`
 - `isReviewSession(session)`
 - `getOriginalSessionID(session)`
 - `getReviewSessionID(session)`
@@ -344,9 +344,9 @@ Forward `metadata` when defined.
 
 Important: this method should still replace metadata because the upstream API replaces metadata. Do not hide this with an implicit merge here. Add merge behavior in a separate helper so call sites are explicit.
 
-### 3. Make Session Types Metadata-Aware In OpenChamber
+### 3. Make Session Types Metadata-Aware In AiYo
 
-OpenCode SDK response types should include metadata in the current v2 SDK legacy `Session`, but verify local imports and generated types used by OpenChamber.
+OpenCode SDK response types should include metadata in the current v2 SDK legacy `Session`, but verify local imports and generated types used by AiYo.
 
 Files to inspect/update:
 
@@ -405,7 +405,7 @@ Prepare a handoff for another agent to review this work.
 Suggested template:
 
 ```txt
-Produce a review handoff for another agent. Do not compact or mutate session history. Your output is an assistant message that OpenChamber will send to a separate reviewer agent.
+Produce a review handoff for another agent. Do not compact or mutate session history. Your output is an assistant message that AiYo will send to a separate reviewer agent.
 
 Include:
 - The user's original intent and any later clarifications that changed the intent
@@ -418,7 +418,7 @@ Include:
 Formatting:
 - Concise markdown with clear sections
 - No preamble like "Here is a handoff"
-- Do not mention OpenChamber metadata, linked sessions, session IDs, or routing
+- Do not mention AiYo metadata, linked sessions, session IDs, or routing
 - Respond in the same language the user used most in the conversation
 ```
 
@@ -475,9 +475,9 @@ Add strings for:
 
 Follow locale-ui-patterns. Do not hardcode user-facing text inside components.
 
-### 7. Register The New OpenChamber Slash Command
+### 7. Register The New AiYo Slash Command
 
-There are two possible implementation paths. Pick the one matching how OpenChamber-owned commands are currently registered.
+There are two possible implementation paths. Pick the one matching how AiYo-owned commands are currently registered.
 
 Likely locations:
 
@@ -485,14 +485,14 @@ Likely locations:
 - command autocomplete/store code around `useCommandsStore`
 - command rendering in `ChatInput` / command autocomplete components
 
-The command should appear as `/handoff-review` in OpenChamber command autocomplete.
+The command should appear as `/handoff-review` in AiYo command autocomplete.
 
-It should be treated as an OpenChamber flow command, not only a raw OpenCode command, because after the handoff assistant output completes OpenChamber must create/reuse/open/send to the review session.
+It should be treated as an AiYo flow command, not only a raw OpenCode command, because after the handoff assistant output completes AiYo must create/reuse/open/send to the review session.
 
 Implementation options:
 
 1. Intercept `/handoff-review` in `routeMessage(...)` before normal OpenCode command lookup.
-2. Add it to the command store as an OpenChamber-owned command with a handler.
+2. Add it to the command store as an AiYo-owned command with a handler.
 
 Prefer the smallest approach consistent with existing command architecture.
 
@@ -541,16 +541,16 @@ Waiting rules:
 After handoff text is available:
 
 1. Read original session with `opencodeClient.getSession(originalSessionID)`.
-2. Read `original.metadata.openchamber.reviewSessionID`.
+2. Read `original.metadata.aiyo.reviewSessionID`.
 3. If it exists:
    - Try to get that review session in the same directory.
-   - If it exists and has `metadata.openchamber.kind === 'review'`, reuse it.
+   - If it exists and has `metadata.aiyo.kind === 'review'`, reuse it.
    - If it is missing/deleted, clear the stale link and create a new review session.
 4. If it does not exist, create a new normal session in the same directory with metadata:
 
 ```ts
 {
-  openchamber: {
+  aiyo: {
     kind: 'review',
     originalSessionID,
   }
@@ -561,7 +561,7 @@ After handoff text is available:
 
 ```ts
 {
-  openchamber: {
+  aiyo: {
     reviewSessionID: reviewSession.id,
   }
 }
@@ -627,7 +627,7 @@ Visibility rules:
 - Only assistant messages.
 - Only messages with copyable text.
 - In a review session: show button to send review feedback to the original session.
-- In an original session with `metadata.openchamber.reviewSessionID`: show button to send implementation response to the review session.
+- In an original session with `metadata.aiyo.reviewSessionID`: show button to send implementation response to the review session.
 - Do not show in mini-chat if that surface should avoid extra controls; follow current action-button surface rules.
 
 To avoid button spam:
@@ -733,8 +733,8 @@ Manual validation checklist:
 1. Start `/handoff-review` in a normal session.
 2. Confirm a handoff assistant message appears in original session.
 3. Confirm a normal review session is created in the same directory, not as a child.
-4. Confirm original metadata has `openchamber.reviewSessionID`.
-5. Confirm review metadata has `openchamber.kind === 'review'` and `openchamber.originalSessionID`.
+4. Confirm original metadata has `aiyo.reviewSessionID`.
+5. Confirm review metadata has `aiyo.kind === 'review'` and `aiyo.originalSessionID`.
 6. Confirm review session opens in context panel.
 7. Confirm review session receives the initial handoff review prompt.
 8. Confirm arrow-left-right appears on review assistant message actions.
@@ -751,7 +751,7 @@ Manual validation checklist:
 - Do not allow multiple review sessions for one original session in this first implementation.
 - Do not expose metadata, linked sessions, or session IDs to agents.
 - Do not use parent/child session relationships for this feature.
-- Do not change OpenCode core or SDK unless OpenChamber cannot access metadata from the existing SDK types.
+- Do not change OpenCode core or SDK unless AiYo cannot access metadata from the existing SDK types.
 - Do not make a background metadata reconciler.
 
 ## Main Implementation Risks To Watch While Coding

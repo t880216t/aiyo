@@ -58,7 +58,7 @@ type SyncSystem = {
   directory: string
 }
 
-const SYNC_CONTEXT_GLOBAL_KEY = "__openchamber_sync_context__"
+const SYNC_CONTEXT_GLOBAL_KEY = "__aiyo_sync_context__"
 type SyncGlobal = typeof globalThis & {
   [SYNC_CONTEXT_GLOBAL_KEY]?: React.Context<SyncSystem | null>
 }
@@ -339,7 +339,7 @@ const asOptionalString = (value: unknown): string | undefined => {
 }
 
 const handleUiNotificationEvent = (payload: Event, fallbackDirectory: string): boolean => {
-  if ((payload as { type?: unknown }).type !== "openchamber:notification") {
+  if ((payload as { type?: unknown }).type !== "aiyo:notification") {
     return false
   }
 
@@ -443,7 +443,7 @@ function toSessionStatus(status: Awaited<ReturnType<typeof opencodeClient.getSes
 
 function isStreamHeartbeatEvent(payload: Event): boolean {
   const type = (payload as { type?: unknown }).type
-  return type === "server.heartbeat" || type === "openchamber:heartbeat"
+  return type === "server.heartbeat" || type === "aiyo:heartbeat"
 }
 
 function getActiveSessionCandidateIds(directory: string, state: DirectoryStore): string[] {
@@ -555,7 +555,7 @@ const SHOULD_DISPATCH_VSCODE_NOTIFICATIONS = isVSCodeRuntime()
 
 const dispatchVSCodeRuntimeNotificationEvent = (directory: string, payload: Event) => {
   if (!SHOULD_DISPATCH_VSCODE_NOTIFICATIONS || typeof window === "undefined") return
-  window.dispatchEvent(new CustomEvent("openchamber:vscode-notification-event", {
+  window.dispatchEvent(new CustomEvent("aiyo:vscode-notification-event", {
     detail: { directory, payload },
   }))
 }
@@ -1583,7 +1583,7 @@ function handleEvent(
 
 const dispatchOpenCodeUpdateAvailable = (payload: { version: string }) => {
   if (typeof window === "undefined") return
-  window.dispatchEvent(new CustomEvent("openchamber:opencode-update-available", { detail: payload }))
+  window.dispatchEvent(new CustomEvent("aiyo:opencode-update-available", { detail: payload }))
 }
 
 export function SyncProvider(props: {

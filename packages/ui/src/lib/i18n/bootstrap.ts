@@ -19,6 +19,25 @@ type BootstrapMessages = {
   loadingData: (providersText: string, agentsText: string) => string;
 };
 
+const ZH_CN_MESSAGES: BootstrapMessages = {
+  startingApi: '正在启动 OpenCode API…',
+  initializing: '正在初始化…',
+  connecting: '正在连接…',
+  connected: '已连接！',
+  connectionError: '连接错误',
+  disconnected: '已断开连接',
+  reconnecting: '正在重新连接…',
+  initialDataLoadFailed: 'OpenCode 已连接，但初始数据加载失败。',
+  cliNotFound: '未找到 OpenCode CLI。请先安装。',
+  providersReady: '✓ 供应商',
+  providersLoading: '… 供应商',
+  agentsReady: '✓ 代理',
+  agentsLoading: '… 代理',
+  startingDevServer: (hostLabel) => `正在启动 webview 开发服务器 (${hostLabel})...`,
+  waitingDevServer: (hostLabel, attempt) => `等待 webview 开发服务器 (${hostLabel})... 第 ${attempt} 次尝试`,
+  loadingData: (providersText, agentsText) => `正在加载数据 (${providersText}, ${agentsText})…`,
+};
+
 const EN_MESSAGES: BootstrapMessages = {
   startingApi: 'Starting OpenCode API…',
   initializing: 'Initializing…',
@@ -57,22 +76,26 @@ const FR_MESSAGES: BootstrapMessages = {
   loadingData: (providersText, agentsText) => `Chargement des données (${providersText}, ${agentsText})…`,
 };
 
-export const getBootstrapMessages = (locale: Locale): BootstrapMessages => (locale === 'fr' ? FR_MESSAGES : EN_MESSAGES);
+export const getBootstrapMessages = (locale: Locale): BootstrapMessages => {
+  if (locale === 'zh-CN') return ZH_CN_MESSAGES;
+  if (locale === 'fr') return FR_MESSAGES;
+  return EN_MESSAGES;
+};
 
 export const readStoredLocaleForBootstrap = (): Locale => {
   if (typeof window === 'undefined') {
-    return 'en';
+    return 'zh-CN';
   }
 
   try {
     const raw = window.localStorage.getItem(LOCALE_STORAGE_KEY);
     if (!raw) {
-      return 'en';
+      return 'zh-CN';
     }
 
     const parsed = JSON.parse(raw) as { locale?: unknown };
-    return typeof parsed.locale === 'string' ? normalizeLocale(parsed.locale) : 'en';
+    return typeof parsed.locale === 'string' ? normalizeLocale(parsed.locale) : 'zh-CN';
   } catch {
-    return 'en';
+    return 'zh-CN';
   }
 };

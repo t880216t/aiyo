@@ -1,5 +1,5 @@
-export const SKILL_LINK_PREFIX = '#openchamber-skill:';
-export const AGENT_LINK_PREFIX = '#openchamber-agent:';
+export const SKILL_LINK_PREFIX = '#aiyo-skill:';
+export const AGENT_LINK_PREFIX = '#aiyo-agent:';
 
 export const buildAgentMentionUrl = (name: string): string => {
     const encoded = encodeURIComponent(name);

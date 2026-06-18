@@ -20,13 +20,13 @@ const normalizeBearerToken = (token: string | null | undefined): string => {
 
 const readInjectedBearerToken = (): string => {
   if (typeof window === 'undefined') return '';
-  const injected = (window as typeof window & { __OPENCHAMBER_CLIENT_TOKEN__?: string }).__OPENCHAMBER_CLIENT_TOKEN__;
+  const injected = (window as typeof window & { __AIYO_CLIENT_TOKEN__?: string }).__AIYO_CLIENT_TOKEN__;
   return normalizeBearerToken(injected);
 };
 
 const readInjectedApiBaseUrl = (): string => {
   if (typeof window === 'undefined') return '';
-  const injected = (window as typeof window & { __OPENCHAMBER_API_BASE_URL__?: string }).__OPENCHAMBER_API_BASE_URL__;
+  const injected = (window as typeof window & { __AIYO_API_BASE_URL__?: string }).__AIYO_API_BASE_URL__;
   return typeof injected === 'string' ? injected.trim() : '';
 };
 

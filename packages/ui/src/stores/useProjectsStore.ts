@@ -70,7 +70,7 @@ const ACTIVE_PROJECT_STORAGE_KEY = 'activeProjectId';
 
 const getLocalRuntimeOrigin = (): string => {
   if (typeof window === 'undefined') return '';
-  const value = (window as typeof window & { __OPENCHAMBER_LOCAL_ORIGIN__?: string }).__OPENCHAMBER_LOCAL_ORIGIN__;
+  const value = (window as typeof window & { __AIYO_LOCAL_ORIGIN__?: string }).__AIYO_LOCAL_ORIGIN__;
   return typeof value === 'string' ? value.trim().replace(/\/+$/, '') : '';
 };
 
@@ -442,7 +442,7 @@ const createVSCodeWorkspaceProjects = (
   const activeProjectId = activeProject?.id ?? projects[0]?.id ?? null;
 
   if (streamDebugEnabled()) {
-    console.log('[OpenChamber][VSCode][projects] Using workspace projects', projects);
+    console.log('[AiYo][VSCode][projects] Using workspace projects', projects);
   }
 
   return { projects, activeProjectId, activeProject: activeProject ?? projects[0] ?? null };
@@ -934,7 +934,7 @@ export const useProjectsStore = create<ProjectsStore>()(
 );
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('openchamber:settings-synced', (event: Event) => {
+  window.addEventListener('aiyo:settings-synced', (event: Event) => {
     const detail = (event as CustomEvent<DesktopSettings>).detail;
     if (detail && typeof detail === 'object') {
       useProjectsStore.getState().synchronizeFromSettings(detail);

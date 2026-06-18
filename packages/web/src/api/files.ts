@@ -3,9 +3,9 @@ import type {
   FileSearchQuery,
   FileSearchResult,
   FilesAPI,
-} from '@openchamber/ui/lib/api/types';
-import { runtimeFetch } from '@openchamber/ui/lib/runtime-fetch';
-import type { RuntimeUrlResolver } from '@openchamber/ui/lib/runtime-url';
+} from '@aiyo/ui/lib/api/types';
+import { runtimeFetch } from '@aiyo/ui/lib/runtime-fetch';
+import type { RuntimeUrlResolver } from '@aiyo/ui/lib/runtime-url';
 
 const normalizePath = (path: string): string => path.replace(/\\/g, '/');
 

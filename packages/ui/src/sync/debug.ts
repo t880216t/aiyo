@@ -2,15 +2,15 @@
  * Sync debug logging — gated behind localStorage flag.
  *
  * Enable in browser console:
- *   localStorage.setItem("openchamber:sync:debug", "1")
+ *   localStorage.setItem("aiyo:sync:debug", "1")
  *
  * Disable:
- *   localStorage.removeItem("openchamber:sync:debug")
+ *   localStorage.removeItem("aiyo:sync:debug")
  *
  * All checks are early-returns on the hot path — zero cost when disabled.
  */
 
-const FLAG_KEY = "openchamber:sync:debug"
+const FLAG_KEY = "aiyo:sync:debug"
 
 let _enabled: boolean | undefined
 

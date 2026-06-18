@@ -8,7 +8,7 @@ export type RuntimeEndpointChangedDetail = {
   previousRuntimeKey: string;
 };
 
-const RUNTIME_ENDPOINT_CHANGED_EVENT = 'openchamber:runtime-endpoint-changed';
+const RUNTIME_ENDPOINT_CHANGED_EVENT = 'aiyo:runtime-endpoint-changed';
 
 let activeApiBaseUrl = '';
 let activeRuntimeKey = '';
@@ -27,13 +27,13 @@ const normalizeRuntimeUrlKey = (value: string): string => {
 
 const readInjectedApiBaseUrl = (): string => {
   if (typeof window === 'undefined') return '';
-  const injected = (window as typeof window & { __OPENCHAMBER_API_BASE_URL__?: string }).__OPENCHAMBER_API_BASE_URL__;
+  const injected = (window as typeof window & { __AIYO_API_BASE_URL__?: string }).__AIYO_API_BASE_URL__;
   return typeof injected === 'string' ? injected.trim() : '';
 };
 
 const readInjectedLocalOrigin = (): string => {
   if (typeof window === 'undefined') return '';
-  const injected = (window as typeof window & { __OPENCHAMBER_LOCAL_ORIGIN__?: string }).__OPENCHAMBER_LOCAL_ORIGIN__;
+  const injected = (window as typeof window & { __AIYO_LOCAL_ORIGIN__?: string }).__AIYO_LOCAL_ORIGIN__;
   return typeof injected === 'string' ? injected.trim() : '';
 };
 
@@ -77,11 +77,11 @@ export const switchRuntimeEndpoint = (options: { apiBaseUrl: string; clientToken
   activeRuntimeKey = runtimeKey;
   if (typeof window !== 'undefined') {
     const runtimeWindow = window as typeof window & {
-      __OPENCHAMBER_API_BASE_URL__?: string;
-      __OPENCHAMBER_CLIENT_TOKEN__?: string;
+      __AIYO_API_BASE_URL__?: string;
+      __AIYO_CLIENT_TOKEN__?: string;
     };
-    runtimeWindow.__OPENCHAMBER_API_BASE_URL__ = apiBaseUrl;
-    runtimeWindow.__OPENCHAMBER_CLIENT_TOKEN__ = options.clientToken || undefined;
+    runtimeWindow.__AIYO_API_BASE_URL__ = apiBaseUrl;
+    runtimeWindow.__AIYO_CLIENT_TOKEN__ = options.clientToken || undefined;
   }
   configureRuntimeUrlResolver({ apiBaseUrl, realtimeBaseUrl: apiBaseUrl });
   setRuntimeBearerToken(options.clientToken || null);

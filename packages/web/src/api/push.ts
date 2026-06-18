@@ -1,5 +1,5 @@
-import type { PushAPI, PushSubscribePayload, PushUnsubscribePayload } from '@openchamber/ui/lib/api/types';
-import { runtimeFetch } from '@openchamber/ui/lib/runtime-fetch';
+import type { PushAPI, PushSubscribePayload, PushUnsubscribePayload } from '@aiyo/ui/lib/api/types';
+import { runtimeFetch } from '@aiyo/ui/lib/runtime-fetch';
 
 const fetchJson = async <T>(input: string | URL | Request, init?: RequestInit): Promise<T | null> => {
   try {

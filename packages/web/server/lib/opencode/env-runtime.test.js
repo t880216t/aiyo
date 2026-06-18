@@ -9,7 +9,7 @@ const originalComSpec = process.env.ComSpec;
 const originalPath = process.env.PATH;
 const originalSystemRoot = process.env.SystemRoot;
 const originalWslBinary = process.env.WSL_BINARY;
-const originalOpenChamberWslBinary = process.env.OPENCHAMBER_WSL_BINARY;
+const originalAiYoWslBinary = process.env.AIYO_WSL_BINARY;
 const originalPlatform = process.platform;
 const tempDirs = [];
 const itIf = (condition) => condition ? it : it.skip;
@@ -65,10 +65,10 @@ afterEach(() => {
     delete process.env.WSL_BINARY;
   }
 
-  if (typeof originalOpenChamberWslBinary === 'string') {
-    process.env.OPENCHAMBER_WSL_BINARY = originalOpenChamberWslBinary;
+  if (typeof originalAiYoWslBinary === 'string') {
+    process.env.AIYO_WSL_BINARY = originalAiYoWslBinary;
   } else {
-    delete process.env.OPENCHAMBER_WSL_BINARY;
+    delete process.env.AIYO_WSL_BINARY;
   }
 });
 
@@ -107,7 +107,7 @@ describe('OpenCode env runtime', () => {
   });
 
   it('throws a specific error for a configured directory without an executable CLI in strict mode', async () => {
-    const dir = createTempDir('openchamber-opencode-dir-');
+    const dir = createTempDir('aiyo-opencode-dir-');
     const { runtime } = createRuntime({ opencodeBinary: dir });
 
     await expect(runtime.applyOpencodeBinaryFromSettings({ strict: true })).rejects.toMatchObject({
@@ -117,7 +117,7 @@ describe('OpenCode env runtime', () => {
   });
 
   it('applies a valid configured executable OpenCode binary', async () => {
-    const dir = createTempDir('openchamber-opencode-bin-');
+    const dir = createTempDir('aiyo-opencode-bin-');
     const binary = path.join(dir, 'opencode');
     fs.writeFileSync(binary, '#!/bin/sh\nexit 0\n');
     fs.chmodSync(binary, 0o755);
@@ -140,11 +140,11 @@ describe('OpenCode env runtime', () => {
 
   it('rejects WSL settings in strict mode', async () => {
     setPlatform('win32');
-    const dir = createTempDir('openchamber-no-wsl-');
+    const dir = createTempDir('aiyo-no-wsl-');
     process.env.PATH = dir;
     process.env.SystemRoot = dir;
     process.env.WSL_BINARY = path.join(dir, 'missing-wsl.exe');
-    process.env.OPENCHAMBER_WSL_BINARY = path.join(dir, 'missing-openchamber-wsl.exe');
+    process.env.AIYO_WSL_BINARY = path.join(dir, 'missing-aiyo-wsl.exe');
     const { runtime } = createRuntime({ opencodeBinary: 'wsl:/usr/local/bin/opencode' });
 
     await expect(runtime.applyOpencodeBinaryFromSettings({ strict: true })).rejects.toMatchObject({
@@ -154,7 +154,7 @@ describe('OpenCode env runtime', () => {
 
   it('does not auto-detect OpenCode from WSL fallback paths', () => {
     setPlatform('win32');
-    const dir = createTempDir('openchamber-wsl-opencode-');
+    const dir = createTempDir('aiyo-wsl-opencode-');
     const wslBinary = path.join(dir, 'wsl.exe');
     fs.writeFileSync(wslBinary, '');
     process.env.PATH = dir;
@@ -188,7 +188,7 @@ describe('OpenCode env runtime', () => {
   it('launches Windows cmd shims through cmd call without embedded quotes', () => {
     setPlatform('win32');
     process.env.ComSpec = 'C:\\Windows\\System32\\cmd.exe';
-    const dir = createTempDir('openchamber-opencode-cmd-');
+    const dir = createTempDir('aiyo-opencode-cmd-');
     const shim = path.join(dir, 'opencode.cmd');
     fs.writeFileSync(shim, '@echo off\r\nexit /b 0\r\n');
     const { runtime } = createRuntime({});
@@ -202,7 +202,7 @@ describe('OpenCode env runtime', () => {
 
   it('resolves npm OpenCode cmd shims to the packaged Windows executable', () => {
     setPlatform('win32');
-    const npmDir = createTempDir('openchamber-opencode-npm-');
+    const npmDir = createTempDir('aiyo-opencode-npm-');
     const shim = path.join(npmDir, 'opencode.cmd');
     const nativeBinary = path.join(npmDir, 'node_modules', 'opencode-ai', 'bin', 'opencode.exe');
     fs.mkdirSync(path.dirname(nativeBinary), { recursive: true });

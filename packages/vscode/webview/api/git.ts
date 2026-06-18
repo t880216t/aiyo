@@ -39,7 +39,7 @@ import type {
   CherryPickResponse,
   RevertCommitResponse,
   ResetToCommitResponse,
-} from '@openchamber/ui/lib/api/types';
+} from '@aiyo/ui/lib/api/types';
 
 export const createVSCodeGitAPI = (): GitAPI => ({
   checkIsGitRepository: async (directory: string): Promise<boolean> => {

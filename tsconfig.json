@@ -13,8 +13,8 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "paths": {
-      "@openchamber/ui/*": ["./packages/ui/src/*"],
-      "@openchamber/web/*": ["./packages/web/src/*"]
+      "@aiyo/ui/*": ["./packages/ui/src/*"],
+      "@aiyo/web/*": ["./packages/web/src/*"]
     }
   }
 }

@@ -1,7 +1,7 @@
-# <picture><source media="(prefers-color-scheme: dark)" srcset="docs/references/badges/openchamber-logo-dark.svg"><img src="docs/references/badges/openchamber-logo-light.svg" width="32" height="32" align="absmiddle" /></picture> OpenChamber
+# <picture><source media="(prefers-color-scheme: dark)" srcset="docs/references/badges/aiyo-logo-dark.svg"><img src="docs/references/badges/aiyo-logo-light.svg" width="32" height="32" align="absmiddle" /></picture> AiYo
 
-[![GitHub stars](https://img.shields.io/github/stars/btriapitsyn/openchamber?style=flat&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iI2YxZWNlYyIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMjkuMDYsMTA4Ljc5bC00OC43LDQyLDE0Ljg4LDYyLjc5YTguNCw4LjQsMCwwLDEtMTIuNTIsOS4xN0wxMjgsMTg5LjA5LDczLjI4LDIyMi43NGE4LjQsOC40LDAsMCwxLTEyLjUyLTkuMTdsMTQuODgtNjIuNzktNDguNy00MkE4LjQ2LDguNDYsMCwwLDEsMzEuNzMsOTRMOTUuNjQsODguOGwyNC42Mi01OS42YTguMzYsOC4zNiwwLDAsMSwxNS40OCwwbDI0LjYyLDU5LjZMMjI0LjI3LDk0QTguNDYsOC40NiwwLDAsMSwyMjkuMDYsMTA4Ljc5WiIgb3BhY2l0eT0iMC4yIj48L3BhdGg%2BPHBhdGggZD0iTTIzOS4xOCw5Ny4yNkExNi4zOCwxNi4zOCwwLDAsMCwyMjQuOTIsODZsLTU5LTQuNzZMMTQzLjE0LDI2LjE1YTE2LjM2LDE2LjM2LDAsMCwwLTMwLjI3LDBMOTAuMTEsODEuMjMsMzEuMDgsODZhMTYuNDYsMTYuNDYsMCwwLDAtOS4zNywyOC44Nmw0NSwzOC44M0w1MywyMTEuNzVhMTYuMzgsMTYuMzgsMCwwLDAsMjQuNSwxNy44MkwxMjgsMTk4LjQ5bDUwLjUzLDMxLjA4QTE2LjQsMTYuNCwwLDAsMCwyMDMsMjExLjc1bC0xMy43Ni01OC4wNyw0NS0zOC44M0ExNi40MywxNi40MywwLDAsMCwyMzkuMTgsOTcuMjZabS0xNS4zNCw1LjQ3LTQ4LjcsNDJhOCw4LDAsMCwwLTIuNTYsNy45MWwxNC44OCw2Mi44YS4zNy4zNywwLDAsMS0uMTcuNDhjLS4xOC4xNC0uMjMuMTEtLjM4LDBsLTU0LjcyLTMzLjY1YTgsOCwwLDAsMC04LjM4LDBMNjkuMDksMjE1Ljk0Yy0uMTUuMDktLjE5LjEyLS4zOCwwYS4zNy4zNywwLDAsMS0uMTctLjQ4bDE0Ljg4LTYyLjhhOCw4LDAsMCwwLTIuNTYtNy45MWwtNDguNy00MmMtLjEyLS4xLS4yMy0uMTktLjEzLS41cy4xOC0uMjcuMzMtLjI5bDYzLjkyLTUuMTZBOCw4LDAsMCwwLDEwMyw5MS44NmwyNC42Mi01OS42MWMuMDgtLjE3LjExLS4yNS4zNS0uMjVzLjI3LjA4LjM1LjI1TDE1Myw5MS44NmE4LDgsMCwwLDAsNi43NSw0LjkybDYzLjkyLDUuMTZjLjE1LDAsLjI0LDAsLjMzLjI5UzIyNCwxMDIuNjMsMjIzLjg0LDEwMi43M1oiPjwvcGF0aD48L3N2Zz4%3D&logoColor=FFFCF0&labelColor=100F0F&color=66800B)](https://github.com/btriapitsyn/openchamber/stargazers)
-[![GitHub release](https://img.shields.io/github/v/release/btriapitsyn/openchamber?style=flat&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iI2YxZWNlYyIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0xMjgsMTI5LjA5VjIzMmE4LDgsMCwwLDEtMy44NC0xbC04OC00OC4xOGE4LDgsMCwwLDEtNC4xNi03VjgwLjE4YTgsOCwwLDAsMSwuNy0zLjI1WiIgb3BhY2l0eT0iMC4yIj48L3BhdGg%2BPHBhdGggZD0iTTIyMy42OCw2Ni4xNSwxMzUuNjgsMThhMTUuODgsMTUuODgsMCwwLDAtMTUuMzYsMGwtODgsNDguMTdhMTYsMTYsMCwwLDAtOC4zMiwxNHY5NS42NGExNiwxNiwwLDAsMCw4LjMyLDE0bDg4LDQ4LjE3YTE1Ljg4LDE1Ljg4LDAsMCwwLDE1LjM2LDBsODgtNDguMTdhMTYsMTYsMCwwLDAsOC4zMi0xNFY4MC4xOEExNiwxNiwwLDAsMCwyMjMuNjgsNjYuMTVaTTEyOCwzMmw4MC4zNCw0NC0yOS43NywxNi4zLTgwLjM1LTQ0Wk0xMjgsMTIwLDQ3LjY2LDc2bDMzLjktMTguNTYsODAuMzQsNDRaTTQwLDkwbDgwLDQzLjc4djg1Ljc5TDQwLDE3NS44MlptMTc2LDg1Ljc4aDBsLTgwLDQzLjc5VjEzMy44MmwzMi0xNy41MVYxNTJhOCw4LDAsMCwwLDE2LDBWMTA3LjU1TDIxNiw5MHY4NS43N1oiPjwvcGF0aD48L3N2Zz4%3D&logoColor=FFFCF0&labelColor=100F0F&color=205EA6)](https://github.com/btriapitsyn/openchamber/releases/latest)
+[![GitHub stars](https://img.shields.io/github/stars/t880216t/aiyo?style=flat&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iI2YxZWNlYyIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMjkuMDYsMTA4Ljc5bC00OC43LDQyLDE0Ljg4LDYyLjc5YTguNCw4LjQsMCwwLDEtMTIuNTIsOS4xN0wxMjgsMTg5LjA5LDczLjI4LDIyMi43NGE4LjQsOC40LDAsMCwxLTEyLjUyLTkuMTdsMTQuODgtNjIuNzktNDguNy00MkE4LjQ2LDguNDYsMCwwLDEsMzEuNzMsOTRMOTUuNjQsODguOGwyNC42Mi01OS42YTguMzYsOC4zNiwwLDAsMSwxNS40OCwwbDI0LjYyLDU5LjZMMjI0LjI3LDk0QTguNDYsOC40NiwwLDAsMSwyMjkuMDYsMTA4Ljc5WiIgb3BhY2l0eT0iMC4yIj48L3BhdGg%2BPHBhdGggZD0iTTIzOS4xOCw5Ny4yNkExNi4zOCwxNi4zOCwwLDAsMCwyMjQuOTIsODZsLTU5LTQuNzZMMTQzLjE0LDI2LjE1YTE2LjM2LDE2LjM2LDAsMCwwLTMwLjI3LDBMOTAuMTEsODEuMjMsMzEuMDgsODZhMTYuNDYsMTYuNDYsMCwwLDAtOS4zNywyOC44Nmw0NSwzOC44M0w1MywyMTEuNzVhMTYuMzgsMTYuMzgsMCwwLDAsMjQuNSwxNy44MkwxMjgsMTk4LjQ5bDUwLjUzLDMxLjA4QTE2LjQsMTYuNCwwLDAsMCwyMDMsMjExLjc1bC0xMy43Ni01OC4wNyw0NS0zOC44M0ExNi40MywxNi40MywwLDAsMCwyMzkuMTgsOTcuMjZabS0xNS4zNCw1LjQ3LTQ4LjcsNDJhOCw4LDAsMCwwLTIuNTYsNy45MWwxNC44OCw2Mi44YS4zNy4zNywwLDAsMS0uMTcuNDhjLS4xOC4xNC0uMjMuMTEtLjM4LDBsLTU0LjcyLTMzLjY1YTgsOCwwLDAsMC04LjM4LDBMNjkuMDksMjE1Ljk0Yy0uMTUuMDktLjE5LjEyLS4zOCwwYS4zNy4zNywwLDAsMS0uMTctLjQ4bDE0Ljg4LTYyLjhhOCw4LDAsMCwwLTIuNTYtNy45MWwtNDguNy00MmMtLjEyLS4xLS4yMy0uMTktLjEzLS41cy4xOC0uMjcuMzMtLjI5bDYzLjkyLTUuMTZBOCw4LDAsMCwwLDEwMyw5MS44NmwyNC42Mi01OS42MWMuMDgtLjE3LjExLS4yNS4zNS0uMjVzLjI3LjA4LjM1LjI1TDE1Myw5MS44NmE4LDgsMCwwLDAsNi43NSw0LjkybDYzLjkyLDUuMTZjLjE1LDAsLjI0LDAsLjMzLjI5UzIyNCwxMDIuNjMsMjIzLjg0LDEwMi43M1oiPjwvcGF0aD48L3N2Zz4%3D&logoColor=FFFCF0&labelColor=100F0F&color=66800B)](https://github.com/t880216t/aiyo/stargazers)
+[![GitHub release](https://img.shields.io/github/v/release/t880216t/aiyo?style=flat&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iI2YxZWNlYyIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0xMjgsMTI5LjA5VjIzMmE4LDgsMCwwLDEtMy44NC0xbC04OC00OC4xOGE4LDgsMCwwLDEtNC4xNi03VjgwLjE4YTgsOCwwLDAsMSwuNy0zLjI1WiIgb3BhY2l0eT0iMC4yIj48L3BhdGg%2BPHBhdGggZD0iTTIyMy42OCw2Ni4xNSwxMzUuNjgsMThhMTUuODgsMTUuODgsMCwwLDAtMTUuMzYsMGwtODgsNDguMTdhMTYsMTYsMCwwLDAtOC4zMiwxNHY5NS42NGExNiwxNiwwLDAsMCw4LjMyLDE0bDg4LDQ4LjE3YTE1Ljg4LDE1Ljg4LDAsMCwwLDE1LjM2LDBsODgtNDguMTdhMTYsMTYsMCwwLDAsOC4zMi0xNFY4MC4xOEExNiwxNiwwLDAsMCwyMjMuNjgsNjYuMTVaTTEyOCwzMmw4MC4zNCw0NC0yOS43NywxNi4zLTgwLjM1LTQ0Wk0xMjgsMTIwLDQ3LjY2LDc2bDMzLjktMTguNTYsODAuMzQsNDRaTTQwLDkwbDgwLDQzLjc4djg1Ljc5TDQwLDE3NS44MlptMTc2LDg1Ljc4aDBsLTgwLDQzLjc5VjEzMy44MmwzMi0xNy41MVYxNTJhOCw4LDAsMCwwLDE2LDBWMTA3LjU1TDIxNiw5MHY4NS43N1oiPjwvcGF0aD48L3N2Zz4%3D&logoColor=FFFCF0&labelColor=100F0F&color=205EA6)](https://github.com/t880216t/aiyo/releases/latest)
 [![Created with OpenCode](docs/references/badges/created-with-opencode.svg)](https://opencode.ai)
 [![Discord](https://img.shields.io/badge/Discord-join.svg?style=flat&labelColor=100F0F&color=8B7EC8&logo=discord&logoColor=FFFCF0)](https://discord.gg/ZYRSdnwwKA)
 [![Support the project](https://img.shields.io/badge/Support-Project-black?style=flat&labelColor=100F0F&color=EC8B49&logo=ko-fi&logoColor=FFFCF0)](https://ko-fi.com/G2G41SAWNS)
@@ -11,7 +11,7 @@
 
 ### A rich interface for [OpenCode](https://opencode.ai). Review diffs, manage agents, run dev servers, and keep the big picture while your AI codes.
 
-![OpenChamber Chat](docs/references/chat_example.png)
+![AiYo Chat](docs/references/chat_example.png)
 
 <details>
 <summary>More screenshots</summary>
@@ -28,7 +28,7 @@
 
 </details>
 
-## Why use OpenChamber?
+## Why use AiYo?
 
 - **Cross-device continuity**: Start in TUI, continue on tablet/phone, return to terminal - same session
 - **Remote access**: Use OpenCode from anywhere via browser
@@ -62,11 +62,11 @@
 
 - Floating Mini Chat: keep a small always-on-top assistant beside your editor, browser, or terminal
 - Multiple native windows for separate projects or sessions
-- Native notifications for task alerts while OpenChamber is hidden
+- Native notifications for task alerts while AiYo is hidden
 - One-click open in VS Code, Cursor, Terminal, Finder, Explorer, and more
-- Desktop host switcher for local and remote OpenChamber instances
+- Desktop host switcher for local and remote AiYo instances
 - Convenient tunnel management without manual setup
-- Deep-link connections for joining remote OpenChamber from a link
+- Deep-link connections for joining remote AiYo from a link
 - SSH remote access with host import, connection management, and port forwarding
 
 ### VS Code Extension
@@ -83,102 +83,102 @@
 - **Branchable chat timeline** - Undo, redo, fork from any turn. Explore different approaches without losing your place.
 - **GitHub-native workflows** - Start sessions from issues and PRs with context already attached. Review checks, merge - all in-app.
 - **Project Actions** - Run dev servers, configure SSH port forwarding, open remote URLs locally. Your project commands, one click away.
-- **Connect to remote machines** - Desktop app connects to remote OpenChamber instances over SSH, with dedicated lifecycle and UX flows.
+- **Connect to remote machines** - Desktop app connects to remote AiYo instances over SSH, with dedicated lifecycle and UX flows.
 
 ## Quick Start
 
 > **Prerequisite:** [OpenCode CLI](https://opencode.ai) installed.
 
 ### **Desktop (macOS + Windows)**
-Download from [Releases](https://github.com/btriapitsyn/openchamber/releases).
+Download from [Releases](https://github.com/t880216t/aiyo/releases).
 
 ### **VS Code**
-Install from [Marketplace](https://marketplace.visualstudio.com/items?itemName=fedaykindev.openchamber) or search "OpenChamber" in Extensions.
+Install from [Marketplace](https://marketplace.visualstudio.com/items?itemName=fedaykindev.aiyo) or search "AiYo" in Extensions.
 
 ### **CLI (Web + PWA)**
 _requires Node.js 22+_
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/btriapitsyn/openchamber/main/scripts/install.sh | bash
-openchamber --ui-password be-creative-here
+curl -fsSL https://raw.githubusercontent.com/t880216t/aiyo/main/scripts/install.sh | bash
+aiyo --ui-password be-creative-here
 ```
 
 <details>
 <summary>Advanced CLI options</summary>
 
 ```bash
-openchamber --port 8080              # Custom port
-openchamber --lan --port 3000        # Listen on LAN (0.0.0.0)
-openchamber --ui-password secret     # Password-protect UI
-openchamber startup enable           # Start at login as a native service
-OPENCHAMBER_UI_PASSWORD=secret openchamber startup enable # Save service password env
-openchamber startup status           # Show startup service status
-openchamber startup disable          # Remove startup service
-openchamber tunnel help              # Tunnel lifecycle commands
-openchamber tunnel providers         # Show provider capabilities
-openchamber tunnel profile add --provider cloudflare --mode managed-remote --name prod-main --hostname app.example.com --token <token>
-openchamber tunnel start --profile prod-main
-openchamber tunnel start --provider cloudflare --mode quick --qr
-openchamber tunnel start --provider cloudflare --mode managed-local --config ~/.cloudflared/config.yml
-openchamber tunnel status --all      # Show tunnel state across instances
-openchamber tunnel stop --port 3000  # Stop tunnel only (server stays running)
-openchamber connect-url --port 3000  # Add this server to OpenChamber Desktop
-openchamber connect-url --server http://host:3000 --qr
-openchamber connect-url --port 3000 --qr
-openchamber logs                     # Follow latest instance logs
-OPENCODE_PORT=4096 OPENCODE_SKIP_START=true openchamber                    # Connect to external OpenCode server
-OPENCODE_HOST=https://myhost:4096 OPENCODE_SKIP_START=true openchamber  # Connect via custom host/HTTPS
-openchamber stop                     # Stop server
-openchamber update                   # Update to latest
+aiyo --port 8080              # Custom port
+aiyo --lan --port 3000        # Listen on LAN (0.0.0.0)
+aiyo --ui-password secret     # Password-protect UI
+aiyo startup enable           # Start at login as a native service
+AIYO_UI_PASSWORD=secret aiyo startup enable # Save service password env
+aiyo startup status           # Show startup service status
+aiyo startup disable          # Remove startup service
+aiyo tunnel help              # Tunnel lifecycle commands
+aiyo tunnel providers         # Show provider capabilities
+aiyo tunnel profile add --provider cloudflare --mode managed-remote --name prod-main --hostname app.example.com --token <token>
+aiyo tunnel start --profile prod-main
+aiyo tunnel start --provider cloudflare --mode quick --qr
+aiyo tunnel start --provider cloudflare --mode managed-local --config ~/.cloudflared/config.yml
+aiyo tunnel status --all      # Show tunnel state across instances
+aiyo tunnel stop --port 3000  # Stop tunnel only (server stays running)
+aiyo connect-url --port 3000  # Add this server to AiYo Desktop
+aiyo connect-url --server http://host:3000 --qr
+aiyo connect-url --port 3000 --qr
+aiyo logs                     # Follow latest instance logs
+OPENCODE_PORT=4096 OPENCODE_SKIP_START=true aiyo                    # Connect to external OpenCode server
+OPENCODE_HOST=https://myhost:4096 OPENCODE_SKIP_START=true aiyo  # Connect via custom host/HTTPS
+aiyo stop                     # Stop server
+aiyo update                   # Update to latest
 ```
 
-`startup enable` snapshots your current environment into the native service so startup behaves like you launched `openchamber` from the same shell. This preserves provider tokens, PATH, SSH agent settings, and other CLI auth/config env vars. Use `--no-env-snapshot` if you want a minimal service env.
+`startup enable` snapshots your current environment into the native service so startup behaves like you launched `aiyo` from the same shell. This preserves provider tokens, PATH, SSH agent settings, and other CLI auth/config env vars. Use `--no-env-snapshot` if you want a minimal service env.
 
 Connect to an existing OpenCode server:
 ```bash
-OPENCODE_PORT=4096 OPENCODE_SKIP_START=true openchamber
-OPENCODE_HOST=https://myhost:4096 OPENCODE_SKIP_START=true openchamber
+OPENCODE_PORT=4096 OPENCODE_SKIP_START=true aiyo
+OPENCODE_HOST=https://myhost:4096 OPENCODE_SKIP_START=true aiyo
 ```
 
 Bind managed OpenCode server to all interfaces (use only on trusted networks):
 ```bash
-OPENCHAMBER_OPENCODE_HOSTNAME=0.0.0.0 openchamber --port 3000
+AIYO_OPENCODE_HOSTNAME=0.0.0.0 aiyo --port 3000
 ```
 
-Expose OpenChamber itself on your LAN:
+Expose AiYo itself on your LAN:
 ```bash
-openchamber --lan --port 3000 --ui-password secret
+aiyo --lan --port 3000 --ui-password secret
 ```
 
-Add this server to OpenChamber Desktop or another OpenChamber app:
+Add this server to AiYo Desktop or another AiYo app:
 ```bash
-openchamber connect-url --port 3000 --qr
+aiyo connect-url --port 3000 --qr
 ```
 
-If no OpenChamber server is running on that port, `connect-url` starts one before generating the link.
+If no AiYo server is running on that port, `connect-url` starts one before generating the link.
 
 Headless/API-only setup for a remote machine:
 ```bash
-openchamber connect-url --port 3000 --api-only --lan --server http://your-host-or-ip:3000 --qr --ui-password secret
+aiyo connect-url --port 3000 --api-only --lan --server http://your-host-or-ip:3000 --qr --ui-password secret
 ```
 
-This runs OpenChamber as an API-only server without the desktop app or browser UI assets on that machine, then creates a link for Desktop to import. `--lan` makes the server reachable from other machines. `--server` is the address Desktop should use.
+This runs AiYo as an API-only server without the desktop app or browser UI assets on that machine, then creates a link for Desktop to import. `--lan` makes the server reachable from other machines. `--server` is the address Desktop should use.
 
-When OpenChamber was started with `--lan` or `--host 0.0.0.0`, `connect-url` automatically uses a detected LAN IP instead of `127.0.0.1`. Use `--server http://host:3000` to override the advertised address, and include `--lan` when `connect-url` needs to start the server for LAN access.
+When AiYo was started with `--lan` or `--host 0.0.0.0`, `connect-url` automatically uses a detected LAN IP instead of `127.0.0.1`. Use `--server http://host:3000` to override the advertised address, and include `--lan` when `connect-url` needs to start the server for LAN access.
 
-Paste the printed `openchamber://connect?...` link in Desktop under Settings -> Remote Instances -> Direct Instances -> Import Link. The link contains the server URL and a client token. It does not enable browser UI password protection; use `--ui-password` when exposing a server beyond localhost.
+Paste the printed `aiyo://connect?...` link in Desktop under Settings -> Remote Instances -> Direct Instances -> Import Link. The link contains the server URL and a client token. It does not enable browser UI password protection; use `--ui-password` when exposing a server beyond localhost.
 
 </details>
 
 <details>
 <summary>systemd service (VPN / LAN access)</summary>
 
-Run OpenChamber and OpenCode as separate persistent services — useful when you want to access your
+Run AiYo and OpenCode as separate persistent services — useful when you want to access your
 dev machine over a VPN (e.g. Tailscale) or LAN without a Cloudflare tunnel.
 
 **How it works:**
 - OpenCode runs as its own service, binding only to `localhost`.
-- OpenChamber connects to it via `OPENCODE_HOST` and `--lan` makes it reachable on your VPN IP.
+- AiYo connects to it via `OPENCODE_HOST` and `--lan` makes it reachable on your VPN IP.
 - `--foreground` keeps the CLI process alive so systemd can track and restart it.
 
 **`~/.config/systemd/user/opencode.service`**
@@ -205,15 +205,15 @@ WantedBy=default.target
 > Adjust the `PATH` to match your own tool installation paths.
 > `%t` expands to `$XDG_RUNTIME_DIR` (e.g. `/run/user/1000`), where most SSH agents write their socket.
 
-**`~/.config/systemd/user/openchamber.service`**
+**`~/.config/systemd/user/aiyo.service`**
 ```ini
 [Unit]
-Description=OpenChamber Web Server
+Description=AiYo Web Server
 After=opencode.service
 
 [Service]
 Type=simple
-ExecStart=openchamber serve --port 3000 --host 0.0.0.0 --ui-password your-password --foreground
+ExecStart=aiyo serve --port 3000 --host 0.0.0.0 --ui-password your-password --foreground
 Environment="OPENCODE_HOST=http://localhost:4095"
 Environment="OPENCODE_SKIP_START=true"
 Restart=on-failure
@@ -225,14 +225,14 @@ WantedBy=default.target
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable --now opencode openchamber
+systemctl --user enable --now opencode aiyo
 ```
 
-OpenChamber will be reachable at `http://<your-vpn-hostname>:3000` from any device on your VPN.
+AiYo will be reachable at `http://<your-vpn-hostname>:3000` from any device on your VPN.
 
 > **Note:** `--host 0.0.0.0` is required to listen on all interfaces. The default
 > bind address is `127.0.0.1` (localhost only). Use `--host <ip>` or
-> `OPENCHAMBER_HOST=<ip>` to bind to a specific interface instead.
+> `AIYO_HOST=<ip>` to bind to a specific interface instead.
 
 </details>
 
@@ -254,28 +254,28 @@ environment:
 **Cloudflare Tunnel (optional):**
 ```yaml
 environment:
-  OPENCHAMBER_TUNNEL_MODE: quick # quick | managed-remote | managed-local
-  OPENCHAMBER_TUNNEL_PROVIDER: cloudflare
+  AIYO_TUNNEL_MODE: quick # quick | managed-remote | managed-local
+  AIYO_TUNNEL_PROVIDER: cloudflare
 ```
 
 For `managed-remote` mode, provide:
 
 ```yaml
 environment:
-  OPENCHAMBER_TUNNEL_MODE: managed-remote
-  OPENCHAMBER_TUNNEL_HOSTNAME: app.example.com
-  OPENCHAMBER_TUNNEL_TOKEN: <token>
+  AIYO_TUNNEL_MODE: managed-remote
+  AIYO_TUNNEL_HOSTNAME: app.example.com
+  AIYO_TUNNEL_TOKEN: <token>
 ```
 
 For `managed-local` mode, optionally provide:
 
 ```yaml
 environment:
-  OPENCHAMBER_TUNNEL_MODE: managed-local
-  OPENCHAMBER_TUNNEL_CONFIG: /home/openchamber/.cloudflared/config.yml
+  AIYO_TUNNEL_MODE: managed-local
+  AIYO_TUNNEL_CONFIG: /home/aiyo/.cloudflared/config.yml
 ```
 
-Managed-local path note: `OPENCHAMBER_TUNNEL_CONFIG` must point to a path inside the container user home (`/home/openchamber/...`). If your Cloudflare config references a credentials JSON file, that file path must also be accessible inside the container (mount with `volumes`).
+Managed-local path note: `AIYO_TUNNEL_CONFIG` must point to a path inside the container user home (`/home/aiyo/...`). If your Cloudflare config references a credentials JSON file, that file path must also be accessible inside the container (mount with `volumes`).
 
 ### Reverse proxy notes
 
@@ -284,7 +284,7 @@ Managed-local path note: `OPENCHAMBER_TUNNEL_CONFIG` must point to a path inside
 
 ### Tunnel behavior notes
 
-- OpenChamber supports one active tunnel per running instance (port).
+- AiYo supports one active tunnel per running instance (port).
 - Starting a tunnel with a different mode/provider on the same instance replaces the current tunnel.
 - Replacing or stopping a tunnel revokes existing connect links and invalidates remote tunnel sessions for that instance.
 - Connect links are one-time tokens; generating a new link revokes the previous unused link.
@@ -292,7 +292,7 @@ Managed-local path note: `OPENCHAMBER_TUNNEL_CONFIG` must point to a path inside
 **Data Directory Permission Note:** The `data/` directory is mounted into the container for persistent storage (config, sessions, SSH keys, workspaces). Before running, ensure the directory exists and has proper permissions:
 
 ```bash
-mkdir -p data/openchamber data/opencode/share data/opencode/config data/ssh
+mkdir -p data/aiyo data/opencode/share data/opencode/config data/ssh
 chown -R 1000:1000 data/
 ```
 
@@ -357,11 +357,11 @@ chown -R 1000:1000 data/
 
 - Floating Mini Chat: keep a small always-on-top assistant beside your editor, browser, or terminal
 - Multiple native windows for separate projects or sessions
-- Native notifications for task alerts while OpenChamber is hidden
+- Native notifications for task alerts while AiYo is hidden
 - One-click open in VS Code, Cursor, Terminal, Finder, Explorer, and more
-- Desktop host switcher for local and remote OpenChamber instances
+- Desktop host switcher for local and remote AiYo instances
 - Convenient tunnel management without manual setup
-- Deep-link connections for joining remote OpenChamber from a link
+- Deep-link connections for joining remote AiYo from a link
 - SSH remote access with host import, connection management, and port forwarding
 
 </details>
@@ -381,7 +381,7 @@ chown -R 1000:1000 data/
 <summary><strong>Customization</strong></summary>
 
 - 18+ built-in themes with light/dark variants
-- Custom themes via JSON files in `~/.config/openchamber/themes/` - hot reload, no restart
+- Custom themes via JSON files in `~/.config/aiyo/themes/` - hot reload, no restart
 - Configurable keyboard shortcuts for chat, panels, and services
 - Font size, spacing, corner radius, and layout controls
 - Customizable project icons with upload and automatic favicon discovery

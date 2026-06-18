@@ -737,11 +737,11 @@ export const createSettingsHelpers = (dependencies) => {
       securityScopedBookmarks: bookmarks,
       pinnedDirectories: normalizeStringArray(settings.pinnedDirectories),
       typographySizes: sanitizeTypographySizesPartial(settings.typographySizes),
-      ...(process.env.OPENCHAMBER_RUNTIME === 'desktop'
+      ...(process.env.AIYO_RUNTIME === 'desktop'
         ? {
-            desktopLanAccessActive: process.env.OPENCHAMBER_DESKTOP_LAN_ACCESS_ACTIVE === 'true',
+            desktopLanAccessActive: process.env.AIYO_DESKTOP_LAN_ACCESS_ACTIVE === 'true',
             desktopLanAccessBlockedReason:
-              process.env.OPENCHAMBER_DESKTOP_LAN_ACCESS_BLOCKED_REASON === 'missing-password'
+              process.env.AIYO_DESKTOP_LAN_ACCESS_BLOCKED_REASON === 'missing-password'
                 ? 'missing-password'
                 : null,
           }

@@ -192,11 +192,11 @@ export const useOpenInAppsStore = create<OpenInAppsState>()((set, get) => ({
       applyInstalledApps(detail);
     };
 
-    window.addEventListener('openchamber:settings-synced', settingsHandler);
-    window.addEventListener('openchamber:app-ready', appReadyHandler);
-    window.addEventListener('openchamber:installed-apps-updated', updateHandler);
+    window.addEventListener('aiyo:settings-synced', settingsHandler);
+    window.addEventListener('aiyo:app-ready', appReadyHandler);
+    window.addEventListener('aiyo:installed-apps-updated', updateHandler);
 
-    const appReady = (window as unknown as { __openchamberAppReady?: boolean }).__openchamberAppReady;
+    const appReady = (window as unknown as { __aiyoAppReady?: boolean }).__aiyoAppReady;
     if (appReady) {
       void loadInstalledApps();
     }

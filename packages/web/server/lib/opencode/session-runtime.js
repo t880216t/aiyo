@@ -106,7 +106,7 @@ export const createSessionRuntime = ({ writeSseEvent, getNotificationClients, br
 
     if (typeof broadcastEvent === 'function') {
       broadcastEvent({
-        type: 'openchamber:session-activity',
+        type: 'aiyo:session-activity',
         properties: {
           sessionId,
           phase,
@@ -156,7 +156,7 @@ export const createSessionRuntime = ({ writeSseEvent, getNotificationClients, br
     if (!existing || existing.status !== status || attentionChanged) {
       const state = sessionStates.get(sessionId);
       const syntheticPayload = {
-        type: 'openchamber:session-status',
+        type: 'aiyo:session-status',
         properties: {
           sessionID: sessionId,
           status: state.status,
@@ -214,7 +214,7 @@ export const createSessionRuntime = ({ writeSseEvent, getNotificationClients, br
       state.needsAttention = false;
 
       const syntheticPayload = {
-        type: 'openchamber:session-status',
+        type: 'aiyo:session-status',
         properties: {
           sessionID: sessionId,
           status: state.status,

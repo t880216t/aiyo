@@ -1,20 +1,20 @@
 import { createConfiguredWebAPIs } from './runtimeConfig';
 import { registerSW } from 'virtual:pwa-register';
 
-import type { RuntimeAPIs } from '@openchamber/ui/lib/api/types';
-import { getStoredMobileLayoutPreference } from '@openchamber/ui/lib/mobileLayoutPreference';
-import type { HostedSurface } from '@openchamber/ui/lib/runtimeSurface';
-import '@openchamber/ui/index.css';
-import '@openchamber/ui/styles/fonts';
+import type { RuntimeAPIs } from '@aiyo/ui/lib/api/types';
+import { getStoredMobileLayoutPreference } from '@aiyo/ui/lib/mobileLayoutPreference';
+import type { HostedSurface } from '@aiyo/ui/lib/runtimeSurface';
+import '@aiyo/ui/index.css';
+import '@aiyo/ui/styles/fonts';
 
 declare global {
   interface Window {
-    __OPENCHAMBER_RUNTIME_APIS__?: RuntimeAPIs;
-    __OPENCHAMBER_SURFACE__?: HostedSurface;
+    __AIYO_RUNTIME_APIS__?: RuntimeAPIs;
+    __AIYO_SURFACE__?: HostedSurface;
   }
 }
 
-window.__OPENCHAMBER_RUNTIME_APIS__ = createConfiguredWebAPIs();
+window.__AIYO_RUNTIME_APIS__ = createConfiguredWebAPIs();
 
 const isCoarsePointer = (): boolean => {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -37,7 +37,7 @@ const detectHostedSurface = (): HostedSurface => {
 };
 
 const hostedSurface = detectHostedSurface();
-window.__OPENCHAMBER_SURFACE__ = hostedSurface;
+window.__AIYO_SURFACE__ = hostedSurface;
 
 type PrerenderingDocument = Document & {
   prerendering?: boolean;
@@ -105,12 +105,12 @@ const unregisterDevelopmentServiceWorkers = (): void => {
 };
 
 if (hostedSurface === 'mobile') {
-  void import('@openchamber/ui/apps/renderMobileApp')
+  void import('@aiyo/ui/apps/renderMobileApp')
     .then(({ renderMobileApp }) => {
-      renderMobileApp(window.__OPENCHAMBER_RUNTIME_APIS__ ?? createConfiguredWebAPIs());
+      renderMobileApp(window.__AIYO_RUNTIME_APIS__ ?? createConfiguredWebAPIs());
     });
 } else {
-  void import('@openchamber/ui/main');
+  void import('@aiyo/ui/main');
 }
 
 if (import.meta.env.PROD) {

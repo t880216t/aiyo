@@ -2,7 +2,7 @@ export type Locale = 'en' | 'fr' | 'zh-CN' | 'zh-TW' | 'uk' | 'es' | 'pt-BR' | '
 
 export const LOCALES = ['en', 'fr', 'zh-CN', 'zh-TW', 'uk', 'es', 'pt-BR', 'ko', 'pl'] as const satisfies readonly Locale[];
 
-export const DEFAULT_LOCALE: Locale = 'en';
+export const DEFAULT_LOCALE: Locale = 'zh-CN';
 
 export const LOCALE_LABEL_KEYS: Record<Locale, 'common.language.english' | 'common.language.french' | 'common.language.simplifiedChinese' | 'common.language.traditionalChinese' | 'common.language.ukrainian' | 'common.language.spanish' | 'common.language.brazilianPortuguese' | 'common.language.korean' | 'common.language.polish'> = {
   en: 'common.language.english',
@@ -16,7 +16,7 @@ export const LOCALE_LABEL_KEYS: Record<Locale, 'common.language.english' | 'comm
   pl: 'common.language.polish',
 };
 
-export const LOCALE_STORAGE_KEY = 'openchamber.i18n.v1';
+export const LOCALE_STORAGE_KEY = 'aiyo.i18n.v1';
 
 type StoredLocale = {
   locale?: unknown;
