@@ -96,7 +96,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --no-frozen-lockfile
 
       - name: Build packages
         run: bun run build
@@ -148,7 +148,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --no-frozen-lockfile
 
       - name: Install Apple Certificate
         env:
@@ -277,7 +277,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --no-frozen-lockfile
 
       - name: Build web assets
         working-directory: packages/electron
