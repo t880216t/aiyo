@@ -25,6 +25,8 @@ const result = await Bun.build({
   format: 'esm',
   external: [
     'electron',
+    'electron-log',
+    'electron-context-menu',
     '@aiyo/web',
     '@aiyo/web/*',
     'bun-pty',
