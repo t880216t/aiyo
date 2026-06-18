@@ -74,11 +74,13 @@ jobs:
           draft: true
           generate_release_notes: false
           body_path: artifacts/release-notes.md
-          name: OpenChamber v${{ steps.get_version.outputs.version }}
+          name: AiYo v${{ steps.get_version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # DISABLED: publish-npm (Windows-only focus phase)
   publish-npm:
+    if: false
     needs: create-release
     runs-on: ubuntu-latest
     steps:
@@ -119,7 +121,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+  # DISABLED: build-desktop-electron-macos (Windows-only focus phase)
   build-desktop-electron-macos:
+    if: false
     needs: create-release
     runs-on: macos-26
     strategy:
@@ -314,7 +318,9 @@ jobs:
           path: packages/electron/dist/latest.yml
           retention-days: 1
 
+  # DISABLED: combine-electron-manifests (Windows-only focus phase)
   combine-electron-manifests:
+    if: false
     needs: [create-release, build-desktop-electron-macos]
     runs-on: ubuntu-latest
     steps:
@@ -335,7 +341,7 @@ jobs:
         env:
           LATEST_YML_DIR: ${{ github.workspace }}/artifacts
           GH_REPO: ${{ github.repository }}
-          OPENCHAMBER_VERSION: ${{ needs.create-release.outputs.version }}
+          AIYO_VERSION: ${{ needs.create-release.outputs.version }}
         run: node packages/electron/scripts/finalize-latest-yml.mjs
 
       - name: Upload combined manifests to release
@@ -348,11 +354,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   finalize-release:
-    needs: [create-release, build-desktop-electron-macos, build-desktop-electron-windows, publish-npm, combine-electron-manifests]
+    needs: [create-release, build-desktop-electron-windows]
     runs-on: ubuntu-latest
     env:
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      DISCORD_UPDATE_ROLE_ID: ${{ secrets.DISCORD_UPDATE_ROLE_ID }}
+      # DISCORD_WEBHOOK_URL + DISCORD_UPDATE_ROLE_ID removed — Windows-only focus phase
     steps:
       - name: Publish release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
@@ -362,95 +367,60 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send release to Discord
-        if: ${{ env.DISCORD_WEBHOOK_URL != '' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.create-release.outputs.version }}
-          REPOSITORY: ${{ github.repository }}
-          UPDATE_ROLE_ID: ${{ env.DISCORD_UPDATE_ROLE_ID }}
-        run: |
-          node - <<'NODE'
-          (async () => {
-            const tag = `v${process.env.VERSION}`;
-            const repo = process.env.REPOSITORY;
-            const rawRoleId = (process.env.UPDATE_ROLE_ID || '').trim();
-            const updateRoleId = /^\d+$/.test(rawRoleId) ? rawRoleId : '';
+      # DISABLED: Send release to Discord (Windows-only focus phase)
+      # - name: Send release to Discord
+      #   if: ${{ env.DISCORD_WEBHOOK_URL != '' }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     VERSION: ${{ needs.create-release.outputs.version }}
+      #     REPOSITORY: ${{ github.repository }}
+      #     UPDATE_ROLE_ID: ${{ env.DISCORD_UPDATE_ROLE_ID }}
+      #   run: |
+      #     node - <<'NODE'
+      #     (async () => {
+      #       const tag = `v${process.env.VERSION}`;
+      #       const repo = process.env.REPOSITORY;
+      #       const rawRoleId = (process.env.UPDATE_ROLE_ID || '').trim();
+      #       const updateRoleId = /^\d+$/.test(rawRoleId) ? rawRoleId : '';
+      #       const releaseRes = await fetch(`https://api.github.com/repos/${repo}/releases/tags/${tag}`, {
+      #         headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' },
+      #       });
+      #       if (!releaseRes.ok) { const body = await releaseRes.text(); throw new Error(`Failed to fetch release ${tag}: ${releaseRes.status} ${body}`); }
+      #       const release = await releaseRes.json();
+      #       const description = (release.body || `AiYo ${tag} released.`).slice(0, 4096);
+      #       const mention = updateRoleId ? `<@&${updateRoleId}>` : '';
+      #       const payload = {
+      #         username: 'AiYo Releases',
+      #         ...(mention ? { content: mention } : {}),
+      #         ...(updateRoleId ? { allowed_mentions: { roles: [updateRoleId] } } : {}),
+      #         embeds: [{ title: release.name || `AiYo ${tag}`, url: release.html_url, description, color: 2105893, footer: { text: 'AiYo Changelog' } }],
+      #       };
+      #       const discordRes = await fetch(process.env.DISCORD_WEBHOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      #       if (!discordRes.ok) { const body = await discordRes.text(); throw new Error(`Failed to send Discord release: ${discordRes.status} ${body}`); }
+      #     })().catch((error) => { console.error(error); process.exit(1); });
+      #     NODE
 
-            const releaseRes = await fetch(`https://api.github.com/repos/${repo}/releases/tags/${tag}`, {
-              headers: {
-                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-                Accept: 'application/vnd.github+json',
-              },
-            });
-
-            if (!releaseRes.ok) {
-              const body = await releaseRes.text();
-              throw new Error(`Failed to fetch release ${tag}: ${releaseRes.status} ${body}`);
-            }
-
-            const release = await releaseRes.json();
-            const description = (release.body || `OpenChamber ${tag} released.`).slice(0, 4096);
-            const mention = updateRoleId ? `<@&${updateRoleId}>` : '';
-
-            const payload = {
-              username: 'OpenChamber Releases',
-              ...(mention ? { content: mention } : {}),
-              ...(updateRoleId
-                ? {
-                    allowed_mentions: {
-                      roles: [updateRoleId],
-                    },
-                  }
-                : {}),
-              embeds: [
-                {
-                  title: release.name || `OpenChamber ${tag}`,
-                  url: release.html_url,
-                  description,
-                  color: 2105893,
-                  footer: { text: 'OpenChamber Changelog' },
-                },
-              ],
-            };
-
-            const discordRes = await fetch(process.env.DISCORD_WEBHOOK_URL, {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(payload),
-            });
-
-            if (!discordRes.ok) {
-              const body = await discordRes.text();
-              throw new Error(`Failed to send Discord release: ${discordRes.status} ${body}`);
-            }
-          })().catch((error) => {
-            console.error(error);
-            process.exit(1);
-          });
-          NODE
-
-      - name: Trigger openchamber-website site refresh (optional)
-        env:
-          WEBSITE_REPO: openchamber/openchamber-website
-          WEBSITE_TOKEN: ${{ secrets.OPENCHAMBER_WEBSITE_REPO_TOKEN }}
-          VERSION: ${{ needs.create-release.outputs.version }}
-        run: |
-          if [ -z "$WEBSITE_TOKEN" ]; then
-            echo "OPENCHAMBER_WEBSITE_REPO_TOKEN not set; skip site refresh dispatch."
-            exit 0
-          fi
-
-          curl --fail-with-body -sS -X POST \
-            -H "Authorization: Bearer $WEBSITE_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/$WEBSITE_REPO/dispatches \
-            -d @- <<JSON
-          {
-            "event_type": "site_refresh_requested",
-            "client_payload": {
-              "source_repo": "${{ github.repository }}",
-              "release_tag": "v$VERSION"
-            }
-          }
-          JSON
+      # DISABLED: Trigger aiyo-website site refresh (Windows-only focus phase)
+      # - name: Trigger aiyo-website site refresh (optional)
+      #   env:
+      #     WEBSITE_REPO: t880216t/aiyo-website
+      #     WEBSITE_TOKEN: ${{ secrets.AIYO_WEBSITE_REPO_TOKEN }}
+      #     VERSION: ${{ needs.create-release.outputs.version }}
+      #   run: |
+      #     if [ -z "$WEBSITE_TOKEN" ]; then
+      #       echo "AIYO_WEBSITE_REPO_TOKEN not set; skip site refresh dispatch."
+      #       exit 0
+      #     fi
+      #     curl --fail-with-body -sS -X POST \
+      #       -H "Authorization: Bearer $WEBSITE_TOKEN" \
+      #       -H "Accept: application/vnd.github+json" \
+      #       https://api.github.com/repos/$WEBSITE_REPO/dispatches \
+      #       -d @- <<JSON
+      #     {
+      #       "event_type": "site_refresh_requested",
+      #       "client_payload": {
+      #         "source_repo": "${{ github.repository }}",
+      #         "release_tag": "v$VERSION"
+      #       }
+      #     }
+      #     JSON

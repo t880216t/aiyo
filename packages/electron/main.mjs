@@ -13,18 +13,18 @@ import updaterPkg from 'electron-updater';
 import { ElectronSshManager } from './ssh-manager.mjs';
 import { createTrayController } from './tray.mjs';
 import { resolveManagedOpenCodeCwd } from './opencode-cwd.mjs';
-import { mintOutsideFileGrant } from '@openchamber/web/server/lib/fs/routes.js';
+import { mintOutsideFileGrant } from '@aiyo/web/server/lib/fs/routes.js';
 
 const execFileAsync = promisify(execFile);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const isDev = process.env.OPENCHAMBER_ELECTRON_DEV === '1' || !app.isPackaged;
+const isDev = process.env.AIYO_ELECTRON_DEV === '1' || !app.isPackaged;
 
-const DEEP_LINK_PROTOCOL = 'openchamber';
-const UI_PROTOCOL = 'openchamber-ui';
-const PACKAGED_APP_USER_MODEL_ID = 'dev.openchamber.desktop';
-const DEV_APP_USER_MODEL_ID = 'dev.openchamber.desktop.dev';
+const DEEP_LINK_PROTOCOL = 'aiyo';
+const UI_PROTOCOL = 'aiyo-ui';
+const PACKAGED_APP_USER_MODEL_ID = 'dev.aiyo.desktop';
+const DEV_APP_USER_MODEL_ID = 'dev.aiyo.desktop.dev';
 const APP_USER_MODEL_ID = app.isPackaged ? PACKAGED_APP_USER_MODEL_ID : DEV_APP_USER_MODEL_ID;
 const BACKGROUND_START_ARG = '--background';
 
@@ -46,10 +46,10 @@ const shouldStartInBackground = (loginItemSettings = readLoginItemSettings()) =>
 };
 
 // Set the product name early so electron-log derives its log directory as
-// ~/Library/Logs/OpenChamber/ (not ~/Library/Logs/@openchamber/electron/).
-app.setName('OpenChamber');
+// ~/Library/Logs/AiYo/ (not ~/Library/Logs/@aiyo/electron/).
+app.setName('AiYo');
 if (isDev) {
-  app.setPath('userData', path.join(app.getPath('appData'), 'OpenChamber Dev'));
+  app.setPath('userData', path.join(app.getPath('appData'), 'AiYo Dev'));
 }
 app.setAppUserModelId(APP_USER_MODEL_ID);
 app.commandLine.appendSwitch('proxy-bypass-list', '<-loopback>');
@@ -83,7 +83,7 @@ log.transports.console.level = isDev ? 'debug' : 'warn';
 
 // The in-process web server runs in this same Node process and uses plain
 // `console.log/warn/error`. Without piping console through electron-log,
-// that output never lands in ~/Library/Logs/OpenChamber/main.log and we
+// that output never lands in ~/Library/Logs/AiYo/main.log and we
 // can't diagnose issues (e.g. OpenCode lifecycle, SSE disconnects) after
 // the fact. Route all console calls through electron-log so server-side
 // diagnostics are persisted.
@@ -126,13 +126,13 @@ const readAppMetadata = () => {
     try {
       const raw = fs.readFileSync(candidate, 'utf8');
       const parsed = JSON.parse(raw);
-      if (parsed?.name === '@openchamber/electron' && typeof parsed.version === 'string') {
+      if (parsed?.name === '@aiyo/electron' && typeof parsed.version === 'string') {
         return { name: parsed.name, version: parsed.version };
       }
     } catch {
     }
   }
-  return { name: '@openchamber/electron', version: app.getVersion() };
+  return { name: '@aiyo/electron', version: app.getVersion() };
 };
 
 const APP_METADATA = readAppMetadata();
@@ -154,10 +154,9 @@ const LOCAL_HOST_ID = 'local';
 const LOCAL_DESKTOP_CLIENT_KIND = 'desktop-local';
 const LOCAL_DESKTOP_CLIENT_DEDUPE_KEY = 'desktop-local';
 const ENV_OVERRIDE_HOST_ID = '__env';
-const CHANGELOG_URL = 'https://raw.githubusercontent.com/openchamber/openchamber/main/CHANGELOG.md';
-const GITHUB_BUG_REPORT_URL = 'https://github.com/openchamber/openchamber/issues/new?template=bug_report.yml';
-const GITHUB_FEATURE_REQUEST_URL = 'https://github.com/openchamber/openchamber/issues/new?template=feature_request.yml';
-const DISCORD_INVITE_URL = 'https://discord.gg/ZYRSdnwwKA';
+const CHANGELOG_URL = 'https://raw.githubusercontent.com/t880216t/aiyo/main/CHANGELOG.md';
+const GITHUB_BUG_REPORT_URL = 'https://github.com/t880216t/aiyo/issues/new?template=bug_report.yml';
+const GITHUB_FEATURE_REQUEST_URL = 'https://github.com/t880216t/aiyo/issues/new?template=feature_request.yml';
 const INSTALLED_APPS_CACHE_TTL_SECS = 60 * 60 * 24;
 const INSTALLED_APPS_CACHE_FILE = 'discovered-apps.json';
 const OPENCODE_SHUTDOWN_GRACE_MS = 100;
@@ -220,7 +219,7 @@ const quitConfirmationMessage = () => {
   if (reasons.length === 0) {
     return 'Background processes (sidecar, SSH sessions) will be stopped.';
   }
-  return `OpenChamber detected ${reasons.join(', ')}. Quitting now will stop sidecar/background processes and may interrupt pending work.`;
+  return `AiYo detected ${reasons.join(', ')}. Quitting now will stop sidecar/background processes and may interrupt pending work.`;
 };
 
 const shutdownBackgroundServices = () => {
@@ -311,8 +310,8 @@ const requestQuitWithConfirmation = async () => {
   try {
     const result = await dialog.showMessageBox({
       type: 'warning',
-      title: 'Quit OpenChamber?',
-      message: 'Quit OpenChamber?',
+      title: 'Quit AiYo?',
+      message: 'Quit AiYo?',
       detail: quitConfirmationMessage(),
       buttons: ['Quit', 'Cancel'],
       defaultId: 1,
@@ -350,8 +349,8 @@ const refreshQuitRiskFlags = async () => {
   const base = typeof state.sidecarUrl === 'string' ? state.sidecarUrl.trim().replace(/\/$/, '') : '';
   if (!base) return;
 
-  const scheduledUrl = `${base}/api/openchamber/scheduled-tasks/status`;
-  const tunnelUrl = `${base}/api/openchamber/tunnel/status`;
+  const scheduledUrl = `${base}/api/aiyo/scheduled-tasks/status`;
+  const tunnelUrl = `${base}/api/aiyo/tunnel/status`;
 
   const fetchJson = async (url) => {
     try {
@@ -380,10 +379,10 @@ const refreshQuitRiskFlags = async () => {
 };
 
 const settingsFilePath = () => {
-  if (typeof process.env.OPENCHAMBER_DATA_DIR === 'string' && process.env.OPENCHAMBER_DATA_DIR.trim()) {
-    return path.join(process.env.OPENCHAMBER_DATA_DIR.trim(), 'settings.json');
+  if (typeof process.env.AIYO_DATA_DIR === 'string' && process.env.AIYO_DATA_DIR.trim()) {
+    return path.join(process.env.AIYO_DATA_DIR.trim(), 'settings.json');
   }
-  return path.join(os.homedir(), '.config', 'openchamber', 'settings.json');
+  return path.join(os.homedir(), '.config', 'aiyo', 'settings.json');
 };
 
 const sshManager = new ElectronSshManager({
@@ -805,8 +804,8 @@ const buildLocalUrl = (port) => `http://127.0.0.1:${port}`;
 const resourceRoot = () => isDev ? path.join(__dirname, 'resources') : process.resourcesPath;
 const resolveWebDistDir = () => path.join(resourceRoot(), 'web-dist');
 const shouldUsePackagedUi = () => {
-  if (process.env.OPENCHAMBER_ELECTRON_LOAD_SERVER_UI === '1') return false;
-  if (process.env.OPENCHAMBER_ELECTRON_USE_BUNDLED_UI === '1') return true;
+  if (process.env.AIYO_ELECTRON_LOAD_SERVER_UI === '1') return false;
+  if (process.env.AIYO_ELECTRON_USE_BUNDLED_UI === '1') return true;
   return app.isPackaged;
 };
 const packagedUiOrigin = () => `${UI_PROTOCOL}://app`;
@@ -815,7 +814,7 @@ const buildPackagedUiUrl = (pathname = '/index.html') => new URL(pathname, `${pa
 const injectRuntimeConfigIntoHtml = (html) => {
   const apiBaseUrl = state.apiBaseUrl || state.sidecarUrl || '';
   const localOrigin = state.localOrigin || state.sidecarUrl || '';
-  const initScript = `<script>if(window.__OPENCHAMBER_LOCAL_ORIGIN__===undefined){window.__OPENCHAMBER_LOCAL_ORIGIN__=${JSON.stringify(localOrigin)};}if(window.__OPENCHAMBER_API_BASE_URL__===undefined){window.__OPENCHAMBER_API_BASE_URL__=${JSON.stringify(apiBaseUrl)};}if(window.__OPENCHAMBER_CLIENT_TOKEN__===undefined&&${JSON.stringify(state.clientToken || '')}){window.__OPENCHAMBER_CLIENT_TOKEN__=${JSON.stringify(state.clientToken || '')};}</script>`;
+  const initScript = `<script>if(window.__AIYO_LOCAL_ORIGIN__===undefined){window.__AIYO_LOCAL_ORIGIN__=${JSON.stringify(localOrigin)};}if(window.__AIYO_API_BASE_URL__===undefined){window.__AIYO_API_BASE_URL__=${JSON.stringify(apiBaseUrl)};}if(window.__AIYO_CLIENT_TOKEN__===undefined&&${JSON.stringify(state.clientToken || '')}){window.__AIYO_CLIENT_TOKEN__=${JSON.stringify(state.clientToken || '')};}</script>`;
   if (html.includes('<head>')) return html.replace('<head>', `<head>${initScript}`);
   if (html.includes('</head>')) return html.replace('</head>', `${initScript}</head>`);
   return `${initScript}${html}`;
@@ -942,7 +941,7 @@ const maybeShowNativeNotification = (rawInput) => {
 
   const title = typeof payload.title === 'string' && payload.title.trim()
     ? payload.title.trim()
-    : 'OpenChamber';
+    : 'AiYo';
   const body = typeof payload.body === 'string' ? payload.body : '';
   const sessionId = typeof payload.sessionId === 'string' && payload.sessionId.trim()
     ? payload.sessionId.trim()
@@ -964,7 +963,7 @@ const maybeShowNativeNotification = (rawInput) => {
   notification.on('click', () => {
     focusForegroundWindow();
     if (sessionId) {
-      emitToAllWindows('openchamber:open-session', { sessionId, directory });
+      emitToAllWindows('aiyo:open-session', { sessionId, directory });
     }
     release();
   });
@@ -1065,7 +1064,7 @@ const loadShellEnv = () => {
 };
 
 // Merge the user's login-shell env (PATH, etc.) into this process before we
-import { pathLooksUserConfigured, mergePathValues } from '@openchamber/web/server/lib/opencode/path-utils.js';
+import { pathLooksUserConfigured, mergePathValues } from '@aiyo/web/server/lib/opencode/path-utils.js';
 
 // import/start the server in-process. The server and its children (opencode
 // CLI, git, etc.) inherit process.env directly now — there is no sidecar
@@ -1124,36 +1123,36 @@ const spawnLocalServer = async () => {
     chosenPort = await pickUnusedPort(bindHost);
   }
 
-  // The server module reads ENV_DESKTOP_NOTIFY / OPENCHAMBER_DIST_DIR /
-  // OPENCHAMBER_RUNTIME at import time (top-level const), so these must be
+  // The server module reads ENV_DESKTOP_NOTIFY / AIYO_DIST_DIR /
+  // AIYO_RUNTIME at import time (top-level const), so these must be
   // set before the first import. After this point, the same env is used by
   // both the Electron main and the server running inside it.
-  process.env.OPENCHAMBER_HOST = bindHost;
-  process.env.OPENCHAMBER_DESKTOP_LAN_ACCESS_ACTIVE = effectiveLanAccessEnabled ? 'true' : 'false';
+  process.env.AIYO_HOST = bindHost;
+  process.env.AIYO_DESKTOP_LAN_ACCESS_ACTIVE = effectiveLanAccessEnabled ? 'true' : 'false';
   if (lanAccessBlockedByMissingPassword) {
-    process.env.OPENCHAMBER_DESKTOP_LAN_ACCESS_BLOCKED_REASON = 'missing-password';
+    process.env.AIYO_DESKTOP_LAN_ACCESS_BLOCKED_REASON = 'missing-password';
   } else {
-    delete process.env.OPENCHAMBER_DESKTOP_LAN_ACCESS_BLOCKED_REASON;
+    delete process.env.AIYO_DESKTOP_LAN_ACCESS_BLOCKED_REASON;
   }
-  process.env.OPENCHAMBER_DIST_DIR = resolveWebDistDir();
-  process.env.OPENCHAMBER_RUNTIME = 'desktop';
+  process.env.AIYO_DIST_DIR = resolveWebDistDir();
+  process.env.AIYO_RUNTIME = 'desktop';
   // OpenCode uses process cwd as a fallback directory; app userData would make
   // packaged desktop look like a separate empty workspace.
-  process.env.OPENCHAMBER_OPENCODE_CWD = resolveManagedOpenCodeCwd({
+  process.env.AIYO_OPENCODE_CWD = resolveManagedOpenCodeCwd({
     env: process.env,
     homedir: () => os.homedir(),
   });
-  process.env.OPENCHAMBER_DESKTOP_NOTIFY = 'true';
+  process.env.AIYO_DESKTOP_NOTIFY = 'true';
   if (desktopUiPassword) {
-    process.env.OPENCHAMBER_UI_PASSWORD = desktopUiPassword;
+    process.env.AIYO_UI_PASSWORD = desktopUiPassword;
   } else {
-    delete process.env.OPENCHAMBER_UI_PASSWORD;
+    delete process.env.AIYO_UI_PASSWORD;
   }
-  process.env.OPENCHAMBER_SKIP_API_COMPRESSION = process.env.OPENCHAMBER_SKIP_API_COMPRESSION || 'true';
+  process.env.AIYO_SKIP_API_COMPRESSION = process.env.AIYO_SKIP_API_COMPRESSION || 'true';
   process.env.NO_PROXY = process.env.NO_PROXY || 'localhost,127.0.0.1';
   process.env.no_proxy = process.env.no_proxy || 'localhost,127.0.0.1';
 
-  const { startWebUiServer } = await import('@openchamber/web/server/index.js');
+  const { startWebUiServer } = await import('@aiyo/web/server/index.js');
 
   const handle = await startWebUiServer({
     port: chosenPort,
@@ -1252,7 +1251,7 @@ Stop-ProcessTree $targetPid $true
     'if [ "$pid" -gt 0 ] 2>/dev/null; then kill -KILL "-$pid" 2>/dev/null; kill -KILL "$pid" 2>/dev/null; fi',
     'if [ "$port" -gt 0 ] 2>/dev/null && command -v lsof >/dev/null 2>&1; then for target in $(lsof -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null; lsof -ti ":$port" 2>/dev/null); do [ "$target" = "$$" ] || kill -KILL "$target" 2>/dev/null; done; fi',
   ].join('; ');
-  const child = spawn('/bin/sh', ['-c', script, 'openchamber-opencode-killer', normalizedPid, normalizedPort, String(OPENCODE_SHUTDOWN_GRACE_MS / 1000)], {
+  const child = spawn('/bin/sh', ['-c', script, 'aiyo-opencode-killer', normalizedPid, normalizedPort, String(OPENCODE_SHUTDOWN_GRACE_MS / 1000)], {
     detached: true,
     stdio: 'ignore',
     windowsHide: true,
@@ -1293,7 +1292,7 @@ const buildInitScript = (localOrigin, bootOutcome, apiBaseUrl = '', clientToken 
   const outcome = JSON.stringify(bootOutcome ?? null);
   return [
     '(function(){',
-    `try{var __oc_local=${local};var __oc_api=${apiBase};var __oc_packaged=${packagedOrigin};var __oc_origin=window.location&&window.location.origin||'';var __oc_is_packaged=__oc_origin===__oc_packaged;var __oc_is_local=__oc_local&&__oc_origin===new URL(__oc_local).origin;window.__OPENCHAMBER_MACOS_MAJOR__=${macVersion};window.__OPENCHAMBER_LOCAL_ORIGIN__=__oc_local;window.__OPENCHAMBER_API_BASE_URL__=__oc_api;if(__oc_is_local||__oc_is_packaged){window.__OPENCHAMBER_HOME__=${home};}if((__oc_is_local||__oc_is_packaged)&&${token}){window.__OPENCHAMBER_CLIENT_TOKEN__=${token};}var __oc_bo=${outcome};if(__oc_bo){window.__OPENCHAMBER_DESKTOP_BOOT_OUTCOME__=__oc_bo;}}catch(_e){}`,
+    `try{var __oc_local=${local};var __oc_api=${apiBase};var __oc_packaged=${packagedOrigin};var __oc_origin=window.location&&window.location.origin||'';var __oc_is_packaged=__oc_origin===__oc_packaged;var __oc_is_local=__oc_local&&__oc_origin===new URL(__oc_local).origin;window.__AIYO_MACOS_MAJOR__=${macVersion};window.__AIYO_LOCAL_ORIGIN__=__oc_local;window.__AIYO_API_BASE_URL__=__oc_api;if(__oc_is_local||__oc_is_packaged){window.__AIYO_HOME__=${home};}if((__oc_is_local||__oc_is_packaged)&&${token}){window.__AIYO_CLIENT_TOKEN__=${token};}var __oc_bo=${outcome};if(__oc_bo){window.__AIYO_DESKTOP_BOOT_OUTCOME__=__oc_bo;}}catch(_e){}`,
     '}())',
   ].join('');
 };
@@ -1388,7 +1387,7 @@ const buildStartupSplashHtml = () => {
   </head>
   <body>
     <div class="stack">
-      <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenChamber loading icon">
+      <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AiYo loading icon">
         <path d="M50 50 L8.432 26 L8.432 74 L50 98 Z" fill="var(--splash-face-fill)" stroke="var(--splash-stroke)" stroke-width="2" stroke-linejoin="round"/>
         <path d="M50 50 L39.608 44 L39.608 56 L50 62 Z" fill="var(--splash-cell-fill)" opacity="0.2"/>
         <path d="M39.608 44 L29.216 38 L29.216 50 L39.608 56 Z" fill="var(--splash-cell-fill)" opacity="0.45"/>
@@ -1489,7 +1488,7 @@ const loginRemoteAndIssueClientToken = async ({ url, password, trustDevice }) =>
       password: candidatePassword,
       trustDevice: trustDevice === true,
       issueClientToken: true,
-      clientLabel: 'OpenChamber Desktop',
+      clientLabel: 'AiYo Desktop',
       ...(isLocalRuntimeUrl(baseUrl) ? {
         clientKind: LOCAL_DESKTOP_CLIENT_KIND,
         dedupeKey: LOCAL_DESKTOP_CLIENT_DEDUPE_KEY,
@@ -1519,7 +1518,7 @@ const loginRemoteAndIssueClientToken = async ({ url, password, trustDevice }) =>
       Cookie: cookie,
     },
     body: JSON.stringify({
-      label: 'OpenChamber Desktop',
+      label: 'AiYo Desktop',
       ...(isLocalRuntimeUrl(baseUrl) ? {
         clientKind: LOCAL_DESKTOP_CLIENT_KIND,
         dedupeKey: LOCAL_DESKTOP_CLIENT_DEDUPE_KEY,
@@ -1536,7 +1535,7 @@ const loginRemoteAndIssueClientToken = async ({ url, password, trustDevice }) =>
 
 const emitToWindow = (browserWindow, event, detail) => {
   if (!browserWindow || browserWindow.isDestroyed()) return;
-  browserWindow.webContents.send('openchamber:emit', { event, detail });
+  browserWindow.webContents.send('aiyo:emit', { event, detail });
 };
 
 const emitToAllWindows = (event, detail) => {
@@ -1561,7 +1560,7 @@ const applyMacVibrancy = (browserWindow) => {
 
 const setMacVibrancyReady = (browserWindow, ready) => {
   if (process.platform !== 'darwin' || !browserWindow || browserWindow.isDestroyed()) return;
-  emitToWindow(browserWindow, 'openchamber:vibrancy-ready', { ready });
+  emitToWindow(browserWindow, 'aiyo:vibrancy-ready', { ready });
 };
 
 const scheduleMacVibrancyReady = (browserWindow, delayMs = 160) => {
@@ -1697,7 +1696,7 @@ const confirmConnectDeepLink = async (payload) => {
   }
   const options = {
     type: 'warning',
-    title: 'Connect to OpenChamber server?',
+    title: 'Connect to AiYo server?',
     message: `Connect to "${payload.label}"?`,
     detail:
       `This will add ${payload.serverUrl} as a remote instance and route this app's activity ` +
@@ -1738,11 +1737,11 @@ const dispatchDeepLink = (link) => {
     return;
   }
   if (link.type === 'session' && link.value) {
-    emitToAllWindows('openchamber:open-session', { sessionId: link.value });
+    emitToAllWindows('aiyo:open-session', { sessionId: link.value });
     return;
   }
   if (link.type === 'project' && link.value) {
-    emitToAllWindows('openchamber:open-project', { projectPath: link.value });
+    emitToAllWindows('aiyo:open-project', { projectPath: link.value });
     return;
   }
   if (link.type === 'host' && link.value) {
@@ -1799,8 +1798,8 @@ const getMenuTargetWindow = () => {
 
 const dispatchMenuAction = (action) => {
   const target = getMenuTargetWindow();
-  emitToWindow(target, 'openchamber:menu-action', action);
-  dispatchDomEventToWindow(target, 'openchamber:menu-action', action);
+  emitToWindow(target, 'aiyo:menu-action', action);
+  dispatchDomEventToWindow(target, 'aiyo:menu-action', action);
 };
 
 // Mini-chat draft windows are not deduplicated, so this must reach the renderer
@@ -1808,13 +1807,13 @@ const dispatchMenuAction = (action) => {
 // resolves the active directory/project and opens the window.
 const dispatchOpenMiniChat = (browserWindow) => {
   const target = browserWindow && !browserWindow.isDestroyed() ? browserWindow : getMenuTargetWindow();
-  if (target) emitToWindow(target, 'openchamber:open-mini-chat');
+  if (target) emitToWindow(target, 'aiyo:open-mini-chat');
 };
 
 const dispatchCheckForUpdates = () => {
-  emitToAllWindows('openchamber:check-for-updates');
+  emitToAllWindows('aiyo:check-for-updates');
   for (const browserWindow of BrowserWindow.getAllWindows()) {
-    dispatchDomEventToWindow(browserWindow, 'openchamber:check-for-updates');
+    dispatchDomEventToWindow(browserWindow, 'aiyo:check-for-updates');
   }
 };
 
@@ -1887,7 +1886,7 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
   const autoHidesNativeMenuBar = process.platform !== 'darwin';
   const windowIconPath = getWindowIconPath();
   const options = {
-    title: 'OpenChamber',
+    title: 'AiYo',
     ...(Number.isFinite(restoredBounds?.x) && Number.isFinite(restoredBounds?.y)
       ? { x: restoredBounds.x, y: restoredBounds.y }
       : {}),
@@ -1911,13 +1910,13 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
     trafficLightPosition: process.platform === 'darwin' ? { x: 16, y: 17 } : undefined,
     webPreferences: {
       additionalArguments: [
-        `--openchamber-local-origin=${desktopLocalOrigin}`,
-        `--openchamber-api-base-url=${desktopApiBaseUrl}`,
-        `--openchamber-client-token=${desktopClientToken}`,
-        `--openchamber-home=${desktopHome}`,
-        `--openchamber-macos-major=${desktopMacosMajor}`,
-        `--openchamber-mac-vibrancy=${useVibrancy ? '1' : '0'}`,
-        `--openchamber-boot-outcome=${JSON.stringify(state.bootOutcome || null)}`,
+        `--aiyo-local-origin=${desktopLocalOrigin}`,
+        `--aiyo-api-base-url=${desktopApiBaseUrl}`,
+        `--aiyo-client-token=${desktopClientToken}`,
+        `--aiyo-home=${desktopHome}`,
+        `--aiyo-macos-major=${desktopMacosMajor}`,
+        `--aiyo-mac-vibrancy=${useVibrancy ? '1' : '0'}`,
+        `--aiyo-boot-outcome=${JSON.stringify(state.bootOutcome || null)}`,
       ],
       preload: isDev ? path.join(__dirname, 'preload.mjs') : path.join(app.getAppPath(), 'preload.mjs'),
       backgroundThrottling: false,
@@ -1983,16 +1982,16 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
 
   browserWindow.on('resize', () => {
     if (process.platform === 'darwin') {
-      emitToWindow(browserWindow, 'openchamber:window-resized');
+      emitToWindow(browserWindow, 'aiyo:window-resized');
     }
     debounceWindowStatePersist(browserWindow, false);
   });
   browserWindow.on('maximize', () => {
-    emitToWindow(browserWindow, 'openchamber:window-maximized-changed', { maximized: true });
+    emitToWindow(browserWindow, 'aiyo:window-maximized-changed', { maximized: true });
     debounceWindowStatePersist(browserWindow, false);
   });
   browserWindow.on('unmaximize', () => {
-    emitToWindow(browserWindow, 'openchamber:window-maximized-changed', { maximized: false });
+    emitToWindow(browserWindow, 'aiyo:window-maximized-changed', { maximized: false });
     debounceWindowStatePersist(browserWindow, false);
   });
   browserWindow.on('move', () => {
@@ -2232,7 +2231,7 @@ const createMiniChatWindow = async ({ mode, sessionId = '', directory = '', proj
   // macOS vibrancy, on by default; users can disable it (Appearance settings).
   const useVibrancy = process.platform === 'darwin' && readSettingsRoot().desktopVibrancy !== false;
   const browserWindow = new BrowserWindow({
-    title: 'OpenChamber Mini Chat',
+    title: 'AiYo Mini Chat',
     width: MINI_CHAT_WINDOW_WIDTH,
     height: MINI_CHAT_WINDOW_HEIGHT,
     minWidth: MINI_CHAT_MIN_WINDOW_WIDTH,
@@ -2250,11 +2249,11 @@ const createMiniChatWindow = async ({ mode, sessionId = '', directory = '', proj
     trafficLightPosition: process.platform === 'darwin' ? { x: 16, y: 17 } : undefined,
     webPreferences: {
       additionalArguments: [
-        `--openchamber-local-origin=${desktopLocalOrigin}`,
-        `--openchamber-api-base-url=${desktopApiBaseUrl}`,
-        `--openchamber-client-token=${desktopClientToken}`,
-        `--openchamber-home=${desktopHome}`,
-        `--openchamber-macos-major=${desktopMacosMajor}`,
+        `--aiyo-local-origin=${desktopLocalOrigin}`,
+        `--aiyo-api-base-url=${desktopApiBaseUrl}`,
+        `--aiyo-client-token=${desktopClientToken}`,
+        `--aiyo-home=${desktopHome}`,
+        `--aiyo-macos-major=${desktopMacosMajor}`,
       ],
       preload: isDev ? path.join(__dirname, 'preload.mjs') : path.join(app.getAppPath(), 'preload.mjs'),
       backgroundThrottling: false,
@@ -2365,8 +2364,8 @@ const resolveMiniChatRuntimeConfig = (browserWindow, args = {}) => {
 };
 
 const resolveInitialUrl = async () => {
-  const hmrApiPort = process.env.OPENCHAMBER_HMR_API_PORT || '3901';
-  const hmrUiPort = process.env.OPENCHAMBER_HMR_UI_PORT || '5173';
+  const hmrApiPort = process.env.AIYO_HMR_API_PORT || '3901';
+  const hmrUiPort = process.env.AIYO_HMR_UI_PORT || '5173';
   const hmrApiUrl = `http://127.0.0.1:${hmrApiPort}`;
   const hmrUiUrl = `http://127.0.0.1:${hmrUiPort}`;
   const localUrl = isDev && await waitForHealth(hmrApiUrl, 5_000, 100)
@@ -2388,7 +2387,7 @@ const resolveInitialUrl = async () => {
   let clientToken = readDesktopLocalClientToken();
   let remoteProbe = null;
 
-  const envTarget = normalizeHostUrl(process.env.OPENCHAMBER_SERVER_URL || '');
+  const envTarget = normalizeHostUrl(process.env.AIYO_SERVER_URL || '');
   const config = readDesktopHostsConfig();
   if (envTarget) {
     apiBaseUrl = envTarget;
@@ -2438,7 +2437,7 @@ const compareSemver = (left, right) => {
 };
 
 const parseGithubRepo = () => {
-  return { owner: 'openchamber', repo: 'openchamber' };
+  return { owner: 't880216t', repo: 'aiyo' };
 };
 
 const setupAutoUpdater = () => {
@@ -2463,7 +2462,7 @@ const setupAutoUpdater = () => {
     const total = Number(progress.total || 0);
     const transferred = Number(progress.transferred || 0);
     setTaskbarProgress(total > 0 ? Math.max(0, Math.min(1, transferred / total)) : 0.01);
-    emitToAllWindows('openchamber:update-progress', mapUpdaterProgressEvent({
+    emitToAllWindows('aiyo:update-progress', mapUpdaterProgressEvent({
       event: 'Progress',
       data: {
         chunkLength: Math.max(0, Math.round(progress.bytesPerSecond || 0)),
@@ -2546,7 +2545,7 @@ const isAppBundleInstalled = async (appName) => Boolean(await resolveAppBundlePa
 const iconToDataUrl = async (iconPath, appName) => {
   if (!iconPath || !(await pathExists(iconPath))) return null;
   const safeName = String(appName || 'app').replace(/[^a-z0-9]/gi, '_');
-  const tempPath = path.join(os.tmpdir(), `openchamber-icon-${safeName}-${Date.now()}.png`);
+  const tempPath = path.join(os.tmpdir(), `aiyo-icon-${safeName}-${Date.now()}.png`);
   try {
     await execFileAsync('sips', ['-s', 'format', 'png', '-Z', '32', iconPath, '--out', tempPath], { stdio: 'ignore' });
   } catch {
@@ -3169,7 +3168,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
       if (!underHome && !underTmp) {
         throw new Error('File is outside the allowed workspace');
       }
-      const DENIED_SEGMENTS = ['.ssh', '.aws', '.gnupg', '.gpg', '.config/gh', '.config/openchamber/credentials'];
+      const DENIED_SEGMENTS = ['.ssh', '.aws', '.gnupg', '.gpg', '.config/gh', '.config/aiyo/credentials'];
       const relFromHome = underHome ? filePath.slice(home.length + 1) : '';
       const relNormalized = relFromHome.split(path.sep).join('/');
       if (DENIED_SEGMENTS.some((segment) => relNormalized === segment || relNormalized.startsWith(`${segment}/`))) {
@@ -3373,7 +3372,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
           : await buildInstalledApps(Array.isArray(args.apps) ? args.apps : []);
         await fsp.mkdir(path.dirname(cachePath), { recursive: true });
         await fsp.writeFile(cachePath, JSON.stringify({ updatedAt: now, apps }, null, 2));
-        emitToAllWindows('openchamber:installed-apps-updated', apps);
+        emitToAllWindows('aiyo:installed-apps-updated', apps);
       };
       if (process.platform !== 'darwin' && process.platform !== 'win32') {
         throw new Error('desktop_get_installed_apps is only supported on macOS and Windows');
@@ -3394,7 +3393,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
       const nextConfigInput = args.input || args.config || {};
       await writeDesktopHostsConfig(nextConfigInput);
       const updatedConfig = readDesktopHostsConfig();
-      const envTarget = normalizeHostUrl(process.env.OPENCHAMBER_SERVER_URL || '');
+      const envTarget = normalizeHostUrl(process.env.AIYO_SERVER_URL || '');
       if (Object.prototype.hasOwnProperty.call(nextConfigInput, 'localClientToken') && isLocalRuntimeUrl(state.apiBaseUrl || state.sidecarUrl || state.localOrigin || '')) {
         state.clientToken = readDesktopLocalClientToken();
       }
@@ -3507,7 +3506,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
         throw new Error('No pending update');
       }
       setTaskbarProgress(0.01);
-      emitToAllWindows('openchamber:update-progress', mapUpdaterProgressEvent({
+      emitToAllWindows('aiyo:update-progress', mapUpdaterProgressEvent({
         event: 'Started',
         data: {
           contentLength: null,
@@ -3537,7 +3536,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
             Promise.resolve(autoUpdater.downloadUpdate()).catch((error) => finish(reject, error));
           });
         }
-        emitToAllWindows('openchamber:update-progress', mapUpdaterProgressEvent({
+        emitToAllWindows('aiyo:update-progress', mapUpdaterProgressEvent({
           event: 'Finished',
           data: {},
         }));
@@ -3552,7 +3551,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
       if (applyUpdate && process.platform === 'darwin' && typeof app.isInApplicationsFolder === 'function') {
         try {
           if (!app.isInApplicationsFolder()) {
-            throw new Error('Desktop update requires OpenChamber.app to be installed in /Applications');
+            throw new Error('Desktop update requires AiYo.app to be installed in /Applications');
           }
         } catch (error) {
           log.warn('[electron] desktop_restart blocked', error);
@@ -3678,9 +3677,9 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
       state.mainWindow.show();
       state.mainWindow.focus();
       if (sessionId) {
-        emitToWindow(state.mainWindow, 'openchamber:open-session', { sessionId, directory });
+        emitToWindow(state.mainWindow, 'aiyo:open-session', { sessionId, directory });
       } else if (mode === 'draft') {
-        emitToWindow(state.mainWindow, 'openchamber:open-draft-session', { directory, projectId });
+        emitToWindow(state.mainWindow, 'aiyo:open-draft-session', { directory, projectId });
       }
       return { focused: true };
     }
@@ -3773,7 +3772,7 @@ const buildMacMenu = () => {
     {
       label: app.name,
       submenu: [
-        { label: 'About OpenChamber', click: () => dispatchAction('about') },
+        { label: 'About AiYo', click: () => dispatchAction('about') },
         {
           label: 'Check for Updates',
           click: () => dispatchCheckForUpdates(),
@@ -3861,7 +3860,6 @@ const buildMacMenu = () => {
         { label: 'Report a Bug', click: () => shell.openExternal(GITHUB_BUG_REPORT_URL) },
         { label: 'Request a Feature', click: () => shell.openExternal(GITHUB_FEATURE_REQUEST_URL) },
         { type: 'separator' },
-        { label: 'Join Discord', click: () => shell.openExternal(DISCORD_INVITE_URL) },
       ],
     },
   ]);
@@ -3876,9 +3874,9 @@ const buildAutoHiddenMenu = () => {
 
   return Menu.buildFromTemplate([
     {
-      label: 'OpenChamber',
+      label: 'AiYo',
       submenu: [
-        { label: 'About OpenChamber', click: () => dispatchAction('about') },
+        { label: 'About AiYo', click: () => dispatchAction('about') },
         {
           label: 'Check for Updates',
           click: () => dispatchCheckForUpdates(),
@@ -3974,7 +3972,6 @@ const buildAutoHiddenMenu = () => {
         { label: 'Report a Bug', click: () => shell.openExternal(GITHUB_BUG_REPORT_URL) },
         { label: 'Request a Feature', click: () => shell.openExternal(GITHUB_FEATURE_REQUEST_URL) },
         { type: 'separator' },
-        { label: 'Join Discord', click: () => shell.openExternal(DISCORD_INVITE_URL) },
       ],
     },
   ]);
@@ -4068,7 +4065,7 @@ const COMMANDS_SAFE_FOR_REMOTE = new Set([
   'desktop_tray_update',
 ]);
 
-ipcMain.handle('openchamber:invoke', async (event, command, args) => {
+ipcMain.handle('aiyo:invoke', async (event, command, args) => {
   if (!isLocalSender(event.sender) && !COMMANDS_SAFE_FOR_REMOTE.has(command)) {
     log.warn(`[ipc] rejected ${command} from non-local origin: ${event.sender?.getURL?.() || '(unknown)'}`);
     throw new Error('IPC not available for this origin');
@@ -4077,7 +4074,7 @@ ipcMain.handle('openchamber:invoke', async (event, command, args) => {
   return handleInvoke(browserWindow, command, args);
 });
 
-ipcMain.handle('openchamber:dialog:open', async (event, options) => {
+ipcMain.handle('aiyo:dialog:open', async (event, options) => {
   // Native file dialogs expose absolute local paths; never grant to remote.
   if (!isLocalSender(event.sender)) {
     log.warn(`[ipc] rejected dialog:open from non-local origin: ${event.sender?.getURL?.() || '(unknown)'}`);
@@ -4126,7 +4123,7 @@ ipcMain.handle('openchamber:dialog:open', async (event, options) => {
   return result.filePaths[0] || null;
 });
 
-ipcMain.handle('openchamber:file:grant-existing', async (event, filePath) => {
+ipcMain.handle('aiyo:file:grant-existing', async (event, filePath) => {
   if (!isLocalSender(event.sender)) {
     log.warn(`[ipc] rejected file:grant-existing from non-local origin: ${event.sender?.getURL?.() || '(unknown)'}`);
     throw new Error('IPC not available for this origin');
@@ -4244,7 +4241,7 @@ const focusMainWindowWithSession = async (sessionId, directory) => {
     state.mainWindow.show();
     state.mainWindow.focus();
     if (sessionId) {
-      emitToWindow(state.mainWindow, 'openchamber:open-session', { sessionId, directory: directory || '' });
+      emitToWindow(state.mainWindow, 'aiyo:open-session', { sessionId, directory: directory || '' });
     }
     return;
   }
@@ -4265,7 +4262,7 @@ const dispatchTrayAction = async (action) => {
     const target = (state.mainWindow && !state.mainWindow.isDestroyed())
       ? state.mainWindow
       : await revealMainWindow();
-    emitToWindow(target, 'openchamber:tray-action', action);
+    emitToWindow(target, 'aiyo:tray-action', action);
     return;
   }
 
@@ -4287,7 +4284,7 @@ const dispatchTrayAction = async (action) => {
       if (surface.isMinimized()) surface.restore();
       surface.show();
       surface.focus();
-      emitToWindow(surface, 'openchamber:open-session', {
+      emitToWindow(surface, 'aiyo:open-session', {
         sessionId: action.sessionId,
         directory: action.directory || '',
       });
@@ -4301,7 +4298,7 @@ const dispatchTrayAction = async (action) => {
   if (!target || target.isDestroyed()) return;
 
   if (action.type === 'new-session') {
-    emitToWindow(target, 'openchamber:open-draft-session', { directory: '', projectId: '' });
+    emitToWindow(target, 'aiyo:open-draft-session', { directory: '', projectId: '' });
   }
   // show-main-window: revealing the window above is the whole action.
 };
@@ -4436,7 +4433,7 @@ app.whenReady().then(async () => {
   // Notify renderer on OS wake-from-sleep so the SSE event pipeline can
   // reconnect immediately instead of waiting for the heartbeat watchdog.
   powerMonitor.on('resume', () => {
-    emitToAllWindows('openchamber:system-resume', { timestamp: Date.now() });
+    emitToAllWindows('aiyo:system-resume', { timestamp: Date.now() });
   });
 }).catch((error) => {
   log.error('[electron] startup failed:', error);

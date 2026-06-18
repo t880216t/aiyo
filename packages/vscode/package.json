@@ -1,15 +1,14 @@
 {
-  "name": "openchamber",
-  "displayName": "OpenChamber",
+  "name": "aiyo",
+  "displayName": "AiYo",
   "description": "%extension.description%",
   "version": "1.13.0",
-  "publisher": "fedaykindev",
+  "publisher": "t880216t",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/btriapitsyn/openchamber.git"
+    "url": "https://github.com/t880216t/aiyo.git"
   },
-  "qna": "https://discord.gg/ZYRSdnwwKA",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
@@ -29,39 +28,39 @@
     "groq",
     "assistant",
     "opencode",
-    "openchamber"
+    "aiyo"
   ],
   "icon": "assets/app-icon.png",
   "main": "./dist/extension.js",
   "l10n": "./l10n",
   "activationEvents": [
-    "onCommand:openchamber.openSidebar",
-    "onCommand:openchamber.attachExplorerToChat",
-    "onView:openchamber.chatView"
+    "onCommand:aiyo.openSidebar",
+    "onCommand:aiyo.attachExplorerToChat",
+    "onView:aiyo.chatView"
   ],
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "openchamber",
-          "title": "OpenChamber",
+          "id": "aiyo",
+          "title": "AiYo",
           "icon": "assets/icon.svg"
         }
       ]
     },
     "views": {
-      "openchamber": [
+      "aiyo": [
         {
           "type": "webview",
-          "id": "openchamber.chatView",
+          "id": "aiyo.chatView",
           "name": "%views.chat.name%"
         }
       ]
     },
     "commands": [
       {
-        "command": "openchamber.openSidebar",
-        "category": "OpenChamber",
+        "command": "aiyo.openSidebar",
+        "category": "AiYo",
         "title": "%command.openSidebar.title%",
         "icon": {
           "light": "assets/icon.svg",
@@ -69,35 +68,35 @@
         }
       },
       {
-        "command": "openchamber.focusChat",
-        "category": "OpenChamber",
+        "command": "aiyo.focusChat",
+        "category": "AiYo",
         "title": "%command.focusChat.title%"
       },
       {
-        "command": "openchamber.restartApi",
-        "category": "OpenChamber",
+        "command": "aiyo.restartApi",
+        "category": "AiYo",
         "title": "%command.restartApi.title%"
       },
       {
-        "command": "openchamber.showOpenCodeStatus",
-        "category": "OpenChamber",
+        "command": "aiyo.showOpenCodeStatus",
+        "category": "AiYo",
         "title": "%command.showOpenCodeStatus.title%"
       },
       {
-        "command": "openchamber.openAgentManager",
-        "category": "OpenChamber",
+        "command": "aiyo.openAgentManager",
+        "category": "AiYo",
         "title": "%command.openAgentManager.title%",
         "icon": "$(circuit-board)"
       },
       {
-        "command": "openchamber.openActiveSessionInEditor",
-        "category": "OpenChamber",
+        "command": "aiyo.openActiveSessionInEditor",
+        "category": "AiYo",
         "title": "%command.openActiveSessionInEditor.title%",
         "icon": "$(link-external)"
       },
       {
-        "command": "openchamber.openNewSessionInEditor",
-        "category": "OpenChamber",
+        "command": "aiyo.openNewSessionInEditor",
+        "category": "AiYo",
         "title": "%command.openNewSessionInEditor.title%",
         "icon": {
           "light": "assets/icon.svg",
@@ -105,113 +104,113 @@
         }
       },
       {
-        "command": "openchamber.openCurrentOrNewSessionInEditor",
-        "category": "OpenChamber",
+        "command": "aiyo.openCurrentOrNewSessionInEditor",
+        "category": "AiYo",
         "title": "%command.openCurrentOrNewSessionInEditor.title%",
         "icon": "$(link-external)"
       },
       {
-        "command": "openchamber.addToContext",
-        "category": "OpenChamber",
+        "command": "aiyo.addToContext",
+        "category": "AiYo",
         "title": "%command.addToContext.title%"
       },
       {
-        "command": "openchamber.explain",
-        "category": "OpenChamber",
+        "command": "aiyo.explain",
+        "category": "AiYo",
         "title": "%command.explain.title%"
       },
       {
-        "command": "openchamber.improveCode",
-        "category": "OpenChamber",
+        "command": "aiyo.improveCode",
+        "category": "AiYo",
         "title": "%command.improveCode.title%"
       },
       {
-        "command": "openchamber.newSession",
-        "category": "OpenChamber",
+        "command": "aiyo.newSession",
+        "category": "AiYo",
         "title": "%command.newSession.title%",
         "icon": "$(add)"
       },
       {
-        "command": "openchamber.showSettings",
-        "category": "OpenChamber",
+        "command": "aiyo.showSettings",
+        "category": "AiYo",
         "title": "%command.showSettings.title%",
         "icon": "$(settings-gear)"
       },
       {
-        "command": "openchamber.attachExplorerToChat",
-        "category": "OpenChamber",
+        "command": "aiyo.attachExplorerToChat",
+        "category": "AiYo",
         "title": "%command.attachExplorerToChat.title%"
       }
     ],
     "submenus": [
       {
-        "id": "openchamber.submenu",
-        "label": "OpenChamber"
+        "id": "aiyo.submenu",
+        "label": "AiYo"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "submenu": "openchamber.submenu",
+          "submenu": "aiyo.submenu",
           "group": "navigation"
         }
       ],
       "explorer/context": [
         {
-          "command": "openchamber.attachExplorerToChat",
+          "command": "aiyo.attachExplorerToChat",
           "when": "resourceScheme == file && explorerResourceIsFolder == false",
           "group": "navigation@50"
         }
       ],
       "editor/title": [
         {
-          "command": "openchamber.openNewSessionInEditor",
+          "command": "aiyo.openNewSessionInEditor",
           "group": "navigation@1"
         }
       ],
       "view/title": [
         {
-          "command": "openchamber.newSession",
-          "when": "view == openchamber.chatView",
+          "command": "aiyo.newSession",
+          "when": "view == aiyo.chatView",
           "group": "navigation@1"
         },
         {
-          "command": "openchamber.openCurrentOrNewSessionInEditor",
-          "when": "view == openchamber.chatView",
+          "command": "aiyo.openCurrentOrNewSessionInEditor",
+          "when": "view == aiyo.chatView",
           "group": "navigation@2"
         },
         {
-          "command": "openchamber.openAgentManager",
-          "when": "view == openchamber.chatView",
+          "command": "aiyo.openAgentManager",
+          "when": "view == aiyo.chatView",
           "group": "navigation@3"
         },
         {
-          "command": "openchamber.showSettings",
-          "when": "view == openchamber.chatView",
+          "command": "aiyo.showSettings",
+          "when": "view == aiyo.chatView",
           "group": "navigation@4"
         }
       ],
-      "openchamber.submenu": [
+      "aiyo.submenu": [
         {
-          "command": "openchamber.explain"
+          "command": "aiyo.explain"
         },
         {
-          "command": "openchamber.improveCode"
+          "command": "aiyo.improveCode"
         },
         {
-          "command": "openchamber.addToContext"
+          "command": "aiyo.addToContext"
         }
       ]
     },
     "configuration": {
-      "title": "OpenChamber",
+      "title": "AiYo",
       "properties": {
-        "openchamber.apiUrl": {
+        "aiyo.apiUrl": {
           "type": "string",
           "default": "",
           "description": "%configuration.apiUrl.description%"
         },
-        "openchamber.opencodeBinary": {
+        "aiyo.opencodeBinary": {
           "type": "string",
           "default": "",
           "description": "%configuration.opencodeBinary.description%"
@@ -243,7 +242,7 @@
     "vite": "^7.1.2"
   },
   "dependencies": {
-    "@openchamber/ui": "workspace:*",
+    "@aiyo/ui": "workspace:*",
     "@opencode-ai/sdk": "^1.17.7",
     "adm-zip": "^0.5.16",
     "jsonc-parser": "^3.3.1",
