@@ -1,13 +1,13 @@
 {
-  "name": "@openchamber/electron",
-  "version": "1.13.0",
+  "name": "@aiyo/electron",
+  "version": "1.13.3",
   "private": true,
-  "description": "Electron desktop runtime for OpenChamber",
-  "author": "OpenChamber",
+  "description": "Electron desktop runtime for AiYo",
+  "author": "AiYo",
   "type": "module",
   "main": "./dist-bundle/main.mjs",
   "dependencies": {
-    "@openchamber/web": "workspace:*",
+    "@aiyo/web": "workspace:*",
     "electron-context-menu": "^4.1.2",
     "electron-log": "^5.4.3",
     "electron-updater": "^6.8.3"
@@ -36,8 +36,8 @@
     "lint": "node -e \"process.exit(0)\""
   },
   "build": {
-    "appId": "dev.openchamber.desktop",
-    "productName": "OpenChamber",
+    "appId": "dev.aiyo.desktop",
+    "productName": "AiYo",
     "files": [
       "dist-bundle/main.mjs",
       "preload.mjs"
@@ -121,8 +121,8 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "openchamber",
-      "repo": "openchamber"
+      "owner": "t880216t",
+      "repo": "aiyo"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "openchamber-monorepo",
-  "version": "1.13.0",
-  "description": "OpenChamber monorepo workspace for web, ui, and desktop runtimes",
+  "name": "aiyo",
+  "version": "1.13.3",
+  "description": "AiYo monorepo workspace for web, ui, and desktop runtimes",
   "private": true,
   "type": "module",
   "packageManager": "bun@1.3.14",
@@ -15,7 +15,7 @@
     "opencode",
     "ai",
     "coding",
-    "openchamber",
+    "aiyo",
     "cli"
   ],
   "author": "Bohdan Triapitsyn",
@@ -44,7 +44,7 @@
     "start:web": "bun run --cwd packages/web start",
     "pack:web": "bun pm pack --cwd packages/web",
     "electron:dev": "node ./packages/electron/scripts/electron-dev.mjs",
-    "electron:dev:bundled": "OPENCHAMBER_ELECTRON_USE_BUNDLED_UI=1 node ./packages/electron/scripts/electron-dev.mjs",
+    "electron:dev:bundled": "AIYO_ELECTRON_USE_BUNDLED_UI=1 node ./packages/electron/scripts/electron-dev.mjs",
     "electron:build": "bun run --cwd packages/electron package",
     "vscode:dev": "node ./scripts/dev-vscode.mjs",
     "vscode:build": "bun run --cwd packages/vscode build",
