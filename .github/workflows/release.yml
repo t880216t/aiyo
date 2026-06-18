@@ -356,8 +356,6 @@ jobs:
   finalize-release:
     needs: [create-release, build-desktop-electron-windows]
     runs-on: ubuntu-latest
-    env:
-      # DISCORD_WEBHOOK_URL + DISCORD_UPDATE_ROLE_ID removed — Windows-only focus phase
     steps:
       - name: Publish release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
