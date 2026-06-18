@@ -195,6 +195,7 @@ export const AboutSettings: React.FC<AboutSettingsProps> = ({ initialUpdateDialo
           onRestart={updateStore.restartToUpdate}
           runtimeType={updateStore.runtimeType}
         />
+        </div>
       </div>
     );
   }
