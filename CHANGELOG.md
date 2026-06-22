@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.4] - 2026-06-22
+
+- Desktop: add builtin skill and MCP deployment mechanism — skills and default MCP config bundled in the installer are automatically deployed to `~/.config/opencode/` on first launch and overwritten on version upgrade.
+- Desktop: bundle xspace-browser skill and its MCP bridge config as builtin defaults.
+
 ## [1.13.3] - 2026-06-18
 
 - Brand: remove Discord and Twitter/X links from About dialog and settings.
