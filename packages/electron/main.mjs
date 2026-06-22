@@ -438,6 +438,75 @@ const mutateSettingsRoot = (mutator) => {
 
 const writeSettingsRoot = async (root) => writeJsonFile(settingsFilePath(), root);
 
+// ---- Builtin Resource Deployment ----
+// Deploys builtin skills and default MCP config from the Electron resources
+// on first launch. Uses a version flag in settings.json to avoid re-deploying
+// on every launch; re-deploys when the app version changes.
+const deployBuiltinResources = async () => {
+  try {
+    const settings = readSettingsRoot();
+
+    // In packaged mode, deploy once per version. In dev mode, always redeploy
+    // so that iterating on builtin resources doesn't require bumping the version.
+    if (app.isPackaged && settings.builtinResourcesDeployedVersion === APP_VERSION) {
+      return;
+    }
+
+    const builtinRoot = path.join(resourceRoot(), 'builtin');
+    if (!fs.existsSync(builtinRoot)) {
+      log.info('[electron] no builtin resources found, skipping deployment');
+      return;
+    }
+
+    // --- Deploy builtin skills ---
+    const builtinSkillsDir = path.join(builtinRoot, 'skills');
+    const userSkillsDir = path.join(os.homedir(), '.config', 'opencode', 'skills');
+
+    if (fs.existsSync(builtinSkillsDir)) {
+      for (const name of fs.readdirSync(builtinSkillsDir)) {
+        const srcDir = path.join(builtinSkillsDir, name);
+        if (!fs.statSync(srcDir).isDirectory()) continue;
+
+        const destDir = path.join(userSkillsDir, name);
+        const existed = fs.existsSync(destDir);
+        // Always overwrite builtin skills so app updates deliver the latest.
+        fs.cpSync(srcDir, destDir, { recursive: true });
+        log.info(`[electron] deployed builtin skill: ${name}${existed ? ' (overwritten)' : ''}`);
+      }
+    }
+
+    // --- Deploy default MCP config ---
+    const builtinConfigPath = path.join(builtinRoot, 'opencode.json');
+    const userConfigPath = path.join(os.homedir(), '.config', 'opencode', 'config.json');
+
+    if (fs.existsSync(builtinConfigPath)) {
+      const builtinConfig = readJsonFile(builtinConfigPath);
+      const existingConfig = readJsonFile(userConfigPath);
+
+      // Merge MCP section: builtin entries override existing ones,
+      // but user-installed MCP servers that are NOT in builtin are preserved.
+      if (builtinConfig.mcp && typeof builtinConfig.mcp === 'object') {
+        const mergedMcp = {
+          ...(existingConfig.mcp || {}),
+          ...builtinConfig.mcp,
+        };
+        existingConfig.mcp = mergedMcp;
+      }
+
+      await fsp.mkdir(path.dirname(userConfigPath), { recursive: true });
+      await fsp.writeFile(userConfigPath, JSON.stringify(existingConfig, null, 2));
+      log.info('[electron] deployed builtin MCP config');
+    }
+
+    // Mark current version as deployed so it won't re-run until next upgrade
+    await mutateSettingsRoot((root) => {
+      root.builtinResourcesDeployedVersion = APP_VERSION;
+    });
+  } catch (error) {
+    log.warn('[electron] builtin resource deployment failed:', error);
+  }
+};
+
 const normalizeHostUrl = (raw) => {
   const trimmed = typeof raw === 'string' ? raw.trim() : '';
   if (!trimmed) return null;
@@ -4389,6 +4458,12 @@ app.whenReady().then(async () => {
     isBackgroundStart,
     loginItemSettings,
   });
+
+  // Deploy builtin skills and default MCP config on first launch / version upgrade.
+  // Safe to run before the window/host-chooser is shown — copies a few small files
+  // into ~/.config/opencode/ and returns quickly.
+  await deployBuiltinResources();
+
   nativeTheme.themeSource = readThemeSource();
   registerPackagedUiProtocol();
   setupAutoUpdater();

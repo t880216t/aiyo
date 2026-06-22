@@ -1,6 +1,6 @@
 {
   "name": "@aiyo/electron",
-  "version": "1.13.3",
+  "version": "1.13.4",
   "private": true,
   "description": "Electron desktop runtime for AiYo",
   "author": "AiYo",
@@ -54,6 +54,10 @@
       {
         "from": "resources/icons/tray",
         "to": "icons/tray"
+      },
+      {
+        "from": "resources/builtin",
+        "to": "builtin"
       }
     ],
     "afterPack": "scripts/after-pack.cjs",

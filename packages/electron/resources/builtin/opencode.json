@@ -1,0 +1,9 @@
+{
+  "mcp": {
+    "xspace-browser": {
+      "type": "local",
+      "command": ["npx", "-y", "xspace-browser-mcp-bridge"],
+      "enabled": true
+    }
+  }
+}

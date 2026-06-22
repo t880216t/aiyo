@@ -1,6 +1,6 @@
 {
   "name": "@aiyo/web",
-  "version": "1.13.0",
+  "version": "1.13.4",
   "private": false,
   "type": "module",
   "main": "./server/index.js",
