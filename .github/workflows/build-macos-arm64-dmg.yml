@@ -40,7 +40,8 @@ jobs:
       - name: Build Electron app (arm64)
         working-directory: packages/electron
         env:
-          # Disable code signing and notarization for unsigned internal build
+          # Use ad-hoc signing for internal builds. This keeps the app
+          # structurally signed without requiring a Developer ID certificate.
           CSC_IDENTITY_AUTO_DISCOVERY: false
           ELECTRON_BUILDER_ARCH: arm64
         run: |
@@ -48,6 +49,7 @@ jobs:
           bun run bundle:main
           bun run rebuild:native
           ./node_modules/.bin/electron-builder --mac --arm64 --publish=never \
+            --config.mac.identity=- \
             --config.mac.notarize=false
 
       - name: Prepare DMG artifact
