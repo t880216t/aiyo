@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.7] - 2026-06-25
+
+- CI: ad-hoc sign macOS Electron builds so internal DMGs install as unverified developer builds instead of appearing damaged.
+
 ## [1.13.6] - 2026-06-25
 
 - CI: enable macOS unsigned arm64 electron build in release workflow, removing Apple certificate signing, hardened runtime, and notarization for internal distribution.
