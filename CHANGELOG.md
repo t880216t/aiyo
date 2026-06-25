@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.6] - 2026-06-25
+
+- CI: enable macOS unsigned arm64 electron build in release workflow, removing Apple certificate signing, hardened runtime, and notarization for internal distribution.
+
 ## [1.13.5] - 2026-06-25
 
 - CI: enable macOS unsigned electron build (arm64 + x64) in release workflow, removing Apple certificate signing and notarization requirements for internal distribution.
