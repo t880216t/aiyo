@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.5] - 2026-06-25
+
+- CI: enable macOS unsigned electron build (arm64 + x64) in release workflow, removing Apple certificate signing and notarization requirements for internal distribution.
+
 ## [1.13.4] - 2026-06-22
 
 - Desktop: add builtin skill and MCP deployment mechanism — skills and default MCP config bundled in the installer are automatically deployed to `~/.config/opencode/` on first launch and overwritten on version upgrade.
