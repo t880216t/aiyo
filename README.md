@@ -92,6 +92,13 @@
 ### **Desktop (macOS + Windows)**
 Download from [Releases](https://github.com/t880216t/aiyo/releases).
 
+For unsigned or ad-hoc signed macOS builds, macOS may block the app on first launch. After copying AiYo to Applications, you can manually clear the quarantine flag:
+
+```bash
+sudo xattr -dr com.apple.quarantine /Applications/AiYo.app
+open /Applications/AiYo.app
+```
+
 ### **VS Code**
 Install from [Marketplace](https://marketplace.visualstudio.com/items?itemName=fedaykindev.aiyo) or search "AiYo" in Extensions.
 
