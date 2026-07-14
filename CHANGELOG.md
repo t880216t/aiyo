@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.8] - 2026-07-14
+
+- Settings/Providers: add custom OpenAI-compatible providers from the provider picker, including base URL, model IDs, scope, and optional API key setup.
+- Desktop: allow Electron dev UI origins to authenticate against the in-process runtime server, fixing UI session validation failures during HMR development.
+
 ## [1.13.7] - 2026-06-25
 
 - CI: ad-hoc sign macOS Electron builds so internal DMGs install as unverified developer builds instead of appearing damaged.

@@ -64,6 +64,20 @@ export const getProviderAuth = (providerId: string): AuthEntry | null => {
   return auth[providerId] || null;
 };
 
+export const setProviderApiKeyAuth = (providerId: string, apiKey: string): void => {
+  const normalizedProviderId = typeof providerId === 'string' ? providerId.trim() : '';
+  const normalizedApiKey = typeof apiKey === 'string' ? apiKey.trim() : '';
+  if (!normalizedProviderId) {
+    throw new Error('Provider ID is required');
+  }
+  if (!normalizedApiKey) {
+    throw new Error('API key is required');
+  }
+  const auth = readAuthFile();
+  auth[normalizedProviderId] = { type: 'api', key: normalizedApiKey };
+  writeAuthFile(auth);
+};
+
 export const listProviderAuths = (): string[] => {
   const auth = readAuthFile();
   return Object.keys(auth);

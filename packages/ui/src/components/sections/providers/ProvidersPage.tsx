@@ -5,6 +5,7 @@ import { useConfigStore } from '@/stores/useConfigStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +44,7 @@ const formatTokens = (value?: number | null) => {
 };
 
 const ADD_PROVIDER_ID = '__add_provider__';
+const CUSTOM_PROVIDER_ID = '__custom_provider__';
 
 interface AuthMethod {
   type?: string;
@@ -70,6 +72,8 @@ interface ProviderSources {
   project: ProviderSourceInfo;
   custom?: ProviderSourceInfo;
 }
+
+type CustomProviderScope = 'user' | 'project';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -169,6 +173,13 @@ export const ProvidersPage: React.FC = () => {
   const [providerDropdownOpen, setProviderDropdownOpen] = React.useState(false);
   const [providerSources, setProviderSources] = React.useState<Record<string, ProviderSources>>({});
   const [showAuthPanel, setShowAuthPanel] = React.useState(false);
+  const [customProviderId, setCustomProviderId] = React.useState('');
+  const [customProviderName, setCustomProviderName] = React.useState('');
+  const [customProviderBaseUrl, setCustomProviderBaseUrl] = React.useState('');
+  const [customProviderModels, setCustomProviderModels] = React.useState('');
+  const [customProviderApiKey, setCustomProviderApiKey] = React.useState('');
+  const [customProviderScope, setCustomProviderScope] = React.useState<CustomProviderScope>('user');
+  const [customProviderBusy, setCustomProviderBusy] = React.useState(false);
 
   React.useEffect(() => {
     if (!selectedProviderId && providers.length > 0) {
@@ -259,7 +270,11 @@ export const ProvidersPage: React.FC = () => {
       return;
     }
 
-    if (candidateProviderId && !unconnectedProviders.some((provider) => provider.id === candidateProviderId)) {
+    if (
+      candidateProviderId &&
+      candidateProviderId !== CUSTOM_PROVIDER_ID &&
+      !unconnectedProviders.some((provider) => provider.id === candidateProviderId)
+    ) {
       setCandidateProviderId('');
     }
   }, [selectedProviderId, candidateProviderId, unconnectedProviders]);
@@ -482,7 +497,67 @@ export const ProvidersPage: React.FC = () => {
     }
   };
 
+  const handleCreateCustomProvider = async () => {
+    const providerId = customProviderId.trim();
+    const name = customProviderName.trim();
+    const baseURL = customProviderBaseUrl.trim();
+    const models = customProviderModels
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter((item, index, all) => item.length > 0 && all.indexOf(item) === index);
+
+    if (!providerId || !name || !baseURL || models.length === 0) {
+      toast.error(t('settings.providers.page.toast.customProviderRequired'));
+      return;
+    }
+
+    setCustomProviderBusy(true);
+    try {
+      const directory = opencodeClient.getDirectory();
+      const response = await runtimeFetch('/api/provider/custom', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          providerId,
+          name,
+          baseURL,
+          models,
+          apiKey: customProviderApiKey.trim() || undefined,
+          scope: customProviderScope,
+          directory: customProviderScope === 'project' && directory ? directory : undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.success === false) {
+        throw new Error(payload?.error || t('settings.providers.page.toast.customProviderCreateFailed'));
+      }
+
+      toast.success(t('settings.providers.page.toast.customProviderCreated'));
+      setCustomProviderId('');
+      setCustomProviderName('');
+      setCustomProviderBaseUrl('');
+      setCustomProviderModels('');
+      setCustomProviderApiKey('');
+      setCustomProviderScope('user');
+      await reloadOpenCodeConfiguration({ scopes: ["providers"], mode: "active" });
+      setSelectedProvider(providerId);
+    } catch (error) {
+      console.error('Failed to create custom provider:', error);
+      toast.error(error instanceof Error ? error.message : t('settings.providers.page.toast.customProviderCreateFailed'));
+    } finally {
+      setCustomProviderBusy(false);
+    }
+  };
+
   const isAddMode = selectedProviderId === ADD_PROVIDER_ID;
+  const isCustomProviderCandidate = candidateProviderId === CUSTOM_PROVIDER_ID;
+  const selectedCandidateProvider =
+    candidateProviderId && !isCustomProviderCandidate
+      ? unconnectedProviders.find((provider) => provider.id === candidateProviderId)
+      : undefined;
 
   if (!isAddMode && providers.length === 0) {
     return (
@@ -514,10 +589,6 @@ export const ProvidersPage: React.FC = () => {
                 <span className="typography-ui-label text-foreground">{t('settings.providers.page.connect.providerField')}</span>
                   {availableLoading ? (
                     <p className="typography-meta text-muted-foreground">{t('settings.providers.page.state.loading')}</p>
-                  ) : availableError ? (
-                    <p className="typography-meta text-muted-foreground">{availableError}</p>
-                  ) : unconnectedProviders.length === 0 ? (
-                    <p className="typography-meta text-muted-foreground">{t('settings.providers.page.connect.allProvidersConnected')}</p>
                   ) : (
                     <DropdownMenu open={providerDropdownOpen} onOpenChange={(open) => {
                       setProviderDropdownOpen(open);
@@ -531,11 +602,19 @@ export const ProvidersPage: React.FC = () => {
                           )}
                         >
                           <span className="flex items-center gap-2 min-w-0">
-                            {candidateProviderId ? <ProviderLogo providerId={candidateProviderId} className="h-3.5 w-3.5 flex-shrink-0" /> : null}
+                            {isCustomProviderCandidate ? (
+                              <span className="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded bg-[var(--surface-subtle)] text-muted-foreground">
+                                <Icon name="add" className="h-3 w-3" />
+                              </span>
+                            ) : candidateProviderId ? (
+                              <ProviderLogo providerId={candidateProviderId} className="h-3.5 w-3.5 flex-shrink-0" />
+                            ) : null}
                             <span className={cn("truncate typography-ui-label font-normal", candidateProviderId ? "text-foreground" : "text-muted-foreground")}>
-                              {candidateProviderId
-                                ? (unconnectedProviders.find(p => p.id === candidateProviderId)?.name || candidateProviderId)
-                                : t('settings.providers.page.connect.selectProviderPlaceholder')}
+                              {isCustomProviderCandidate
+                                ? t('settings.providers.page.custom.title')
+                                : candidateProviderId
+                                  ? (selectedCandidateProvider?.name || candidateProviderId)
+                                  : t('settings.providers.page.connect.selectProviderPlaceholder')}
                             </span>
                           </span>
                           <Icon name="arrow-down-s" className="h-4 w-4 flex-shrink-0 text-muted-foreground/50" />
@@ -563,42 +642,169 @@ export const ProvidersPage: React.FC = () => {
                         </div>
                         <ScrollableOverlay outerClassName="max-h-[240px]" className="p-1">
                           {(() => {
+                            const query = providerSearchQuery.toLowerCase();
+                            const customProviderLabel = t('settings.providers.page.custom.title');
+                            const customProviderMatches =
+                              !query ||
+                              customProviderLabel.toLowerCase().includes(query) ||
+                              CUSTOM_PROVIDER_ID.includes(query) ||
+                              'custom provider'.includes(query);
                             const filtered = unconnectedProviders.filter(p => {
-                              const query = providerSearchQuery.toLowerCase();
                               return (p.name || p.id).toLowerCase().includes(query) || p.id.toLowerCase().includes(query);
                             });
-                            if (filtered.length === 0) {
+                            if (!customProviderMatches && filtered.length === 0) {
                               return <p className="py-4 text-center typography-meta text-muted-foreground">{t('settings.providers.page.connect.noProvidersFound')}</p>;
                             }
-                            return filtered.map((provider) => (
-                              <DropdownMenuItem
-                                key={provider.id}
-                                onSelect={() => {
-                                  setCandidateProviderId(provider.id);
-                                  setProviderDropdownOpen(false);
-                                  setProviderSearchQuery('');
-                                }}
-                                className="flex items-center justify-between"
-                              >
-                                <span className="flex items-center gap-2 min-w-0">
-                                  <ProviderLogo providerId={provider.id} className="h-4 w-4 flex-shrink-0" />
-                                  <span className="truncate">{provider.name || provider.id}</span>
-                                </span>
-                                {candidateProviderId === provider.id && (
-                                  <Icon name="check" className="h-4 w-4 text-[var(--primary-base)]" />
-                                )}
-                              </DropdownMenuItem>
-                            ));
+                            return (
+                              <>
+                                {customProviderMatches ? (
+                                  <DropdownMenuItem
+                                    key={CUSTOM_PROVIDER_ID}
+                                    onSelect={() => {
+                                      setCandidateProviderId(CUSTOM_PROVIDER_ID);
+                                      setProviderDropdownOpen(false);
+                                      setProviderSearchQuery('');
+                                    }}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <span className="flex items-center gap-2 min-w-0">
+                                      <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded bg-[var(--surface-subtle)] text-muted-foreground">
+                                        <Icon name="add" className="h-3 w-3" />
+                                      </span>
+                                      <span className="truncate">{customProviderLabel}</span>
+                                    </span>
+                                    {isCustomProviderCandidate && (
+                                      <Icon name="check" className="h-4 w-4 text-[var(--primary-base)]" />
+                                    )}
+                                  </DropdownMenuItem>
+                                ) : null}
+                                {filtered.map((provider) => (
+                                  <DropdownMenuItem
+                                    key={provider.id}
+                                    onSelect={() => {
+                                      setCandidateProviderId(provider.id);
+                                      setProviderDropdownOpen(false);
+                                      setProviderSearchQuery('');
+                                    }}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <span className="flex items-center gap-2 min-w-0">
+                                      <ProviderLogo providerId={provider.id} className="h-4 w-4 flex-shrink-0" />
+                                      <span className="truncate">{provider.name || provider.id}</span>
+                                    </span>
+                                    {candidateProviderId === provider.id && (
+                                      <Icon name="check" className="h-4 w-4 text-[var(--primary-base)]" />
+                                    )}
+                                  </DropdownMenuItem>
+                                ))}
+                              </>
+                            );
                           })()}
                         </ScrollableOverlay>
                       </DropdownMenuContent>
                     </DropdownMenu>
                    )}
               </div>
+              {availableError ? (
+                <p className="typography-meta text-muted-foreground px-1">{availableError}</p>
+              ) : null}
             </section>
           </div>
 
-          {candidateProviderId && (
+          {isCustomProviderCandidate ? (
+          <div data-settings-item="providers.custom" className="mb-8">
+            <div className="mb-1 px-1">
+              <h2 className="typography-ui-header font-medium text-foreground">{t('settings.providers.page.custom.title')}</h2>
+            </div>
+
+            <section className="px-2 pb-2 pt-0 space-y-3">
+              <p className="typography-meta text-muted-foreground">{t('settings.providers.page.custom.description')}</p>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="space-y-1.5">
+                  <span className="typography-ui-label text-foreground">{t('settings.providers.page.custom.providerIdLabel')}</span>
+                  <Input
+                    value={customProviderId}
+                    onChange={(event) => setCustomProviderId(event.target.value)}
+                    placeholder={t('settings.providers.page.custom.providerIdPlaceholder')}
+                    className="h-7 font-mono text-xs"
+                  />
+                </label>
+                <label className="space-y-1.5">
+                  <span className="typography-ui-label text-foreground">{t('settings.providers.page.custom.nameLabel')}</span>
+                  <Input
+                    value={customProviderName}
+                    onChange={(event) => setCustomProviderName(event.target.value)}
+                    placeholder={t('settings.providers.page.custom.namePlaceholder')}
+                    className="h-7"
+                  />
+                </label>
+              </div>
+
+              <label className="block space-y-1.5">
+                <span className="typography-ui-label text-foreground">{t('settings.providers.page.custom.baseUrlLabel')}</span>
+                <Input
+                  value={customProviderBaseUrl}
+                  onChange={(event) => setCustomProviderBaseUrl(event.target.value)}
+                  placeholder={t('settings.providers.page.custom.baseUrlPlaceholder')}
+                  className="h-7 font-mono text-xs"
+                />
+              </label>
+
+              <label className="block space-y-1.5">
+                <span className="typography-ui-label text-foreground">{t('settings.providers.page.custom.modelsLabel')}</span>
+                <Textarea
+                  value={customProviderModels}
+                  onChange={(event) => setCustomProviderModels(event.target.value)}
+                  placeholder={t('settings.providers.page.custom.modelsPlaceholder')}
+                  rows={3}
+                  className="min-h-[76px] font-mono text-xs"
+                />
+              </label>
+
+              <label className="block space-y-1.5">
+                <span className="typography-ui-label text-foreground">{t('settings.providers.page.custom.apiKeyLabel')}</span>
+                <Input
+                  type="password"
+                  value={customProviderApiKey}
+                  onChange={(event) => setCustomProviderApiKey(event.target.value)}
+                  placeholder={t('settings.providers.page.custom.apiKeyPlaceholder')}
+                  className="h-7 font-mono text-xs"
+                />
+              </label>
+
+              <div className="flex flex-col gap-2 py-1.5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-1">
+                  <span className="typography-ui-label mr-1 text-foreground">{t('settings.providers.page.custom.scopeLabel')}</span>
+                  {(['user', 'project'] as const).map((scope) => (
+                    <Button
+                      key={scope}
+                      type="button"
+                      variant={customProviderScope === scope ? 'secondary' : 'outline'}
+                      size="xs"
+                      className="!font-normal"
+                      onClick={() => setCustomProviderScope(scope)}
+                    >
+                      {scope === 'user' ? t('settings.providers.page.custom.scopeUser') : t('settings.providers.page.custom.scopeProject')}
+                    </Button>
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  size="xs"
+                  className="!font-normal sm:self-end"
+                  onClick={handleCreateCustomProvider}
+                  disabled={customProviderBusy}
+                >
+                  {customProviderBusy ? t('settings.providers.page.actions.saving') : t('settings.providers.page.custom.createButton')}
+                </Button>
+              </div>
+            </section>
+          </div>
+          ) : null}
+
+          {candidateProviderId && !isCustomProviderCandidate && (
             <div data-settings-item="providers.auth" className="mb-8">
               <div className="mb-1 px-1">
                 <h2 className="typography-ui-header font-medium text-foreground">{t('settings.providers.page.auth.title')}</h2>

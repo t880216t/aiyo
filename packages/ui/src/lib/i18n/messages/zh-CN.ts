@@ -1,6 +1,8 @@
 import type { I18nKey } from './en';
 import { settingsDict } from './zh-CN.settings';
 
+export type { I18nKey } from './en';
+
 export const dict: Record<I18nKey, string> = {
   ...settingsDict,
   'common.loading': '加载中...',

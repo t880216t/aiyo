@@ -1095,6 +1095,10 @@ async function main(options = {}) {
   const app = express();
   const serverStartedAt = new Date().toISOString();
   const packagedClientOrigins = new Set(['aiyo-ui://app']);
+  if (process.env.AIYO_ELECTRON_DEV === '1' && process.env.AIYO_HMR_UI_PORT) {
+    packagedClientOrigins.add(`http://127.0.0.1:${process.env.AIYO_HMR_UI_PORT}`);
+    packagedClientOrigins.add(`http://localhost:${process.env.AIYO_HMR_UI_PORT}`);
+  }
   app.set('trust proxy', true);
   app.use((req, res, next) => {
     const origin = typeof req.headers.origin === 'string' ? req.headers.origin : '';

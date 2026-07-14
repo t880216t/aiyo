@@ -42,6 +42,7 @@ export {
 } from './skills.js';
 
 export {
+  createCustomProviderConfig,
   getProviderSources,
   removeProviderConfig,
 } from './providers.js';

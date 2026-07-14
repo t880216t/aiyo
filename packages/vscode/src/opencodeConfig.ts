@@ -18,6 +18,8 @@ const SNIPPET_EXTENSION = '.md';
 const SNIPPET_NAME_PATTERN = /^[a-z0-9][a-z0-9_-]{0,79}$/i;
 const HASHTAG_PATTERN = /#([a-z0-9_-]+)/gi;
 const MAX_SNIPPET_EXPANSION_COUNT = 15;
+const CUSTOM_PROVIDER_NPM_PACKAGE = '@ai-sdk/openai-compatible';
+const PROVIDER_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}$/;
 
 // Scope types (shared by agents and commands)
 export const AGENT_SCOPE = {
@@ -2067,6 +2069,98 @@ export const getProviderSources = (providerId: string, workingDirectory?: string
     user: { exists: userExists, path: layers.paths.userPath },
     project: { exists: projectExists, path: layers.paths.projectPath ?? null },
     custom: { exists: customExists, path: layers.paths.customPath },
+  };
+};
+
+const normalizeNonEmptyString = (value: unknown): string =>
+  typeof value === 'string' && value.trim().length > 0 ? value.trim() : '';
+
+const normalizeModelIds = (models: unknown): string[] => {
+  if (!Array.isArray(models)) return [];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const model of models) {
+    const modelId = normalizeNonEmptyString(model);
+    if (!modelId || seen.has(modelId)) continue;
+    seen.add(modelId);
+    result.push(modelId);
+  }
+  return result;
+};
+
+export const createCustomProviderConfig = (data: {
+  providerId?: unknown;
+  name?: unknown;
+  baseURL?: unknown;
+  models?: unknown;
+  scope?: 'user' | 'project';
+  workingDirectory?: string;
+}) => {
+  const providerId = normalizeNonEmptyString(data.providerId);
+  const name = normalizeNonEmptyString(data.name);
+  const baseURL = normalizeNonEmptyString(data.baseURL);
+  const models = normalizeModelIds(data.models);
+  const scope = data.scope ?? 'user';
+
+  if (!providerId) throw new Error('Provider ID is required');
+  if (!PROVIDER_ID_PATTERN.test(providerId)) {
+    throw new Error('Provider ID may only contain letters, numbers, underscores, and hyphens');
+  }
+  if (!name) throw new Error('Provider name is required');
+  if (!baseURL) throw new Error('Base URL is required');
+  try {
+    const parsedUrl = new URL(baseURL);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new Error('Base URL must use http or https');
+    }
+  } catch {
+    throw new Error('Base URL must be a valid URL');
+  }
+  if (models.length === 0) throw new Error('At least one model is required');
+
+  const layers = readConfigLayers(data.workingDirectory);
+  let targetPath: string | null | undefined = layers.paths.userPath;
+
+  if (scope === 'project') {
+    if (!data.workingDirectory) {
+      throw new Error('Working directory is required for project scope');
+    }
+    targetPath = layers.paths.projectPath ?? targetPath;
+  } else if (scope !== 'user') {
+    throw new Error('Invalid scope');
+  }
+
+  const targetConfig = getConfigForPath(layers, targetPath);
+  const providerConfig = isPlainObject((targetConfig as Record<string, unknown>).provider)
+    ? (targetConfig as Record<string, unknown>).provider as Record<string, unknown>
+    : {};
+  const providersConfig = isPlainObject((targetConfig as Record<string, unknown>).providers)
+    ? (targetConfig as Record<string, unknown>).providers as Record<string, unknown>
+    : {};
+
+  if (
+    Object.prototype.hasOwnProperty.call(providerConfig, providerId)
+    || Object.prototype.hasOwnProperty.call(providersConfig, providerId)
+  ) {
+    throw new Error('Provider already exists in the selected scope');
+  }
+
+  const modelConfig = Object.fromEntries(models.map((modelId) => [modelId, { name: modelId }]));
+  (targetConfig as Record<string, unknown>).provider = {
+    ...providerConfig,
+    [providerId]: {
+      name,
+      npm: CUSTOM_PROVIDER_NPM_PACKAGE,
+      options: { baseURL },
+      models: modelConfig,
+    },
+  };
+
+  writeConfig(targetConfig as Record<string, unknown>, targetPath || CONFIG_FILE);
+  return {
+    providerId,
+    scope,
+    path: targetPath || CONFIG_FILE,
   };
 };
 

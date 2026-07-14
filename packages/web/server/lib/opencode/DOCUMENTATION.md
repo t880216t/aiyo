@@ -53,6 +53,11 @@ This module provides OpenCode server integration utilities for the web server ru
 - `AUTH_FILE`: Auth file path constant.
 - `OPENCODE_DATA_DIR`: OpenCode data directory path constant.
 
+## Public exports (providers.js)
+- `createCustomProviderConfig({ providerId, name, baseURL, models, scope, workingDirectory })`: Adds an OpenAI-compatible custom provider to user or project OpenCode config.
+- `getProviderSources(providerId, workingDirectory)`: Returns provider config source presence across auth, user, project, and custom config layers.
+- `removeProviderConfig(providerId, workingDirectory, scope)`: Removes provider config from a selected config layer.
+
 ## Public exports (shared.js)
 - `OPENCODE_CONFIG_DIR`, `AGENT_DIR`, `COMMAND_DIR`, `SKILL_DIR`, `CONFIG_FILE`, `CUSTOM_CONFIG_FILE`: Path constants.
 - `AGENT_SCOPE`, `COMMAND_SCOPE`, `SKILL_SCOPE`: Scope constants with USER and PROJECT values.
@@ -78,6 +83,7 @@ This module provides OpenCode server integration utilities for the web server ru
   - `GET /api/opencode/upgrade-status`
   - `POST /api/opencode/directory`
   - `GET /api/provider/:providerId/source`
+  - `POST /api/provider/custom`
   - `DELETE /api/provider/:providerId/auth`
 - Owns lazy auth library loading for provider auth checks/removal.
 - Keeps route behavior independent from composition root; `index.js` now supplies dependencies only.

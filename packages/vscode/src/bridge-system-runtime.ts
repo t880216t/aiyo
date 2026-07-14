@@ -3,8 +3,8 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { randomUUID } from 'crypto';
-import { removeProviderConfig, getProviderSources } from './opencodeConfig';
-import { getProviderAuth, removeProviderAuth } from './opencodeAuth';
+import { createCustomProviderConfig, removeProviderConfig, getProviderSources } from './opencodeConfig';
+import { getProviderAuth, removeProviderAuth, setProviderApiKeyAuth } from './opencodeAuth';
 import { fetchQuotaForProvider, listConfiguredQuotaProviders } from './quotaProviders';
 import { getSessionActivitySnapshot } from './sessionActivityWatcher';
 import type { BridgeContext, BridgeResponse } from './bridge';
@@ -444,6 +444,52 @@ export async function handleSystemBridgeMessage(
               ? `Provider ${providerId} disconnected successfully. Reloading interface…`
               : `Provider ${providerId} was not configured.`,
             reloadDelayMs: removed ? deps.clientReloadDelayMs : undefined,
+          },
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return { id, type, success: false, error: errorMessage };
+      }
+    }
+
+    case 'api:provider/custom:create': {
+      const { providerId, name, baseURL, models, scope, directory, apiKey } = (payload || {}) as {
+        providerId?: unknown;
+        name?: unknown;
+        baseURL?: unknown;
+        models?: unknown;
+        scope?: 'user' | 'project';
+        directory?: string;
+        apiKey?: unknown;
+      };
+      const workingDirectory = typeof directory === 'string' && directory.trim().length > 0
+        ? directory.trim()
+        : ctx?.manager?.getWorkingDirectory();
+      try {
+        const created = createCustomProviderConfig({
+          providerId,
+          name,
+          baseURL,
+          models,
+          scope,
+          workingDirectory,
+        });
+
+        if (typeof apiKey === 'string' && apiKey.trim().length > 0) {
+          setProviderApiKeyAuth(created.providerId, apiKey);
+        }
+
+        await ctx?.manager?.restart();
+        return {
+          id,
+          type,
+          success: true,
+          data: {
+            success: true,
+            providerId: created.providerId,
+            scope: created.scope,
+            path: created.path,
+            requiresReload: true,
           },
         };
       } catch (error) {

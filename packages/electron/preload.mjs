@@ -12,6 +12,7 @@ const readArgValue = (name) => {
 };
 
 const localOrigin = readArgValue('--aiyo-local-origin');
+const localUiOrigin = readArgValue('--aiyo-local-ui-origin');
 const apiBaseUrl = readArgValue('--aiyo-api-base-url');
 const clientToken = readArgValue('--aiyo-client-token');
 const homeDirectory = readArgValue('--aiyo-home');
@@ -42,7 +43,8 @@ const currentOrigin = (() => {
 })();
 const isLocalPage = currentOrigin !== 'null'
   && (currentOrigin === 'aiyo-ui://app'
-  || (localOrigin && currentOrigin === localOrigin));
+  || (localOrigin && currentOrigin === localOrigin)
+  || (localUiOrigin && currentOrigin === localUiOrigin));
 
 // Remote pages need __AIYO_LOCAL_ORIGIN__ so the HostSwitcher knows
 // the URL of the Local entry (isDesktopLocalOriginActive() falls back to

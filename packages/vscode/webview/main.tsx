@@ -1044,6 +1044,25 @@ const handleLocalApiRequest = async (input: RequestInfo | URL, url: URL, init: R
     }
   }
 
+  // Handle custom provider creation: POST /api/provider/custom
+  if (pathname === '/api/provider/custom' && method === 'POST') {
+    try {
+      const bodyText = init?.body
+        ? typeof init.body === 'string'
+          ? init.body
+          : await new Response(init.body as BodyInit).text()
+        : input instanceof Request
+          ? await input.clone().text()
+          : '';
+      const payload = bodyText ? JSON.parse(bodyText) : {};
+      const data = await sendBridgeMessage('api:provider/custom:create', payload);
+      return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return new Response(JSON.stringify({ error: message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    }
+  }
+
   // Handle provider source lookup: GET /api/provider/:providerId/source
   const providerSourceMatch = pathname.match(/^\/api\/provider\/([^/]+)\/source$/);
   if (providerSourceMatch && method === 'GET') {

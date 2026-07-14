@@ -1,6 +1,10 @@
 export const createRequestSecurityRuntime = (deps) => {
   const { readSettingsFromDiskMigrated } = deps;
   const packagedClientOrigins = new Set(['aiyo-ui://app']);
+  if (process.env.AIYO_ELECTRON_DEV === '1' && process.env.AIYO_HMR_UI_PORT) {
+    packagedClientOrigins.add(`http://127.0.0.1:${process.env.AIYO_HMR_UI_PORT}`);
+    packagedClientOrigins.add(`http://localhost:${process.env.AIYO_HMR_UI_PORT}`);
+  }
 
   const getUiSessionTokenFromRequest = (req) => {
     const cookieHeader = req?.headers?.cookie;

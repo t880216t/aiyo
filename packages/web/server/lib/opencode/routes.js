@@ -15,6 +15,7 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
     sanitizeProjects,
     validateDirectoryPath,
     resolveProjectDirectory,
+    createCustomProviderConfig,
     getProviderSources,
     removeProviderConfig,
     refreshOpenCodeAfterConfigChange,
@@ -371,6 +372,56 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
     } catch (error) {
       console.error('Failed to get provider sources:', error);
       return res.status(500).json({ error: error.message || 'Failed to get provider sources' });
+    }
+  });
+
+  app.post('/api/provider/custom', async (req, res) => {
+    try {
+      const body = req.body && typeof req.body === 'object' ? req.body : {};
+      const scope = typeof body.scope === 'string' ? body.scope : 'user';
+      const headerDirectory = typeof req.get === 'function' ? req.get('x-opencode-directory') : null;
+      const bodyDirectory = typeof body.directory === 'string' ? body.directory : null;
+      const requestedDirectory = headerDirectory || bodyDirectory || null;
+
+      let directory = null;
+      if (scope === 'project' || requestedDirectory) {
+        const resolved = await resolveProjectDirectory(req);
+        if (!resolved.directory) {
+          return res.status(400).json({ error: resolved.error });
+        }
+        directory = resolved.directory;
+      }
+
+      const created = createCustomProviderConfig({
+        providerId: body.providerId,
+        name: body.name,
+        baseURL: body.baseURL,
+        models: body.models,
+        scope,
+        workingDirectory: directory,
+      });
+
+      if (typeof body.apiKey === 'string' && body.apiKey.trim().length > 0) {
+        const { readAuthFile, writeAuthFile } = await getAuthLibrary();
+        const auth = readAuthFile();
+        auth[created.providerId] = { type: 'api', key: body.apiKey.trim() };
+        writeAuthFile(auth);
+      }
+
+      await refreshOpenCodeAfterConfigChange(`custom provider ${created.providerId} created (${scope})`);
+
+      return res.json({
+        success: true,
+        providerId: created.providerId,
+        scope: created.scope,
+        path: created.path,
+        requiresReload: true,
+      });
+    } catch (error) {
+      console.error('Failed to create custom provider:', error);
+      const message = error.message || 'Failed to create custom provider';
+      const status = /required|invalid|valid|exists|scope/i.test(message) ? 400 : 500;
+      return res.status(status).json({ error: message });
     }
   });
 

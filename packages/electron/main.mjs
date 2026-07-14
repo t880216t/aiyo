@@ -167,6 +167,7 @@ const state = {
   serverHandle: null,
   sidecarUrl: null,
   localOrigin: null,
+  localUiOrigin: null,
   apiBaseUrl: null,
   clientToken: null,
   bootOutcome: null,
@@ -541,7 +542,7 @@ const readDesktopLocalClientToken = () => {
 
 const isLocalRuntimeUrl = (targetUrl) => {
   const localUrl = state.sidecarUrl || state.localOrigin || '';
-  return Boolean(localUrl && sameOrigin(targetUrl, localUrl));
+  return Boolean((localUrl && sameOrigin(targetUrl, localUrl)) || (state.localUiOrigin && sameOrigin(targetUrl, state.localUiOrigin)));
 };
 
 const readDesktopHostsConfig = () => {
@@ -1944,6 +1945,7 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
   const useSaved = saved && typeof saved.width === 'number' && typeof saved.height === 'number';
   const restoredBounds = useSaved ? clampWindowBoundsToVisibleWorkArea(saved) : null;
   const desktopLocalOrigin = state.localOrigin || state.sidecarUrl || '';
+  const desktopLocalUiOrigin = state.localUiOrigin || desktopLocalOrigin;
   const desktopApiBaseUrl = typeof runtimeConfig.apiBaseUrl === 'string' ? runtimeConfig.apiBaseUrl : (state.apiBaseUrl || '');
   const desktopClientToken = typeof runtimeConfig.clientToken === 'string' ? runtimeConfig.clientToken : (state.clientToken || '');
   const desktopHome = os.homedir() || '';
@@ -1980,6 +1982,7 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
     webPreferences: {
       additionalArguments: [
         `--aiyo-local-origin=${desktopLocalOrigin}`,
+        `--aiyo-local-ui-origin=${desktopLocalUiOrigin}`,
         `--aiyo-api-base-url=${desktopApiBaseUrl}`,
         `--aiyo-client-token=${desktopClientToken}`,
         `--aiyo-home=${desktopHome}`,
@@ -2112,6 +2115,12 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
         } catch {
         }
       }
+      if (state.localUiOrigin) {
+        try {
+          if (new URL(state.localUiOrigin).origin === url.origin) return true;
+        } catch {
+        }
+      }
       if (state.sidecarUrl) {
         try {
           if (new URL(state.sidecarUrl).origin === url.origin) return true;
@@ -2187,6 +2196,7 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
 
 const activateMainWindow = async (url, localOrigin, bootOutcome, runtimeConfig = {}) => {
   state.localOrigin = localOrigin;
+  state.localUiOrigin = typeof runtimeConfig.localUiOrigin === 'string' ? runtimeConfig.localUiOrigin : localOrigin;
   state.apiBaseUrl = typeof runtimeConfig.apiBaseUrl === 'string' ? runtimeConfig.apiBaseUrl : state.apiBaseUrl;
   state.clientToken = typeof runtimeConfig.clientToken === 'string' ? runtimeConfig.clientToken : '';
   state.bootOutcome = bootOutcome ?? null;
@@ -2213,8 +2223,8 @@ const activateMainWindow = async (url, localOrigin, bootOutcome, runtimeConfig =
 
 const openMainWindow = async () => {
   if (!state.localOrigin) {
-    const { initialUrl, localOrigin, bootOutcome, apiBaseUrl, clientToken } = await resolveInitialUrl();
-    return activateMainWindow(initialUrl, localOrigin, bootOutcome, { apiBaseUrl, clientToken });
+    const { initialUrl, localOrigin, localUiOrigin, bootOutcome, apiBaseUrl, clientToken } = await resolveInitialUrl();
+    return activateMainWindow(initialUrl, localOrigin, bootOutcome, { apiBaseUrl, clientToken, localUiOrigin });
   }
 
   const config = readDesktopHostsConfig();
@@ -2227,7 +2237,7 @@ const openMainWindow = async () => {
   const targetUrl = host?.url && apiBaseUrl && !state.unreachableHosts.has(apiBaseUrl)
     ? (shouldUsePackagedUi() ? buildPackagedUiUrl('/index.html') : host.url)
     : localUiUrl;
-  return activateMainWindow(targetUrl, state.localOrigin, state.bootOutcome, { apiBaseUrl, clientToken });
+  return activateMainWindow(targetUrl, state.localOrigin, state.bootOutcome, { apiBaseUrl, clientToken, localUiOrigin: state.localUiOrigin || state.localOrigin });
 };
 
 const createAdditionalWindow = async (url, runtimeConfig = {}) => {
@@ -2293,6 +2303,7 @@ const createMiniChatWindow = async ({ mode, sessionId = '', directory = '', proj
   }
 
   const desktopLocalOrigin = state.localOrigin || '';
+  const desktopLocalUiOrigin = state.localUiOrigin || desktopLocalOrigin;
   const desktopApiBaseUrl = effectiveRuntimeConfig.apiBaseUrl || '';
   const desktopClientToken = effectiveRuntimeConfig.clientToken || '';
   const desktopHome = os.homedir() || '';
@@ -2319,6 +2330,7 @@ const createMiniChatWindow = async ({ mode, sessionId = '', directory = '', proj
     webPreferences: {
       additionalArguments: [
         `--aiyo-local-origin=${desktopLocalOrigin}`,
+        `--aiyo-local-ui-origin=${desktopLocalUiOrigin}`,
         `--aiyo-api-base-url=${desktopApiBaseUrl}`,
         `--aiyo-client-token=${desktopClientToken}`,
         `--aiyo-home=${desktopHome}`,
@@ -2451,6 +2463,7 @@ const resolveInitialUrl = async () => {
   const localAvailable = Boolean(localUrl);
 
   const localOrigin = new URL(localUrl).origin;
+  const localUiOrigin = new URL(localUiUrl).origin;
   let initialUrl = localUiUrl;
   let apiBaseUrl = localUrl;
   let clientToken = readDesktopLocalClientToken();
@@ -2491,7 +2504,7 @@ const resolveInitialUrl = async () => {
     localAvailable,
   });
 
-  return { initialUrl, localOrigin, localUiUrl, bootOutcome, apiBaseUrl, clientToken };
+  return { initialUrl, localOrigin, localUiUrl, localUiOrigin, bootOutcome, apiBaseUrl, clientToken };
 };
 
 const compareSemver = (left, right) => {
@@ -4102,6 +4115,13 @@ const isLocalSender = (webContents) => {
       } catch {
       }
     }
+    if (state.localUiOrigin) {
+      try {
+        const allowed = new URL(state.localUiOrigin);
+        if (allowed.origin === url.origin) return true;
+      } catch {
+      }
+    }
     if (state.sidecarUrl) {
       try {
         const allowed = new URL(state.sidecarUrl);
@@ -4485,8 +4505,9 @@ app.whenReady().then(async () => {
   }
 
   if (isBackgroundStart) {
-    const { localOrigin, bootOutcome } = await resolveInitialUrl();
+    const { localOrigin, localUiOrigin, bootOutcome } = await resolveInitialUrl();
     state.localOrigin = localOrigin;
+    state.localUiOrigin = localUiOrigin;
     state.bootOutcome = bootOutcome ?? null;
     state.initScript = buildInitScript(localOrigin, state.bootOutcome);
     log.info('[electron] started in background without window');
@@ -4502,8 +4523,8 @@ app.whenReady().then(async () => {
   const initial = extractInitialDeepLinks();
   if (initial.length > 0) handleDeepLinks(initial);
 
-  const { initialUrl, localOrigin, bootOutcome, apiBaseUrl, clientToken } = await resolveInitialUrl();
-  await activateMainWindow(initialUrl, localOrigin, bootOutcome, { apiBaseUrl, clientToken });
+  const { initialUrl, localOrigin, localUiOrigin, bootOutcome, apiBaseUrl, clientToken } = await resolveInitialUrl();
+  await activateMainWindow(initialUrl, localOrigin, bootOutcome, { apiBaseUrl, clientToken, localUiOrigin });
 
   // Notify renderer on OS wake-from-sleep so the SSE event pipeline can
   // reconnect immediately instead of waiting for the heartbeat watchdog.
