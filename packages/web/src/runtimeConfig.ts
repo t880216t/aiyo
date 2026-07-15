@@ -18,6 +18,7 @@ declare global {
     __AIYO_API_BASE_URL__?: string;
     __AIYO_CLIENT_TOKEN__?: string;
     __AIYO_LOCAL_ORIGIN__?: string;
+    __AIYO_LOCAL_UI_ORIGIN__?: string;
   }
 }
 
@@ -31,6 +32,9 @@ export const createConfiguredWebAPIs = () => {
   const localOrigin = typeof window.__AIYO_LOCAL_ORIGIN__ === 'string'
     ? window.__AIYO_LOCAL_ORIGIN__.trim()
     : '';
+  const localUiOrigin = typeof window.__AIYO_LOCAL_UI_ORIGIN__ === 'string'
+    ? window.__AIYO_LOCAL_UI_ORIGIN__.trim()
+    : '';
 
   const urls = configureRuntimeUrlResolver({
     apiBaseUrl: apiBaseUrl || undefined,
@@ -38,7 +42,7 @@ export const createConfiguredWebAPIs = () => {
   });
   initializeRuntimeEndpoint({
     apiBaseUrl,
-    runtimeKey: sameOrigin(apiBaseUrl, localOrigin) ? 'local' : null,
+    runtimeKey: sameOrigin(apiBaseUrl, localOrigin) || sameOrigin(apiBaseUrl, localUiOrigin) ? 'local' : null,
   });
   setRuntimeBearerToken(clientToken || null);
   void refreshRuntimeUrlAuthToken(apiBaseUrl || undefined).catch(() => {});

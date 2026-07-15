@@ -1120,6 +1120,8 @@
   'settings.providers.page.toast.customProviderRequired': '供應商 ID、名稱、Base URL 和至少一個模型為必填',
   'settings.providers.page.toast.customProviderCreated': '自訂供應商已新增',
   'settings.providers.page.toast.customProviderCreateFailed': '新增自訂供應商失敗',
+  'settings.providers.page.toast.customProviderUpdated': '自訂供應商已更新',
+  'settings.providers.page.toast.customProviderUpdateFailed': '更新自訂供應商失敗',
   'settings.mcp.page.empty.selectServer': '請從側邊欄選擇一個 MCP 伺服器',
   'settings.mcp.page.empty.addNewOne': '或新增一個新的',
   'settings.mcp.page.header.newServer': '新建 MCP 伺服器',

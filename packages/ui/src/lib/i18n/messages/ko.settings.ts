@@ -1199,6 +1199,8 @@ export const settingsDict = {
   'settings.providers.page.toast.customProviderRequired': '프로바이더 ID, 이름, Base URL, 하나 이상의 모델이 필요합니다',
   'settings.providers.page.toast.customProviderCreated': '사용자 지정 프로바이더가 추가되었습니다',
   'settings.providers.page.toast.customProviderCreateFailed': '사용자 지정 프로바이더를 추가하지 못했습니다',
+  'settings.providers.page.toast.customProviderUpdated': '사용자 지정 프로바이더가 업데이트되었습니다',
+  'settings.providers.page.toast.customProviderUpdateFailed': '사용자 지정 프로바이더를 업데이트하지 못했습니다',
   'settings.mcp.page.empty.selectServer': '사이드바에서 MCP 서버를 선택하세요',
   'settings.mcp.page.empty.addNewOne': '또는 새로 추가하세요',
   'settings.mcp.page.header.newServer': '새 MCP 서버',

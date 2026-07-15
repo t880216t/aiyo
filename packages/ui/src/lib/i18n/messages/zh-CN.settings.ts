@@ -1199,6 +1199,8 @@ export const settingsDict = {
   'settings.providers.page.toast.customProviderRequired': '提供商 ID、名称、Base URL 和至少一个模型为必填项',
   'settings.providers.page.toast.customProviderCreated': '自定义提供商已添加',
   'settings.providers.page.toast.customProviderCreateFailed': '添加自定义提供商失败',
+  'settings.providers.page.toast.customProviderUpdated': '自定义提供商已更新',
+  'settings.providers.page.toast.customProviderUpdateFailed': '更新自定义提供商失败',
   'settings.mcp.page.empty.selectServer': '请从侧边栏选择一个 MCP 服务器',
   'settings.mcp.page.empty.addNewOne': '或添加一个新的',
   'settings.mcp.page.header.newServer': '新建 MCP 服务器',

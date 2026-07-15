@@ -1199,6 +1199,8 @@ export const settingsDict = {
   "settings.providers.page.toast.customProviderRequired": "Потрібні ID, назва, Base URL і принаймні одна модель",
   "settings.providers.page.toast.customProviderCreated": "Власного провайдера додано",
   "settings.providers.page.toast.customProviderCreateFailed": "Не вдалося додати власного провайдера",
+  "settings.providers.page.toast.customProviderUpdated": "Власного провайдера оновлено",
+  "settings.providers.page.toast.customProviderUpdateFailed": "Не вдалося оновити власного провайдера",
   "settings.mcp.page.empty.selectServer": "Виберіть MCP сервер на бічній панелі",
   "settings.mcp.page.empty.addNewOne": "або додати новий",
   "settings.mcp.page.header.newServer": "Новий сервер MCP",

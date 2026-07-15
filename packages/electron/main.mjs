@@ -52,7 +52,10 @@ if (isDev) {
   app.setPath('userData', path.join(app.getPath('appData'), 'AiYo Dev'));
 }
 app.setAppUserModelId(APP_USER_MODEL_ID);
-app.commandLine.appendSwitch('proxy-bypass-list', '<-loopback>');
+// Keep desktop UI traffic to the local API off system proxies. Chromium's
+// "<-loopback>" token disables the default loopback bypass, which can route
+// 127.0.0.1 through system/corporate proxies and break local fetches.
+app.commandLine.appendSwitch('proxy-bypass-list', 'localhost;127.0.0.1;[::1];<local>');
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -1352,9 +1355,10 @@ const macosMajorVersion = () => {
   return major === 10 ? minor : major;
 };
 
-const buildInitScript = (localOrigin, bootOutcome, apiBaseUrl = '', clientToken = '') => {
+const buildInitScript = (localOrigin, bootOutcome, apiBaseUrl = '', clientToken = '', localUiOrigin = '') => {
   const home = JSON.stringify(os.homedir() || '');
   const local = JSON.stringify(localOrigin || '');
+  const localUi = JSON.stringify(localUiOrigin || localOrigin || '');
   const apiBase = JSON.stringify(apiBaseUrl || '');
   const token = JSON.stringify(clientToken || '');
   const packagedOrigin = JSON.stringify(packagedUiOrigin());
@@ -1362,7 +1366,7 @@ const buildInitScript = (localOrigin, bootOutcome, apiBaseUrl = '', clientToken 
   const outcome = JSON.stringify(bootOutcome ?? null);
   return [
     '(function(){',
-    `try{var __oc_local=${local};var __oc_api=${apiBase};var __oc_packaged=${packagedOrigin};var __oc_origin=window.location&&window.location.origin||'';var __oc_is_packaged=__oc_origin===__oc_packaged;var __oc_is_local=__oc_local&&__oc_origin===new URL(__oc_local).origin;window.__AIYO_MACOS_MAJOR__=${macVersion};window.__AIYO_LOCAL_ORIGIN__=__oc_local;window.__AIYO_API_BASE_URL__=__oc_api;if(__oc_is_local||__oc_is_packaged){window.__AIYO_HOME__=${home};}if((__oc_is_local||__oc_is_packaged)&&${token}){window.__AIYO_CLIENT_TOKEN__=${token};}var __oc_bo=${outcome};if(__oc_bo){window.__AIYO_DESKTOP_BOOT_OUTCOME__=__oc_bo;}}catch(_e){}`,
+    `try{var __oc_local=${local};var __oc_local_ui=${localUi};var __oc_api=${apiBase};var __oc_packaged=${packagedOrigin};var __oc_origin=window.location&&window.location.origin||'';var __oc_is_packaged=__oc_origin===__oc_packaged;var __oc_is_local=(__oc_local&&__oc_origin===new URL(__oc_local).origin)||(__oc_local_ui&&__oc_origin===new URL(__oc_local_ui).origin);window.__AIYO_MACOS_MAJOR__=${macVersion};window.__AIYO_LOCAL_ORIGIN__=__oc_local;window.__AIYO_LOCAL_UI_ORIGIN__=__oc_local_ui;window.__AIYO_API_BASE_URL__=__oc_api;if(__oc_is_local||__oc_is_packaged){window.__AIYO_HOME__=${home};}if((__oc_is_local||__oc_is_packaged)&&${token}){window.__AIYO_CLIENT_TOKEN__=${token};}var __oc_bo=${outcome};if(__oc_bo){window.__AIYO_DESKTOP_BOOT_OUTCOME__=__oc_bo;}}catch(_e){}`,
     '}())',
   ].join('');
 };
@@ -2006,7 +2010,7 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {} }
   const browserWindow = new BrowserWindow(options);
   browserWindow.__ocLabel = label || nextWindowLabel();
   browserWindow.__ocRuntimeConfig = { apiBaseUrl: desktopApiBaseUrl, clientToken: desktopClientToken };
-  browserWindow.__ocInitScript = buildInitScript(desktopLocalOrigin, state.bootOutcome, desktopApiBaseUrl, desktopClientToken);
+  browserWindow.__ocInitScript = buildInitScript(desktopLocalOrigin, state.bootOutcome, desktopApiBaseUrl, desktopClientToken, desktopLocalUiOrigin);
   browserWindow.__ocTitleBarOverlayEnabled = titleBarOverlayEnabled;
 
   if (useSaved && saved.maximized) {
@@ -2200,7 +2204,7 @@ const activateMainWindow = async (url, localOrigin, bootOutcome, runtimeConfig =
   state.apiBaseUrl = typeof runtimeConfig.apiBaseUrl === 'string' ? runtimeConfig.apiBaseUrl : state.apiBaseUrl;
   state.clientToken = typeof runtimeConfig.clientToken === 'string' ? runtimeConfig.clientToken : '';
   state.bootOutcome = bootOutcome ?? null;
-  state.initScript = buildInitScript(localOrigin, state.bootOutcome, state.apiBaseUrl, state.clientToken);
+  state.initScript = buildInitScript(localOrigin, state.bootOutcome, state.apiBaseUrl, state.clientToken, state.localUiOrigin);
 
   const mainWindow = state.mainWindow;
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -2347,7 +2351,7 @@ const createMiniChatWindow = async ({ mode, sessionId = '', directory = '', proj
   });
   browserWindow.__ocLabel = nextWindowLabel();
   browserWindow.__ocRuntimeConfig = effectiveRuntimeConfig;
-  browserWindow.__ocInitScript = buildInitScript(desktopLocalOrigin, state.bootOutcome, desktopApiBaseUrl, desktopClientToken);
+  browserWindow.__ocInitScript = buildInitScript(desktopLocalOrigin, state.bootOutcome, desktopApiBaseUrl, desktopClientToken, desktopLocalUiOrigin);
   browserWindow.__ocMiniChat = true;
   browserWindow.__ocMiniChatSessionId = sessionWindowKey;
   browserWindow.__ocPinned = false;
@@ -2449,11 +2453,12 @@ const resolveInitialUrl = async () => {
   const hmrUiPort = process.env.AIYO_HMR_UI_PORT || '5173';
   const hmrApiUrl = `http://127.0.0.1:${hmrApiPort}`;
   const hmrUiUrl = `http://127.0.0.1:${hmrUiPort}`;
+  const usePackagedUi = shouldUsePackagedUi();
   const localUrl = isDev && await waitForHealth(hmrApiUrl, 5_000, 100)
     ? hmrApiUrl
     : await spawnLocalServer();
 
-  const localUiUrl = shouldUsePackagedUi()
+  const localUiUrl = usePackagedUi
     ? buildPackagedUiUrl('/index.html')
     : isDev && await waitForHealth(hmrUiUrl, 8_000, 100)
     ? hmrUiUrl
@@ -2474,13 +2479,13 @@ const resolveInitialUrl = async () => {
   if (envTarget) {
     apiBaseUrl = envTarget;
     clientToken = '';
-    initialUrl = shouldUsePackagedUi() ? localUiUrl : envTarget;
+    initialUrl = usePackagedUi ? localUiUrl : envTarget;
   } else if (config.defaultHostId && config.defaultHostId !== LOCAL_HOST_ID) {
     const host = config.hosts.find((entry) => entry.id === config.defaultHostId);
     if (host?.url) {
       apiBaseUrl = host.apiUrl || host.url;
       clientToken = host.clientToken || '';
-      initialUrl = shouldUsePackagedUi() ? localUiUrl : host.url;
+      initialUrl = usePackagedUi ? localUiUrl : host.url;
     }
   }
 
@@ -2504,7 +2509,11 @@ const resolveInitialUrl = async () => {
     localAvailable,
   });
 
-  return { initialUrl, localOrigin, localUiUrl, localUiOrigin, bootOutcome, apiBaseUrl, clientToken };
+  const rendererApiBaseUrl = !usePackagedUi && initialUrl === localUiUrl && apiBaseUrl === localUrl && localUiUrl !== localUrl
+    ? localUiUrl
+    : apiBaseUrl;
+
+  return { initialUrl, localOrigin, localUiUrl, localUiOrigin, bootOutcome, apiBaseUrl: rendererApiBaseUrl, clientToken };
 };
 
 const compareSemver = (left, right) => {
@@ -3485,7 +3494,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
         config: updatedConfig,
         localAvailable: Boolean(state.sidecarUrl || state.localOrigin),
       });
-      state.initScript = buildInitScript(state.localOrigin, state.bootOutcome, state.apiBaseUrl, state.clientToken);
+      state.initScript = buildInitScript(state.localOrigin, state.bootOutcome, state.apiBaseUrl, state.clientToken, state.localUiOrigin);
       log.info('[electron] hosts config updated, recomputed bootOutcome', state.bootOutcome);
       return null;
     }
@@ -4509,7 +4518,7 @@ app.whenReady().then(async () => {
     state.localOrigin = localOrigin;
     state.localUiOrigin = localUiOrigin;
     state.bootOutcome = bootOutcome ?? null;
-    state.initScript = buildInitScript(localOrigin, state.bootOutcome);
+    state.initScript = buildInitScript(localOrigin, state.bootOutcome, '', '', localUiOrigin);
     log.info('[electron] started in background without window');
     return;
   }

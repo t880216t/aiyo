@@ -5,6 +5,7 @@ declare global {
     __AIYO_HOME__?: string;
     __AIYO_MACOS_MAJOR__?: number;
     __AIYO_LOCAL_ORIGIN__?: string;
+    __AIYO_LOCAL_UI_ORIGIN__?: string;
     __AIYO_ELECTRON__?: { runtime?: string; macVibrancy?: boolean; macVibrancySupported?: boolean };
     __AIYO_PLATFORM__?: string;
     __AIYO_DESKTOP_BOOT_OUTCOME__?: DesktopBootOutcome;

@@ -37,6 +37,12 @@ const readInjectedLocalOrigin = (): string => {
   return typeof injected === 'string' ? injected.trim() : '';
 };
 
+const readInjectedLocalUiOrigin = (): string => {
+  if (typeof window === 'undefined') return '';
+  const injected = (window as typeof window & { __AIYO_LOCAL_UI_ORIGIN__?: string }).__AIYO_LOCAL_UI_ORIGIN__;
+  return typeof injected === 'string' ? injected.trim() : '';
+};
+
 const sameOrigin = (left: string, right: string): boolean => {
   if (!left || !right) return false;
   try {
@@ -50,7 +56,7 @@ export const getRuntimeApiBaseUrl = (): string => activeApiBaseUrl || readInject
 export const getRuntimeKey = (): string => {
   if (activeRuntimeKey) return activeRuntimeKey;
   const apiBaseUrl = getRuntimeApiBaseUrl();
-  if (sameOrigin(apiBaseUrl, readInjectedLocalOrigin())) return 'local';
+  if (sameOrigin(apiBaseUrl, readInjectedLocalOrigin()) || sameOrigin(apiBaseUrl, readInjectedLocalUiOrigin())) return 'local';
   return normalizeRuntimeUrlKey(apiBaseUrl);
 };
 
@@ -65,7 +71,7 @@ export const initializeRuntimeEndpoint = (options: { apiBaseUrl?: string | null;
   }
 
   activeApiBaseUrl = apiBaseUrl;
-  activeRuntimeKey = options.runtimeKey?.trim() || (sameOrigin(apiBaseUrl, readInjectedLocalOrigin()) ? 'local' : normalizeRuntimeUrlKey(apiBaseUrl));
+  activeRuntimeKey = options.runtimeKey?.trim() || (sameOrigin(apiBaseUrl, readInjectedLocalOrigin()) || sameOrigin(apiBaseUrl, readInjectedLocalUiOrigin()) ? 'local' : normalizeRuntimeUrlKey(apiBaseUrl));
 };
 
 export const switchRuntimeEndpoint = (options: { apiBaseUrl: string; clientToken?: string | null; runtimeKey?: string | null }): void => {

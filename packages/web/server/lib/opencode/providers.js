@@ -111,6 +111,89 @@ function createCustomProviderConfig({ providerId, providerID, name, baseURL, mod
   };
 }
 
+function resolveProviderConfigTarget({ providerId, workingDirectory, scope = 'user' } = {}) {
+  const normalizedProviderId = normalizeNonEmptyString(providerId);
+  if (!normalizedProviderId) {
+    throw new Error('Provider ID is required');
+  }
+
+  const layers = readConfigLayers(workingDirectory);
+  let targetPath = layers.paths.userPath;
+
+  if (scope === 'project') {
+    if (!workingDirectory) {
+      throw new Error('Working directory is required for project scope');
+    }
+    targetPath = layers.paths.projectPath || targetPath;
+  } else if (scope === 'custom') {
+    if (!layers.paths.customPath) {
+      throw new Error('Custom config is not available');
+    }
+    targetPath = layers.paths.customPath;
+  } else if (scope !== 'user') {
+    throw new Error('Invalid scope');
+  }
+
+  const targetConfig = getConfigForPath(layers, targetPath);
+  const providerConfig = isPlainObject(targetConfig.provider) ? targetConfig.provider : {};
+  const providersConfig = isPlainObject(targetConfig.providers) ? targetConfig.providers : {};
+  const sectionKey = Object.prototype.hasOwnProperty.call(providerConfig, normalizedProviderId)
+    ? 'provider'
+    : Object.prototype.hasOwnProperty.call(providersConfig, normalizedProviderId)
+      ? 'providers'
+      : '';
+
+  if (!sectionKey) {
+    throw new Error('Provider does not exist in the selected scope');
+  }
+
+  return {
+    providerId: normalizedProviderId,
+    scope,
+    targetPath: targetPath || CONFIG_FILE,
+    targetConfig,
+    sectionKey,
+    providers: sectionKey === 'provider' ? providerConfig : providersConfig,
+  };
+}
+
+function updateCustomProviderConfig({ providerId, baseURL, scope = 'user', workingDirectory } = {}) {
+  const normalizedBaseURL = normalizeNonEmptyString(baseURL);
+  if (!normalizedBaseURL) {
+    throw new Error('Base URL is required');
+  }
+  try {
+    const parsedUrl = new URL(normalizedBaseURL);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new Error('Base URL must use http or https');
+    }
+  } catch {
+    throw new Error('Base URL must be a valid URL');
+  }
+
+  const target = resolveProviderConfigTarget({ providerId, workingDirectory, scope });
+  const existing = isPlainObject(target.providers[target.providerId]) ? target.providers[target.providerId] : {};
+  const existingOptions = isPlainObject(existing.options) ? existing.options : {};
+
+  target.providers[target.providerId] = {
+    ...existing,
+    options: {
+      ...existingOptions,
+      baseURL: normalizedBaseURL,
+    },
+  };
+  target.targetConfig[target.sectionKey] = target.providers;
+
+  writeConfig(target.targetConfig, target.targetPath);
+  console.log(`Updated custom provider ${target.providerId} in config: ${target.targetPath}`);
+
+  return {
+    providerId: target.providerId,
+    scope: target.scope,
+    path: target.targetPath,
+  };
+}
+
 function getProviderSources(providerId, workingDirectory) {
   const layers = readConfigLayers(workingDirectory);
   const { userConfig, projectConfig, customConfig, paths } = layers;
@@ -199,4 +282,5 @@ export {
   createCustomProviderConfig,
   getProviderSources,
   removeProviderConfig,
+  updateCustomProviderConfig,
 };

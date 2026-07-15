@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.9] - 2026-07-15
+
+- Settings/Providers: allow custom providers to update their base URL and disconnect by removing their saved config, not just credentials.
+- Server: parse and handle AiYo-owned provider configuration routes explicitly before the OpenCode proxy.
+- Desktop: route Electron dev HMR API traffic through the Vite origin to avoid loopback ALPN failures when creating sessions.
+
 ## [1.13.8] - 2026-07-14
 
 - Settings/Providers: add custom OpenAI-compatible providers from the provider picker, including base URL, model IDs, scope, and optional API key setup.

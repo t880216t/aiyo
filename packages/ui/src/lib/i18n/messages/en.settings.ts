@@ -1232,6 +1232,8 @@ export const settingsDict = {
   'settings.providers.page.toast.customProviderRequired': 'Provider ID, name, base URL, and at least one model are required',
   'settings.providers.page.toast.customProviderCreated': 'Custom provider added',
   'settings.providers.page.toast.customProviderCreateFailed': 'Failed to add custom provider',
+  'settings.providers.page.toast.customProviderUpdated': 'Custom provider updated',
+  'settings.providers.page.toast.customProviderUpdateFailed': 'Failed to update custom provider',
   'settings.mcp.page.empty.selectServer': 'Select an MCP server from the sidebar',
   'settings.mcp.page.empty.addNewOne': 'or add a new one',
   'settings.mcp.page.header.newServer': 'New MCP Server',

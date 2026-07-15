@@ -76,6 +76,11 @@ const getLocalOrigin = (): string => {
   return window.__AIYO_LOCAL_ORIGIN__ || window.location.origin;
 };
 
+const getLocalRuntimeOrigin = (): string => {
+  if (typeof window === 'undefined') return '';
+  return window.__AIYO_LOCAL_UI_ORIGIN__ || getLocalOrigin();
+};
+
 const getLocalClientToken = async (): Promise<string> => {
   if (!isElectronShell()) return '';
   return desktopLocalClientTokenGet().catch(() => '');
@@ -684,7 +689,7 @@ export function DesktopHostSwitcherDialog({
     const localTarget = toNavigationUrl(localOrigin);
     if (isElectronShell()) {
       const clientToken = await getLocalClientToken();
-      switchRuntimeEndpoint({ apiBaseUrl: localOrigin, clientToken: clientToken || null, runtimeKey: 'local' });
+      switchRuntimeEndpoint({ apiBaseUrl: getLocalRuntimeOrigin(), clientToken: clientToken || null, runtimeKey: 'local' });
       onHostSwitched?.();
       return;
     }
@@ -1187,7 +1192,7 @@ export function DesktopHostSwitcherButton({ headerIconButtonClass }: DesktopHost
 
     if (isElectronShell()) {
       const clientToken = await getLocalClientToken();
-      switchRuntimeEndpoint({ apiBaseUrl: nextLocalOrigin, clientToken: clientToken || null, runtimeKey: 'local' });
+      switchRuntimeEndpoint({ apiBaseUrl: getLocalRuntimeOrigin() || nextLocalOrigin, clientToken: clientToken || null, runtimeKey: 'local' });
     } else {
       window.location.assign(toNavigationUrl(nextLocalOrigin));
     }

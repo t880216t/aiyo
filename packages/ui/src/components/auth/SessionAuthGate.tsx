@@ -35,6 +35,12 @@ const readLocalOrigin = (): string => {
   return typeof injected === 'string' ? injected.trim() : '';
 };
 
+const readLocalUiOrigin = (): string => {
+  if (typeof window === 'undefined') return '';
+  const injected = (window as typeof window & { __AIYO_LOCAL_UI_ORIGIN__?: string }).__AIYO_LOCAL_UI_ORIGIN__;
+  return typeof injected === 'string' ? injected.trim() : '';
+};
+
 const sameOrigin = (left: string, right: string): boolean => {
   const normalizedLeft = normalizeHostUrl(left);
   const normalizedRight = normalizeHostUrl(right);
@@ -54,7 +60,8 @@ const isLocalDesktopRuntime = (): boolean => {
   if (!isDesktopShell()) return false;
   const apiBaseUrl = getRuntimeApiBaseUrl();
   const localOrigin = readLocalOrigin();
-  return Boolean(localOrigin && sameOrigin(localOrigin, apiBaseUrl));
+  const localUiOrigin = readLocalUiOrigin();
+  return Boolean((localOrigin && sameOrigin(localOrigin, apiBaseUrl)) || (localUiOrigin && sameOrigin(localUiOrigin, apiBaseUrl)));
 };
 
 const desktopClientAuthMetadata = (): { clientKind?: string; dedupeKey?: string } => {
@@ -149,7 +156,7 @@ const persistDesktopClientToken = async (apiBaseUrl: string, clientToken: string
   if (!isDesktopShell() || !clientToken) return;
   const cfg = await desktopHostsGet().catch(() => null);
   if (!cfg) return;
-  if (cfg.localOrigin && sameOrigin(cfg.localOrigin, apiBaseUrl)) {
+  if ((cfg.localOrigin && sameOrigin(cfg.localOrigin, apiBaseUrl)) || sameOrigin(readLocalUiOrigin(), apiBaseUrl)) {
     await desktopHostsSet({
       hosts: cfg.hosts,
       defaultHostId: cfg.defaultHostId,

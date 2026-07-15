@@ -18,6 +18,7 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
     createCustomProviderConfig,
     getProviderSources,
     removeProviderConfig,
+    updateCustomProviderConfig,
     refreshOpenCodeAfterConfigChange,
     buildOpenCodeUrl,
     getOpenCodeAuthHeaders,
@@ -422,6 +423,48 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
       console.error('Failed to create custom provider:', error);
       const message = error.message || 'Failed to create custom provider';
       const status = /required|invalid|valid|exists|scope/i.test(message) ? 400 : 500;
+      return res.status(status).json({ error: message });
+    }
+  });
+
+  app.put('/api/provider/:providerId/custom', async (req, res) => {
+    try {
+      const providerId = typeof req.params?.providerId === 'string' ? req.params.providerId : '';
+      const body = req.body && typeof req.body === 'object' ? req.body : {};
+      const scope = typeof body.scope === 'string' ? body.scope : 'user';
+      const headerDirectory = typeof req.get === 'function' ? req.get('x-opencode-directory') : null;
+      const bodyDirectory = typeof body.directory === 'string' ? body.directory : null;
+      const requestedDirectory = headerDirectory || bodyDirectory || null;
+
+      let directory = null;
+      if (scope === 'project' || requestedDirectory) {
+        const resolved = await resolveProjectDirectory(req);
+        if (!resolved.directory) {
+          return res.status(400).json({ error: resolved.error });
+        }
+        directory = resolved.directory;
+      }
+
+      const updated = updateCustomProviderConfig({
+        providerId,
+        baseURL: body.baseURL,
+        scope,
+        workingDirectory: directory,
+      });
+
+      await refreshOpenCodeAfterConfigChange(`custom provider ${updated.providerId} updated (${scope})`);
+
+      return res.json({
+        success: true,
+        providerId: updated.providerId,
+        scope: updated.scope,
+        path: updated.path,
+        requiresReload: true,
+      });
+    } catch (error) {
+      console.error('Failed to update custom provider:', error);
+      const message = error.message || 'Failed to update custom provider';
+      const status = /required|invalid|valid|exist|scope|available/i.test(message) ? 400 : 500;
       return res.status(status).json({ error: message });
     }
   });

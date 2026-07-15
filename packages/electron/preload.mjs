@@ -55,6 +55,10 @@ if (localOrigin) {
   contextBridge.exposeInMainWorld('__AIYO_LOCAL_ORIGIN__', localOrigin);
 }
 
+if (localUiOrigin) {
+  contextBridge.exposeInMainWorld('__AIYO_LOCAL_UI_ORIGIN__', localUiOrigin);
+}
+
 if (apiBaseUrl) {
   contextBridge.exposeInMainWorld('__AIYO_API_BASE_URL__', apiBaseUrl);
 }

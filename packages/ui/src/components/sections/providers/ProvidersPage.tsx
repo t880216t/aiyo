@@ -78,6 +78,21 @@ type CustomProviderScope = 'user' | 'project';
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
+const readProviderBaseUrl = (provider: unknown): string => {
+  if (!isRecord(provider) || !isRecord(provider.options)) {
+    return '';
+  }
+  const baseURL = provider.options.baseURL ?? provider.options.baseUrl;
+  return typeof baseURL === 'string' ? baseURL.trim() : '';
+};
+
+const resolveEditableProviderScope = (sources: ProviderSources | undefined): CustomProviderScope | 'custom' | null => {
+  if (sources?.project.exists) return 'project';
+  if (sources?.user.exists) return 'user';
+  if (sources?.custom?.exists) return 'custom';
+  return null;
+};
+
 const normalizeAuthType = (method: AuthMethod) => {
   const raw = typeof method.type === 'string' ? method.type : '';
   const label = `${method.name ?? ''} ${method.label ?? ''}`.toLowerCase();
@@ -180,6 +195,8 @@ export const ProvidersPage: React.FC = () => {
   const [customProviderApiKey, setCustomProviderApiKey] = React.useState('');
   const [customProviderScope, setCustomProviderScope] = React.useState<CustomProviderScope>('user');
   const [customProviderBusy, setCustomProviderBusy] = React.useState(false);
+  const [providerBaseUrlInput, setProviderBaseUrlInput] = React.useState('');
+  const [providerBaseUrlBusy, setProviderBaseUrlBusy] = React.useState(false);
 
   React.useEffect(() => {
     if (!selectedProviderId && providers.length > 0) {
@@ -332,6 +349,13 @@ export const ProvidersPage: React.FC = () => {
 
   const selectedProvider = providers.find((provider) => provider.id === selectedProviderId);
   const selectedSources = selectedProviderId ? providerSources[selectedProviderId] : undefined;
+  const selectedProviderBaseUrl = React.useMemo(() => readProviderBaseUrl(selectedProvider), [selectedProvider]);
+  const editableProviderScope = React.useMemo(() => resolveEditableProviderScope(selectedSources), [selectedSources]);
+  const showProviderBaseUrlEditor = Boolean(selectedProvider && (selectedProviderBaseUrl || editableProviderScope));
+
+  React.useEffect(() => {
+    setProviderBaseUrlInput(selectedProviderBaseUrl);
+  }, [selectedProviderBaseUrl, selectedProviderId]);
 
   const handleSaveApiKey = async (providerId: string) => {
     const apiKey = apiKeyInputs[providerId]?.trim() ?? '';
@@ -482,9 +506,18 @@ export const ProvidersPage: React.FC = () => {
     setAuthBusyKey(busyKey);
 
     try {
-      const result = await opencodeClient.getSdkClient().auth.remove({ providerID: providerId });
-      if (result.error) {
-        throw new Error(t('settings.providers.page.toast.providerDisconnectFailed'));
+      const directory = opencodeClient.getDirectory();
+      const response = await runtimeFetch(`/api/provider/${encodeURIComponent(providerId)}/auth`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+        query: {
+          scope: 'all',
+          ...(directory ? { directory } : {}),
+        },
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.success === false) {
+        throw new Error(payload?.error || t('settings.providers.page.toast.providerDisconnectFailed'));
       }
 
       toast.success(t('settings.providers.page.toast.providerDisconnected'));
@@ -494,6 +527,47 @@ export const ProvidersPage: React.FC = () => {
       toast.error(t('settings.providers.page.toast.providerDisconnectFailed'));
     } finally {
       setAuthBusyKey(null);
+    }
+  };
+
+  const handleUpdateProviderBaseUrl = async () => {
+    if (!selectedProvider || !editableProviderScope) {
+      return;
+    }
+    const baseURL = providerBaseUrlInput.trim();
+    if (!baseURL) {
+      toast.error(t('settings.providers.page.toast.customProviderRequired'));
+      return;
+    }
+
+    setProviderBaseUrlBusy(true);
+    try {
+      const directory = opencodeClient.getDirectory();
+      const response = await runtimeFetch(`/api/provider/${encodeURIComponent(selectedProvider.id)}/custom`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          baseURL,
+          scope: editableProviderScope,
+          directory: editableProviderScope === 'project' && directory ? directory : undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.success === false) {
+        throw new Error(payload?.error || t('settings.providers.page.toast.customProviderUpdateFailed'));
+      }
+
+      toast.success(t('settings.providers.page.toast.customProviderUpdated'));
+      await reloadOpenCodeConfiguration({ scopes: ["providers"], mode: "active" });
+      setSelectedProvider(selectedProvider.id);
+    } catch (error) {
+      console.error('Failed to update custom provider:', error);
+      toast.error(error instanceof Error ? error.message : t('settings.providers.page.toast.customProviderUpdateFailed'));
+    } finally {
+      setProviderBaseUrlBusy(false);
     }
   };
 
@@ -992,6 +1066,35 @@ export const ProvidersPage: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {showProviderBaseUrlEditor ? (
+          <div data-settings-item="providers.custom" className="mb-8">
+            <div className="mb-1 px-1">
+              <h3 className="typography-ui-header font-medium text-foreground">{t('settings.providers.page.custom.baseUrlLabel')}</h3>
+            </div>
+
+            <section className="px-2 pb-2 pt-0">
+              <div className="flex flex-col gap-2 py-1.5 sm:flex-row sm:items-center">
+                <Input
+                  value={providerBaseUrlInput}
+                  onChange={(event) => setProviderBaseUrlInput(event.target.value)}
+                  placeholder={t('settings.providers.page.custom.baseUrlPlaceholder')}
+                  className="h-7 flex-1 font-mono text-xs"
+                  disabled={!editableProviderScope}
+                />
+                <Button
+                  type="button"
+                  size="xs"
+                  className="!font-normal shrink-0"
+                  onClick={handleUpdateProviderBaseUrl}
+                  disabled={!editableProviderScope || providerBaseUrlBusy || providerBaseUrlInput.trim() === selectedProviderBaseUrl}
+                >
+                  {providerBaseUrlBusy ? t('settings.providers.page.actions.saving') : t('settings.common.actions.saveChanges')}
+                </Button>
+              </div>
+            </section>
+          </div>
+        ) : null}
 
         {/* Authentication */}
         <div data-settings-item="providers.auth" className="mb-8">

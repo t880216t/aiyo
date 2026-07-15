@@ -1278,6 +1278,8 @@ export const settingsDict = {
   'settings.providers.page.toast.customProviderCreateFailed': 'Nie udało się dodać niestandardowego dostawcy',
   'settings.providers.page.toast.customProviderCreated': 'Niestandardowy dostawca został dodany',
   'settings.providers.page.toast.customProviderRequired': 'ID, nazwa, Base URL i co najmniej jeden model są wymagane',
+  'settings.providers.page.toast.customProviderUpdated': 'Niestandardowy dostawca został zaktualizowany',
+  'settings.providers.page.toast.customProviderUpdateFailed': 'Nie udało się zaktualizować niestandardowego dostawcy',
   'settings.providers.page.toast.providerDisconnectFailed': 'Nie udało się odłączyć dostawcy',
   'settings.providers.page.toast.providerDisconnected': 'Dostawca został odłączony',
   'settings.providers.page.toast.providerSourcesLoadFailed': 'Nie udało się załadować źródeł dostawcy',

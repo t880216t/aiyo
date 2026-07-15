@@ -45,6 +45,7 @@ export {
   createCustomProviderConfig,
   getProviderSources,
   removeProviderConfig,
+  updateCustomProviderConfig,
 } from './providers.js';
 
 export {
