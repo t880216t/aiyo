@@ -2090,13 +2090,14 @@ const normalizeModelIds = (models: unknown): string[] => {
 
 export const createCustomProviderConfig = (data: {
   providerId?: unknown;
+  providerID?: unknown;
   name?: unknown;
   baseURL?: unknown;
   models?: unknown;
   scope?: 'user' | 'project';
   workingDirectory?: string;
 }) => {
-  const providerId = normalizeNonEmptyString(data.providerId);
+  const providerId = normalizeNonEmptyString(data.providerId || data.providerID);
   const name = normalizeNonEmptyString(data.name);
   const baseURL = normalizeNonEmptyString(data.baseURL);
   const models = normalizeModelIds(data.models);

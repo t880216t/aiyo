@@ -394,6 +394,7 @@ export const registerOpenCodeRoutes = (app, dependencies) => {
 
       const created = createCustomProviderConfig({
         providerId: body.providerId,
+        providerID: body.providerID,
         name: body.name,
         baseURL: body.baseURL,
         models: body.models,

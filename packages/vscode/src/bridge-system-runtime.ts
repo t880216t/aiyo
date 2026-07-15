@@ -453,8 +453,9 @@ export async function handleSystemBridgeMessage(
     }
 
     case 'api:provider/custom:create': {
-      const { providerId, name, baseURL, models, scope, directory, apiKey } = (payload || {}) as {
+      const { providerId, providerID, name, baseURL, models, scope, directory, apiKey } = (payload || {}) as {
         providerId?: unknown;
+        providerID?: unknown;
         name?: unknown;
         baseURL?: unknown;
         models?: unknown;
@@ -468,6 +469,7 @@ export async function handleSystemBridgeMessage(
       try {
         const created = createCustomProviderConfig({
           providerId,
+          providerID,
           name,
           baseURL,
           models,

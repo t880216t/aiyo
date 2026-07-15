@@ -522,6 +522,7 @@ export const ProvidersPage: React.FC = () => {
         },
         body: JSON.stringify({
           providerId,
+          providerID: providerId,
           name,
           baseURL,
           models,

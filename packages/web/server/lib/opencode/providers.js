@@ -31,8 +31,8 @@ function normalizeModelIds(models) {
   return result;
 }
 
-function createCustomProviderConfig({ providerId, name, baseURL, models, scope = 'user', workingDirectory } = {}) {
-  const normalizedProviderId = normalizeNonEmptyString(providerId);
+function createCustomProviderConfig({ providerId, providerID, name, baseURL, models, scope = 'user', workingDirectory } = {}) {
+  const normalizedProviderId = normalizeNonEmptyString(providerId || providerID);
   const normalizedName = normalizeNonEmptyString(name);
   const normalizedBaseURL = normalizeNonEmptyString(baseURL);
   const normalizedModels = normalizeModelIds(models);
