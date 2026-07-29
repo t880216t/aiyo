@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.11] - 2026-07-29
+
+- Desktop: show the real restart/install error when applying a macOS update fails, instead of making the Restart to Update action appear unresponsive.
+
 ## [1.13.10] - 2026-07-29
 
 - Mini Apps: add a settings page and embedded viewer for desktop mini-app workflows, including per-app proxy configuration.

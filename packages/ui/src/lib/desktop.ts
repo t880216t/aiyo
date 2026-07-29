@@ -629,7 +629,13 @@ export const restartToApplyUpdate = async (): Promise<boolean> => {
     return false;
   }
 
-  return restartDesktopApp();
+  try {
+    await invokeDesktop('desktop_restart');
+    return true;
+  } catch (error) {
+    console.warn('Failed to restart desktop app for update', error);
+    throw error;
+  }
 };
 
 export const restartDesktopApp = async (): Promise<boolean> => {
