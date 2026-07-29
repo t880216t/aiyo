@@ -23,7 +23,8 @@ export type SettingsPageSlug =
   | 'notifications'
   | 'voice'
   | 'tunnel'
-  | 'about';
+  | 'about'
+  | 'mini-apps';
 
 export type SettingsPageGroup =
   | 'appearance'
@@ -64,6 +65,14 @@ export const SETTINGS_GROUP_LABELS: Record<SettingsPageGroup, string> = {
 };
 
 export const SETTINGS_PAGE_METADATA: readonly SettingsPageMeta[] = [
+  {
+    slug: 'mini-apps',
+    title: 'Mini Apps',
+    group: 'general',
+    kind: 'single',
+    description: 'Open configured third-party web pages inside AiYo.',
+    keywords: ['mini app', 'mini apps', 'web app', 'third-party', 'website'],
+  },
   {
     slug: 'home',
     title: 'Settings',
@@ -206,7 +215,7 @@ export const SETTINGS_PAGE_METADATA: readonly SettingsPageMeta[] = [
   { slug: 'notifications', title: 'Notifications', group: 'general', kind: 'single', keywords: ['alerts', 'native', 'summary', 'summarization'], },
   { slug: 'voice', title: 'Voice', group: 'advanced', kind: 'single', keywords: ['tts', 'speech', 'voice'], isAvailable: (ctx) => !ctx.isVSCode },
   { slug: 'tunnel', title: 'Remote Tunnel', group: 'advanced', kind: 'single', keywords: ['tunnel', 'cloudflare', 'qr', 'remote', 'mobile', 'share'], isAvailable: (ctx) => !ctx.isVSCode },
-  { slug: 'about', title: 'About', group: 'advanced', kind: 'single', keywords: ['about', 'version', 'updates', 'release', 'changelog'], isAvailable: (ctx) => ctx.isMobile },
+  { slug: 'about', title: 'About', group: 'advanced', kind: 'single', keywords: ['about', 'version', 'updates', 'release', 'changelog'], isAvailable: (ctx) => !ctx.isVSCode },
 ] as const;
 
 export const LEGACY_SIDEBAR_SECTION_TO_SETTINGS_SLUG: Record<SidebarSection, SettingsPageSlug> = {

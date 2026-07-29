@@ -656,6 +656,7 @@ interface UIStore {
   closeContextPanelTab: (directory: string, tabID: string) => void;
   closeContextPanel: (directory: string) => void;
   toggleContextPanelExpanded: (directory: string) => void;
+  setContextPanelExpanded: (directory: string, expanded: boolean) => void;
   setContextPanelWidth: (directory: string, width: number) => void;
   toggleBottomTerminal: () => void;
   setBottomTerminalOpen: (open: boolean) => void;
@@ -1269,6 +1270,30 @@ export const useUIStore = create<UIStore>()(
             };
 
             return { contextPanelByDirectory: clampContextPanelRoots(byDirectory, 20) };
+          });
+        },
+
+        setContextPanelExpanded: (directory, expanded) => {
+          const normalizedDirectory = normalizeDirectoryPath((directory || '').trim());
+          if (!normalizedDirectory) {
+            return;
+          }
+
+          set((state) => {
+            const prev = state.contextPanelByDirectory[normalizedDirectory];
+            if (!prev || prev.expanded === expanded) {
+              return state;
+            }
+
+            return {
+              contextPanelByDirectory: clampContextPanelRoots({
+                ...state.contextPanelByDirectory,
+                [normalizedDirectory]: {
+                  ...touchContextPanelState(prev),
+                  expanded,
+                },
+              }, 20),
+            };
           });
         },
 

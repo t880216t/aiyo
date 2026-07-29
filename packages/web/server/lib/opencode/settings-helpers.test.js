@@ -21,6 +21,57 @@ const createTestHelpers = () => createSettingsHelpers({
 });
 
 describe('settings helpers', () => {
+  it('persists valid mini apps and drops unsafe entries', () => {
+    const helpers = createTestHelpers();
+
+    expect(helpers.sanitizeSettingsUpdate({
+      miniApps: [
+        { id: 'docs', name: ' Docs ', url: 'https://example.com/docs ', iconUrl: ' https://cdn.example.com/icon.png ', pinned: true },
+        { id: 'file', name: 'Local file', url: 'file:///tmp/app.html' },
+        { id: 'bad', name: 'Bad', url: 'javascript:alert(1)' },
+        { id: 'bad-icon', name: 'Bad Icon', url: 'https://example.com/app', iconUrl: 'javascript:alert(1)', pinned: true },
+        { id: 'missing-url', name: 'Missing URL' },
+      ],
+    })).toEqual({
+      miniApps: [
+        { id: 'docs', name: 'Docs', url: 'https://example.com/docs', pinned: true, iconUrl: 'https://cdn.example.com/icon.png' },
+        { id: 'bad-icon', name: 'Bad Icon', url: 'https://example.com/app', pinned: true },
+      ],
+    });
+  });
+
+  it('limits pinned mini apps to five', () => {
+    const helpers = createTestHelpers();
+
+    const miniApps = Array.from({ length: 7 }, (_, index) => ({
+      id: `app-${index}`,
+      name: `App ${index}`,
+      url: `https://example.com/${index}`,
+      pinned: true,
+    }));
+
+    expect(helpers.sanitizeSettingsUpdate({ miniApps }).miniApps.filter((app) => app.pinned)).toHaveLength(5);
+  });
+
+  it('accepts mini app proxy settings and rejects invalid proxy URLs', () => {
+    const helpers = createTestHelpers();
+
+    expect(helpers.sanitizeSettingsUpdate({
+      miniAppProxyMode: 'custom',
+      miniAppProxyUrl: ' socks5://127.0.0.1:1080 ',
+      miniAppProxyBypassRules: ' localhost;127.0.0.1 ',
+    })).toEqual({
+      miniAppProxyMode: 'custom',
+      miniAppProxyUrl: 'socks5://127.0.0.1:1080',
+      miniAppProxyBypassRules: 'localhost;127.0.0.1',
+    });
+
+    expect(helpers.sanitizeSettingsUpdate({
+      miniAppProxyMode: 'global',
+      miniAppProxyUrl: 'javascript:alert(1)',
+    })).toEqual({});
+  });
+
   it('accepts messageStreamTransport as a persisted shared setting', () => {
     const helpers = createTestHelpers();
 

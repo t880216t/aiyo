@@ -194,10 +194,34 @@ function isMacOpenCodeAppBundlePath(candidate: string): boolean {
   return process.platform === 'darwin' && /\/OpenCode\.app\/Contents\/MacOS\/(?:OpenCode|opencode-cli)$/i.test(candidate);
 }
 
+function isWindowsOpenCodeDesktopAppPath(candidate: string): boolean {
+  if (process.platform !== 'win32' || typeof candidate !== 'string') {
+    return false;
+  }
+
+  const localAppData = typeof process.env.LOCALAPPDATA === 'string'
+    ? process.env.LOCALAPPDATA.trim()
+    : '';
+  if (!localAppData) {
+    return false;
+  }
+
+  const normalizeWindowsPath = (value: string) => path.resolve(value).replaceAll('\\', '/').toLowerCase();
+  const normalized = normalizeWindowsPath(candidate);
+  const normalizedLocalAppData = normalizeWindowsPath(localAppData).replace(/\/+$/, '');
+  return normalized.startsWith(`${normalizedLocalAppData}/`)
+    && normalized.endsWith('/programs/opencode/opencode.exe');
+}
+
+function isKnownOpenCodeDesktopAppPath(candidate: string): boolean {
+  return isMacOpenCodeAppBundlePath(candidate) || isWindowsOpenCodeDesktopAppPath(candidate);
+}
+
 function createConfiguredOpencodeBinaryError(raw: string, normalized: string): Error {
   const messageSuffix = 'AiYo needs the standalone opencode CLI. Install it and set aiyo.opencodeBinary to the CLI path, for example ~/.opencode/bin/opencode, or leave the setting empty to use PATH lookup.';
-  if (isMacOpenCodeAppBundlePath(raw) || isMacOpenCodeAppBundlePath(normalized)) {
-    return new Error(`Configured OpenCode binary points at the macOS desktop app bundle, not the CLI: ${normalized}. ${messageSuffix}`);
+  if (isKnownOpenCodeDesktopAppPath(raw) || isKnownOpenCodeDesktopAppPath(normalized)) {
+    const platformName = process.platform === 'win32' ? 'Windows desktop app install' : 'macOS desktop app bundle';
+    return new Error(`Configured OpenCode binary points at the ${platformName}, not the CLI: ${normalized}. ${messageSuffix}`);
   }
 
   try {
@@ -252,7 +276,7 @@ function validateConfiguredOpencodeBinaryForManagedStart(): string | null {
     return null;
   }
 
-  if (isExecutable(normalized) && !isMacOpenCodeAppBundlePath(normalized)) {
+  if (isExecutable(normalized) && !isKnownOpenCodeDesktopAppPath(normalized)) {
     return normalized;
   }
 
@@ -269,7 +293,7 @@ function resolveOpencodeCliPath(): string | null {
     }
   })();
 
-  if (configured && isExecutable(configured) && !isMacOpenCodeAppBundlePath(configured)) {
+  if (configured && isExecutable(configured) && !isKnownOpenCodeDesktopAppPath(configured)) {
     return configured;
   }
 
@@ -286,7 +310,7 @@ function resolveOpencodeCliPath(): string | null {
     }
   })();
 
-  if (sharedFromAiYo && isExecutable(sharedFromAiYo) && !isMacOpenCodeAppBundlePath(sharedFromAiYo)) {
+  if (sharedFromAiYo && isExecutable(sharedFromAiYo) && !isKnownOpenCodeDesktopAppPath(sharedFromAiYo)) {
     return sharedFromAiYo;
   }
 
@@ -300,13 +324,13 @@ function resolveOpencodeCliPath(): string | null {
     .filter(Boolean);
 
   for (const candidate of explicit) {
-    if (isExecutable(candidate)) {
+    if (isExecutable(candidate) && !isKnownOpenCodeDesktopAppPath(candidate)) {
       return candidate;
     }
   }
 
   if (cachedDetectedOpencodeCliPath) {
-    if (isExecutable(cachedDetectedOpencodeCliPath)) {
+    if (isExecutable(cachedDetectedOpencodeCliPath) && !isKnownOpenCodeDesktopAppPath(cachedDetectedOpencodeCliPath)) {
       return cachedDetectedOpencodeCliPath;
     }
     cachedDetectedOpencodeCliPath = undefined;
@@ -325,7 +349,6 @@ function resolveOpencodeCliPath(): string | null {
   const winFallbacks = (() => {
     const userProfile = process.env.USERPROFILE || home;
     const appData = process.env.APPDATA || path.join(userProfile, 'AppData', 'Roaming');
-    const localAppData = process.env.LOCALAPPDATA || '';
     const programData = process.env.ProgramData || 'C:\\ProgramData';
     const npmDir = path.join(appData, 'npm');
 
@@ -342,14 +365,12 @@ function resolveOpencodeCliPath(): string | null {
       // Bun global install
       path.join(userProfile, '.bun', 'bin', 'opencode.exe'),
       path.join(userProfile, '.bun', 'bin', 'opencode.cmd'),
-      // Some installers use LocalAppData
-      localAppData ? path.join(localAppData, 'Programs', 'opencode', 'opencode.exe') : '',
     ].filter(Boolean);
   })();
 
   if (process.platform !== 'win32') {
     const fromPath = findExecutableInPath('opencode');
-    if (fromPath) {
+    if (fromPath && !isKnownOpenCodeDesktopAppPath(fromPath)) {
       cachedDetectedOpencodeCliPath = fromPath;
       return fromPath;
     }
@@ -357,7 +378,7 @@ function resolveOpencodeCliPath(): string | null {
 
   const fallbacks = process.platform === 'win32' ? winFallbacks : unixFallbacks;
   for (const candidate of fallbacks) {
-    if (isExecutable(candidate)) {
+    if (isExecutable(candidate) && !isKnownOpenCodeDesktopAppPath(candidate)) {
       cachedDetectedOpencodeCliPath = candidate;
       return candidate;
     }
@@ -365,7 +386,7 @@ function resolveOpencodeCliPath(): string | null {
 
   if (process.platform === 'win32') {
     const fromPath = findExecutableInPath('opencode');
-    if (fromPath) {
+    if (fromPath && !isKnownOpenCodeDesktopAppPath(fromPath)) {
       cachedDetectedOpencodeCliPath = fromPath;
       return fromPath;
     }
@@ -380,7 +401,7 @@ function resolveOpencodeCliPath(): string | null {
           .split(/\r?\n/)
           .map((line) => line.trim())
           .filter(Boolean);
-        const found = lines.find((line) => isExecutable(line));
+        const found = lines.find((line) => isExecutable(line) && !isKnownOpenCodeDesktopAppPath(line));
         if (found) {
           cachedDetectedOpencodeCliPath = found;
           return found;

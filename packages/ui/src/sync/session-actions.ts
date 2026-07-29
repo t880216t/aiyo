@@ -35,9 +35,11 @@ let _childStores: ChildStoreManager | null = null
 let _getDirectory: () => string = () => ""
 type OptimisticAddInput = { sessionID: string; directory?: string | null; message: Message; parts: Part[] }
 type OptimisticRemoveInput = { sessionID: string; directory?: string | null; messageID: string }
+type OptimisticConfirmInput = { sessionID: string; directory?: string | null; messageID: string }
 
 let _optimisticAdd: ((input: OptimisticAddInput) => void) | null = null
 let _optimisticRemove: ((input: OptimisticRemoveInput) => void) | null = null
+let _optimisticConfirm: ((input: OptimisticConfirmInput) => void) | null = null
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -96,9 +98,11 @@ export function setActionRefs(
 export function setOptimisticRefs(
   add: (input: OptimisticAddInput) => void,
   remove: (input: OptimisticRemoveInput) => void,
+  confirm: (input: OptimisticConfirmInput) => void = () => {},
 ) {
   _optimisticAdd = add
   _optimisticRemove = remove
+  _optimisticConfirm = confirm
 }
 
 function sdk() {
@@ -636,6 +640,13 @@ export async function optimisticSend(input: {
 
   const targetDirectory = input.directory ?? dir()
   const store = targetDirectory ? dirStoreForDirectory(targetDirectory) : dirStore()
+  const sessionBeforeSend = store.getState().session.find((session) => session.id === input.sessionId)
+  const revertMessageID = (sessionBeforeSend as (Session & { revert?: { messageID?: string } }) | undefined)?.revert?.messageID
+  const revertedMessageIDs = revertMessageID
+    ? (store.getState().message[input.sessionId] ?? [])
+      .filter((message) => message.id >= revertMessageID)
+      .map((message) => message.id)
+    : []
   const messageID = ascendingId("msg")
   const textPartId = ascendingId("prt")
 
@@ -682,6 +693,17 @@ export async function optimisticSend(input: {
 
   try {
     await input.send(messageID)
+
+    // A successful send starts a new branch from the current revert marker.
+    // Remove the old branch from the optimistic shadow, otherwise a later
+    // message-page refresh can merge those deleted messages back into the UI.
+    for (const revertedMessageID of revertedMessageIDs) {
+      _optimisticConfirm?.({
+        sessionID: input.sessionId,
+        directory: targetDirectory,
+        messageID: revertedMessageID,
+      })
+    }
   } catch (error) {
     // Rollback via optimistic infrastructure
     _optimisticRemove({
@@ -705,8 +727,9 @@ export async function optimisticSend(input: {
 // ---------------------------------------------------------------------------
 
 export async function abortCurrentOperation(sessionId: string): Promise<void> {
+  const { directory } = dirStoreForSession(sessionId)
   try {
-    await sdk().session.abort({ sessionID: sessionId, directory: dir() })
+    await sdk().session.abort({ sessionID: sessionId, directory })
   } catch (error) {
     console.error("[session-actions] abort failed", error)
   }

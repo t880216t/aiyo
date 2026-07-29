@@ -42,6 +42,10 @@ export type ManagedRemoteTunnelPreset = {
 };
 
 export type DesktopSettings = {
+  miniApps?: Array<{ id: string; name: string; url: string; iconUrl?: string; pinned?: boolean }>;
+  miniAppProxyMode?: 'none' | 'system' | 'custom';
+  miniAppProxyUrl?: string;
+  miniAppProxyBypassRules?: string;
   themeId?: string;
   useSystemTheme?: boolean;
   themeVariant?: 'light' | 'dark';

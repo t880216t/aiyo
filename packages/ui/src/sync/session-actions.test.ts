@@ -317,6 +317,25 @@ describe("shareSession live state", () => {
   })
 })
 
+describe("abortCurrentOperation directory", () => {
+  test("uses the session directory instead of the current UI directory", async () => {
+    replyCalls.length = 0
+    const { abortCurrentOperation, setActionRefs } = await import("./session-actions")
+    setActionRefs(
+      mockSdk as unknown as OpencodeClient,
+      createChildStores([["/other/project", createStore({})]]),
+      () => "/current/project",
+    )
+
+    await abortCurrentOperation("session-b")
+
+    expect(replyCalls.find((call) => call.method === "session.abort")?.params).toEqual({
+      sessionID: "session-b",
+      directory: "/other/project",
+    })
+  })
+})
+
 describe("optimisticSend target directory", () => {
   beforeEach(() => {
     replyCalls.length = 0
@@ -364,6 +383,35 @@ describe("optimisticSend target directory", () => {
     expect(optimisticRemove).toBe(null)
     expect(targetStore.getState().session_status["session-new"]?.type).toBe("busy")
     expect(currentStore.getState().session_status["session-new"]).toBe(undefined)
+  })
+
+  test("discards the reverted branch from the optimistic shadow after sending", async () => {
+    const revertedMessage = { id: "msg_2", role: "user", sessionID: "session-reverted" } as Message
+    const sessionStore = createStore({}, {
+      session: [{ id: "session-reverted", revert: { messageID: "msg_2" } } as Session],
+      message: { "session-reverted": [revertedMessage] },
+    })
+    const childStores = createChildStores([["/target/project", sessionStore]])
+    const confirmed: string[] = []
+
+    const { optimisticSend, setActionRefs, setOptimisticRefs } = await import("./session-actions")
+    setActionRefs(mockSdk as unknown as OpencodeClient, childStores, () => "/target/project")
+    setOptimisticRefs(
+      () => {},
+      () => {},
+      (input) => confirmed.push(input.messageID),
+    )
+
+    await optimisticSend({
+      sessionId: "session-reverted",
+      directory: "/target/project",
+      content: "continue from here",
+      providerID: "provider",
+      modelID: "model",
+      send: async () => {},
+    })
+
+    expect(confirmed).toEqual(["msg_2"])
   })
 })
 

@@ -2,13 +2,8 @@ name: Docs Source
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "packages/docs/**"
-      - "scripts/docs/**"
-      - "package.json"
-  release:
-    types: [published]
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -50,20 +45,20 @@ jobs:
           retention-days: 14
 
       - name: Upload archive to release tag
-        if: ${{ github.event_name == 'release' || github.event.inputs.release_tag != '' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.release_tag != '' }}
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
-          tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.release_tag }}
+          tag_name: ${{ github.event.inputs.release_tag }}
           files: artifacts/${{ steps.archive.outputs.archive_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger aiyo-website docs sync (optional)
-        if: ${{ github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         env:
           WEBSITE_REPO: t880216t/aiyo-website
           WEBSITE_TOKEN: ${{ secrets.AIYO_WEBSITE_REPO_TOKEN }}
-          SOURCE_REF: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+          SOURCE_REF: ${{ github.ref_name }}
         run: |
           if [ -z "$WEBSITE_TOKEN" ]; then
             echo "AIYO_WEBSITE_REPO_TOKEN not set; skip dispatch."

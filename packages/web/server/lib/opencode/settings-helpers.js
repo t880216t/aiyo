@@ -26,6 +26,53 @@ export const createSettingsHelpers = (dependencies) => {
   const SHORTCUT_OVERRIDE_VALUE_MAX_LENGTH = 128;
   const PWA_ORIENTATION_VALUES = new Set(['system', 'portrait', 'landscape']);
   const MOBILE_KEYBOARD_MODE_VALUES = new Set(['native', 'resize-content']);
+  const MINI_APP_PROXY_MODE_VALUES = new Set(['none', 'system', 'custom']);
+  const MINI_APP_PROXY_PROTOCOL_VALUES = new Set(['http:', 'https:', 'socks:', 'socks4:', 'socks5:']);
+  const MINI_APP_PINNED_LIMIT = 5;
+
+  const sanitizeMiniApps = (value) => {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    let pinnedCount = 0;
+    return value
+      .filter((entry) => entry && typeof entry === 'object' && !Array.isArray(entry))
+      .map((entry) => {
+        const id = typeof entry.id === 'string' ? entry.id.trim().slice(0, 128) : '';
+        const name = typeof entry.name === 'string' ? entry.name.trim().slice(0, 120) : '';
+        const rawUrl = typeof entry.url === 'string' ? entry.url.trim() : '';
+        const rawIconUrl = typeof entry.iconUrl === 'string' ? entry.iconUrl.trim().slice(0, 2048) : '';
+        if (!id || !name || !rawUrl) return null;
+
+        try {
+          const url = new URL(rawUrl);
+          if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+        } catch {
+          return null;
+        }
+
+        const app = { id, name, url: rawUrl };
+        if (entry.pinned === true && pinnedCount < MINI_APP_PINNED_LIMIT) {
+          app.pinned = true;
+          pinnedCount += 1;
+        }
+        if (rawIconUrl) {
+          try {
+            const iconUrl = new URL(rawIconUrl);
+            if (iconUrl.protocol === 'http:' || iconUrl.protocol === 'https:') {
+              app.iconUrl = rawIconUrl;
+            }
+          } catch {
+            // Invalid icon URLs fall back to the site's favicon.
+          }
+        }
+
+        return app;
+      })
+      .filter(Boolean)
+      .slice(0, 100);
+  };
 
   const sanitizeShortcutOverrides = (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -72,6 +119,15 @@ export const createSettingsHelpers = (dependencies) => {
       return normalized;
     }
     return fallback;
+  };
+
+  const isValidMiniAppProxyUrl = (value) => {
+    try {
+      const url = new URL(value);
+      return MINI_APP_PROXY_PROTOCOL_VALUES.has(url.protocol) && Boolean(url.hostname);
+    } catch {
+      return false;
+    }
   };
 
   const sanitizeSettingsUpdate = (payload) => {
@@ -143,6 +199,25 @@ export const createSettingsHelpers = (dependencies) => {
     }
     if (typeof candidate.activeProjectId === 'string' && candidate.activeProjectId.length > 0) {
       result.activeProjectId = candidate.activeProjectId;
+    }
+
+    if (Array.isArray(candidate.miniApps)) {
+      result.miniApps = sanitizeMiniApps(candidate.miniApps);
+    }
+    if (typeof candidate.miniAppProxyMode === 'string') {
+      const mode = candidate.miniAppProxyMode.trim();
+      if (MINI_APP_PROXY_MODE_VALUES.has(mode)) {
+        result.miniAppProxyMode = mode;
+      }
+    }
+    if (typeof candidate.miniAppProxyUrl === 'string') {
+      const proxyUrl = candidate.miniAppProxyUrl.trim().slice(0, 2048);
+      if (!proxyUrl || isValidMiniAppProxyUrl(proxyUrl)) {
+        result.miniAppProxyUrl = proxyUrl;
+      }
+    }
+    if (typeof candidate.miniAppProxyBypassRules === 'string') {
+      result.miniAppProxyBypassRules = candidate.miniAppProxyBypassRules.trim().slice(0, 2048);
     }
 
     if (Array.isArray(candidate.securityScopedBookmarks)) {

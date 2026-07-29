@@ -53,6 +53,7 @@ import {
   type SettingsPageMeta,
 } from '@/lib/settings/metadata';
 import { buildSettingsSearchResults, type SettingsSearchResult } from '@/lib/settings/search';
+import { MiniAppsPage } from '@/components/sections/mini-apps/MiniAppsPage';
 
 // Same constraints as main sidebar
 const SETTINGS_NAV_MIN_WIDTH = 176;
@@ -82,6 +83,7 @@ interface SettingsViewProps {
 }
 
 const pageOrder: SettingsPageSlug[] = [
+  'mini-apps',
   'appearance',
   'chat',
   'notifications',
@@ -215,6 +217,8 @@ export function getSettingsNavIcon(slug: SettingsPageSlug): IconName | null {
       return 'global';
     case 'about':
       return 'information';
+    case 'mini-apps':
+      return 'global';
     case 'home':
       return null;
     default:
@@ -523,6 +527,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, forceMobile
         return t('settings.page.tunnel.title');
       case 'about':
         return t('settings.page.about.title');
+      case 'mini-apps':
+        return t('miniApps.title');
       case 'home':
       default:
         return t('settings.view.home.title');
@@ -798,6 +804,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, forceMobile
         return <UsagePage />;
       case 'about':
         return <div className="h-full overflow-auto px-5 py-6"><AboutSettings /></div>;
+      case 'mini-apps':
+        return <MiniAppsPage />;
       case 'magic-prompts':
         return <MagicPromptsPage />;
       case 'snippets':

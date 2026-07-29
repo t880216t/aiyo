@@ -10,6 +10,7 @@ import { getRegisteredRuntimeAPIs } from '@/contexts/runtimeAPIRegistry';
 import { sanitizeStarterRefs } from '@/lib/draftStarters';
 import { normalizeMobileKeyboardMode, setStoredMobileKeyboardMode } from '@/lib/mobileKeyboardMode';
 import { runtimeFetch } from '@/lib/runtime-fetch';
+import { parseMiniApps } from '@/lib/miniApps';
 
 export const applyPersistedHomeDirectoryToWindow = (homeDirectory: string): void => {
   if (typeof window === 'undefined') {
@@ -683,6 +684,19 @@ const sanitizeWebSettings = (payload: unknown): DesktopSettings | null => {
   }
   if (typeof candidate.activeProjectId === 'string' && candidate.activeProjectId.length > 0) {
     result.activeProjectId = candidate.activeProjectId;
+  }
+
+  if (Array.isArray(candidate.miniApps)) {
+    result.miniApps = parseMiniApps(candidate.miniApps);
+  }
+  if (typeof candidate.miniAppProxyMode === 'string' && ['none', 'system', 'custom'].includes(candidate.miniAppProxyMode)) {
+    result.miniAppProxyMode = candidate.miniAppProxyMode as DesktopSettings['miniAppProxyMode'];
+  }
+  if (typeof candidate.miniAppProxyUrl === 'string') {
+    result.miniAppProxyUrl = candidate.miniAppProxyUrl.trim();
+  }
+  if (typeof candidate.miniAppProxyBypassRules === 'string') {
+    result.miniAppProxyBypassRules = candidate.miniAppProxyBypassRules.trim();
   }
 
   if (Array.isArray(candidate.securityScopedBookmarks)) {

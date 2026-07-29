@@ -20,6 +20,7 @@ declare global {
     getTitle(): string;
     isLoading(): boolean;
     getWebContentsId(): number;
+    setUserAgent?(userAgent: string): void;
     executeJavaScript(code: string, userGesture?: boolean): Promise<unknown>;
   }
 
@@ -30,6 +31,7 @@ declare global {
           src?: string;
           partition?: string;
           preload?: string;
+          useragent?: string;
           nodeintegration?: string;
           allowpopups?: string;
           ref?: React.Ref<WebviewElement>;

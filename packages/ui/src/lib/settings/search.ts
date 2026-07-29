@@ -90,6 +90,21 @@ export const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     isAvailable: (ctx) => ctx.isMobile && ctx.isWeb && !ctx.isDesktop && !ctx.isVSCode,
   },
   {
+    id: 'mini-apps.icon-url',
+    page: 'mini-apps',
+    titleKey: 'miniApps.form.iconUrl',
+    descriptionKey: 'miniApps.description',
+    keywords: ['favicon', 'icon', 'logo', 'mini app'],
+  },
+  {
+    id: 'mini-apps.proxy',
+    page: 'mini-apps',
+    titleKey: 'miniApps.proxy.title',
+    descriptionKey: 'miniApps.proxy.description',
+    keywords: ['proxy', 'network', 'socks', 'vpn'],
+    isAvailable: (ctx) => ctx.isDesktopLocalOrigin,
+  },
+  {
     id: 'appearance.interface-font-size',
     page: 'appearance',
     titleKey: 'settings.aiyo.visual.field.interfaceFontSize',

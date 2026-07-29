@@ -3110,6 +3110,80 @@ const launchWindowsSpec = (spec) => {
   child.unref();
 };
 
+const MINI_APP_PROXY_PROTOCOLS = new Set(['http:', 'https:', 'socks:', 'socks4:', 'socks5:']);
+
+const normalizeMiniAppProxyConfig = (value = {}) => {
+  const mode = value?.mode === 'system' || value?.mode === 'custom' || value?.mode === 'none'
+    ? value.mode
+    : 'none';
+  const rawUrl = typeof value?.url === 'string' ? value.url.trim() : '';
+  const bypassRules = typeof value?.bypassRules === 'string' ? value.bypassRules.trim().slice(0, 2048) : '';
+
+  if (mode === 'system') {
+    return { mode: 'system' };
+  }
+
+  if (mode === 'custom' && rawUrl) {
+    try {
+      const url = new URL(rawUrl);
+      if (MINI_APP_PROXY_PROTOCOLS.has(url.protocol) && url.hostname) {
+        return {
+          mode: 'fixed_servers',
+          proxyRules: rawUrl.slice(0, 2048),
+          proxyBypassRules: bypassRules || undefined,
+        };
+      }
+    } catch {
+    }
+  }
+
+  return { mode: 'direct' };
+};
+
+const normalizeMiniAppPartitions = (value) => {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(value
+    .filter((partition) => typeof partition === 'string' && /^persist:aiyo-mini-app-[A-Za-z0-9_-]+$/.test(partition))
+    .slice(0, 100)));
+};
+
+const normalizeMiniAppWebContentsIds = (value) => {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(value
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id) && id > 0)
+    .map((id) => Math.trunc(id))
+    .slice(0, 100)));
+};
+
+const normalizeMiniAppProxyDiagnosticUrls = (value) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((url) => typeof url === 'string' && url.length <= 2048)
+    .filter((url) => {
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    })
+    .slice(0, 10);
+};
+
+const applyMiniAppProxyToSession = async (targetSession, proxyConfig) => {
+  await targetSession.setProxy(proxyConfig);
+  if (typeof targetSession.forceReloadProxyConfig === 'function') {
+    await targetSession.forceReloadProxyConfig();
+  }
+  if (typeof targetSession.clearHostResolverCache === 'function') {
+    await targetSession.clearHostResolverCache();
+  }
+  if (typeof targetSession.closeAllConnections === 'function') {
+    await targetSession.closeAllConnections();
+  }
+};
+
 const runSpecChain = (specs, appName) => {
   if (!Array.isArray(specs) || specs.length === 0) {
     throw new Error(`Failed to open in ${appName}: no launch candidates`);
@@ -3191,6 +3265,32 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
         width: image.getSize().width,
         height: image.getSize().height,
       };
+    }
+
+    case 'desktop_apply_mini_app_proxy': {
+      const partitions = normalizeMiniAppPartitions(args.partitions);
+      const webContentsIds = normalizeMiniAppWebContentsIds(args.webContentsIds);
+      const targetUrls = normalizeMiniAppProxyDiagnosticUrls(args.targetUrls);
+      const proxyConfig = normalizeMiniAppProxyConfig(args.config);
+      const targetSessions = new Set(partitions.map((partition) => session.fromPartition(partition)));
+      for (const webContentsId of webContentsIds) {
+        const wc = webContents.fromId(webContentsId);
+        if (wc && !wc.isDestroyed()) {
+          targetSessions.add(wc.session);
+        }
+      }
+      const sessions = Array.from(targetSessions);
+      await Promise.all(sessions.map((targetSession) => applyMiniAppProxyToSession(targetSession, proxyConfig)));
+      const resolved = [];
+      for (const targetUrl of targetUrls) {
+        for (const targetSession of sessions) {
+          try {
+            resolved.push({ url: targetUrl, proxy: await targetSession.resolveProxy(targetUrl) });
+          } catch {
+          }
+        }
+      }
+      return { applied: sessions.length, mode: proxyConfig.mode, resolved };
     }
 
     case 'desktop_capture_page_rect': {

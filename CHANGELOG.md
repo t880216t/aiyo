@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.10] - 2026-07-29
+
+- Mini Apps: add a settings page and embedded viewer for desktop mini-app workflows, including per-app proxy configuration.
+- Desktop: apply mini-app proxy settings directly to Electron sessions and expose proxy diagnostics for embedded app traffic.
+- Desktop/SSH: improve Windows SSH tunnel support by avoiding ControlMaster-only flows, adding hidden askpass handling, tracking extra forwards, and redacting process diagnostics.
+- Server: reject OpenCode desktop app install paths when resolving the standalone CLI, including the Windows desktop install path.
+- Server: stop auto-attaching to an unrelated OpenCode server on default port 4096 when no explicit runtime host or port is configured.
+- Security: tighten local-host tunnel auth checks so localhost-style hosts still require a private or loopback socket peer.
+- CI: only run docs-source packaging automatically from `v*` tag pushes, not from main branch pushes or release-published events.
+
 ## [1.13.9] - 2026-07-15
 
 - Settings/Providers: allow custom providers to update their base URL and disconnect by removing their saved config, not just credentials.

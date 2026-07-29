@@ -278,7 +278,7 @@ export const createOpenCodeEnvRuntime = (deps) => {
       .filter(Boolean);
 
     for (const candidate of explicit) {
-      if (isExecutable(candidate)) {
+      if (isExecutable(candidate) && !isWindowsOpenCodeDesktopAppPath(candidate)) {
         clearWslOpencodeResolution();
         state.resolvedOpencodeBinarySource = 'env';
         return candidate;
@@ -286,7 +286,7 @@ export const createOpenCodeEnvRuntime = (deps) => {
     }
 
     const resolvedFromPath = searchPathFor('opencode');
-    if (resolvedFromPath) {
+    if (resolvedFromPath && !isWindowsOpenCodeDesktopAppPath(resolvedFromPath)) {
       clearWslOpencodeResolution();
       state.resolvedOpencodeBinarySource = 'path';
       return resolvedFromPath;
@@ -319,13 +319,12 @@ export const createOpenCodeEnvRuntime = (deps) => {
         path.join(programData, 'chocolatey', 'bin', 'opencode.cmd'),
         path.join(userProfile, '.bun', 'bin', 'opencode.exe'),
         path.join(userProfile, '.bun', 'bin', 'opencode.cmd'),
-        localAppData ? path.join(localAppData, 'Programs', 'opencode', 'opencode.exe') : '',
       ].filter(Boolean);
     })();
 
     const fallbacks = process.platform === 'win32' ? winFallbacks : unixFallbacks;
     for (const candidate of fallbacks) {
-      if (isExecutable(candidate)) {
+      if (isExecutable(candidate) && !isWindowsOpenCodeDesktopAppPath(candidate)) {
         clearWslOpencodeResolution();
         state.resolvedOpencodeBinarySource = 'fallback';
         return candidate;
@@ -344,7 +343,7 @@ export const createOpenCodeEnvRuntime = (deps) => {
             .split(/\r?\n/)
             .map((line) => line.trim())
             .filter(Boolean);
-          const found = lines.find((line) => isExecutable(line));
+          const found = lines.find((line) => isExecutable(line) && !isWindowsOpenCodeDesktopAppPath(line));
           if (found) {
             clearWslOpencodeResolution();
             state.resolvedOpencodeBinarySource = 'where';
@@ -370,7 +369,7 @@ export const createOpenCodeEnvRuntime = (deps) => {
         });
         if (result.status === 0) {
           const found = (result.stdout || '').trim().split(/\s+/).pop() || '';
-          if (found && isExecutable(found)) {
+          if (found && isExecutable(found) && !isWindowsOpenCodeDesktopAppPath(found)) {
             clearWslOpencodeResolution();
             state.resolvedOpencodeBinarySource = 'shell';
             return found;
@@ -389,7 +388,7 @@ export const createOpenCodeEnvRuntime = (deps) => {
       .filter(Boolean);
 
     for (const candidate of explicit) {
-      if (isExecutable(candidate)) {
+      if (isExecutable(candidate) && !isKnownOpenCodeDesktopAppPath(candidate)) {
         return candidate;
       }
     }
@@ -824,13 +823,36 @@ export const createOpenCodeEnvRuntime = (deps) => {
     return /\/OpenCode\.app\/Contents\/MacOS\/(?:OpenCode|opencode-cli)$/i.test(candidate);
   };
 
+  const isWindowsOpenCodeDesktopAppPath = (candidate) => {
+    if (process.platform !== 'win32' || typeof candidate !== 'string') {
+      return false;
+    }
+
+    const localAppData = typeof process.env.LOCALAPPDATA === 'string'
+      ? process.env.LOCALAPPDATA.trim()
+      : '';
+    if (!localAppData) {
+      return false;
+    }
+
+    const normalizeWindowsPath = (value) => path.resolve(value).replaceAll('\\', '/').toLowerCase();
+    const normalized = normalizeWindowsPath(candidate);
+    const normalizedLocalAppData = normalizeWindowsPath(localAppData).replace(/\/+$/, '');
+    return normalized.startsWith(`${normalizedLocalAppData}/`)
+      && normalized.endsWith('/programs/opencode/opencode.exe');
+  };
+
+  const isKnownOpenCodeDesktopAppPath = (candidate) => isMacOpenCodeAppBundlePath(candidate)
+    || isWindowsOpenCodeDesktopAppPath(candidate);
+
   const createConfiguredOpencodeBinaryError = (raw, normalized) => {
     const configured = typeof raw === 'string' ? raw.trim() : '';
     const candidate = typeof normalized === 'string' && normalized.trim().length > 0 ? normalized.trim() : configured;
     const messageSuffix = 'AiYo needs the standalone opencode CLI. Install it and set settings.opencodeBinary to the CLI path, for example ~/.opencode/bin/opencode, or leave the setting empty to use PATH lookup.';
     const error = (() => {
-      if (isMacOpenCodeAppBundlePath(candidate) || isMacOpenCodeAppBundlePath(configured)) {
-        return new Error(`Configured OpenCode binary points at the macOS desktop app bundle, not the CLI: ${candidate}. ${messageSuffix}`);
+      if (isKnownOpenCodeDesktopAppPath(candidate) || isKnownOpenCodeDesktopAppPath(configured)) {
+        const platformName = process.platform === 'win32' ? 'Windows desktop app install' : 'macOS desktop app bundle';
+        return new Error(`Configured OpenCode binary points at the ${platformName}, not the CLI: ${candidate}. ${messageSuffix}`);
       }
 
       try {
@@ -927,7 +949,7 @@ export const createOpenCodeEnvRuntime = (deps) => {
         return null;
       }
 
-      if (normalized && isExecutable(normalized) && !isMacOpenCodeAppBundlePath(normalized)) {
+      if (normalized && isExecutable(normalized) && !isKnownOpenCodeDesktopAppPath(normalized)) {
         clearWslOpencodeResolution();
         process.env.OPENCODE_BINARY = normalized;
         prependToPath(path.dirname(normalized));
@@ -962,7 +984,7 @@ export const createOpenCodeEnvRuntime = (deps) => {
     }
 
     const existing = typeof process.env.OPENCODE_BINARY === 'string' ? process.env.OPENCODE_BINARY.trim() : '';
-    if (existing && isExecutable(existing)) {
+    if (existing && isExecutable(existing) && !isKnownOpenCodeDesktopAppPath(existing)) {
       clearWslOpencodeResolution();
       state.resolvedOpencodeBinary = existing;
       state.resolvedOpencodeBinarySource = state.resolvedOpencodeBinarySource || 'env';
