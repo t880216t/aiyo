@@ -1,8 +1,10 @@
 name: stale
 
+# Manual-only. The daily cron was removed because this repository has no
+# OC_REVIEW_APP_ID / OC_REVIEW_APP_PRIVATE_KEY secrets configured, so every
+# scheduled run failed at the token step without ever reaching actions/stale.
+# Re-add a `schedule:` trigger once the bot app secrets exist.
 on:
-  schedule:
-    - cron: "30 1 * * *"
   workflow_dispatch:
 
 permissions:
