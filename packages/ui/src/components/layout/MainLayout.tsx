@@ -394,7 +394,6 @@ export const MainLayout: React.FC = () => {
                 <HelpDialog />
                 <OpenCodeStatusDialog />
                 <SessionDialogs />
-                <MiniAppViewer />
 
                 {isMobile ? (
                 <DrawerProvider value={{
@@ -561,6 +560,14 @@ export const MainLayout: React.FC = () => {
                 </>
             )}
 
+            {/* Rendered last on purpose: Electron builds the window's draggable
+                region by applying every `-webkit-app-region` declaration in DOM
+                order, so later regions override earlier ones. The viewer is a
+                full-window overlay, so it must come after the header / sidebar
+                titlebar strips — otherwise their `no-drag` carves would delete
+                its own drag region and the window could not be moved while a
+                mini app is open. */}
+            <MiniAppViewer />
         </div>
     </DiffWorkerProvider>
     );

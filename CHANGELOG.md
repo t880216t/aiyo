@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.13] - 2026-07-30
+
+- Mini Apps: restore window dragging while a mini app is open by rendering the viewer overlay after the titlebar chrome, so its drag region is no longer overridden by the header/sidebar `no-drag` carves.
+- Mini Apps: make the viewer's top-left app name a full-height window drag handle, and mark the embedded page as `no-drag` so its top edge stays clickable.
+- Mini Apps: add a console (DevTools) action to the viewer toolbar for embedded webview pages.
+
 ## [1.13.12] - 2026-07-30
 
 - Desktop/macOS: replace the automatic restart-to-update flow with a Download DMG action for unsigned internal builds.

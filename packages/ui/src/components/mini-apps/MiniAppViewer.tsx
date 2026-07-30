@@ -298,6 +298,20 @@ export const MiniAppViewer: React.FC = () => {
     return webviewRefs.current.get(activeApp.id) ?? null;
   }, [activeApp]);
 
+  const reloadActive = React.useCallback(() => {
+    if (!activeApp) return;
+    setLoading(activeApp.id, true);
+    if (useWebview) {
+      try {
+        getActiveWebview()?.reload();
+      } catch {
+        setLoading(activeApp.id, false);
+      }
+      return;
+    }
+    setReloadById((current) => ({ ...current, [activeApp.id]: (current[activeApp.id] ?? 0) + 1 }));
+  }, [activeApp, getActiveWebview, setLoading, useWebview]);
+
   const navigateActive = React.useCallback((url: string) => {
     if (!activeApp || !isMiniAppUrl(normalizeViewerUrl(url))) return;
     const nextUrl = normalizeViewerUrl(url);
@@ -313,19 +327,16 @@ export const MiniAppViewer: React.FC = () => {
     setCurrentUrl(activeApp.id, nextUrl);
   }, [activeApp, getActiveWebview, setCurrentUrl, setLoading, useWebview]);
 
-  const reloadActive = React.useCallback(() => {
-    if (!activeApp) return;
-    setLoading(activeApp.id, true);
-    if (useWebview) {
-      try {
-        getActiveWebview()?.reload();
-      } catch {
-        setLoading(activeApp.id, false);
-      }
-      return;
+  const openActiveDevTools = React.useCallback(() => {
+    if (!activeApp || !useWebview) return;
+    const webview = getActiveWebview();
+    if (!webview) return;
+    try {
+      webview.openDevTools?.();
+    } catch {
+      // DevTools are only available for Electron webview instances.
     }
-    setReloadById((current) => ({ ...current, [activeApp.id]: (current[activeApp.id] ?? 0) + 1 }));
-  }, [activeApp, getActiveWebview, setLoading, useWebview]);
+  }, [activeApp, getActiveWebview, useWebview]);
 
   const goBack = React.useCallback(() => {
     try { getActiveWebview()?.goBack(); } catch { /* webview not ready */ }
@@ -356,7 +367,12 @@ export const MiniAppViewer: React.FC = () => {
       <div
         className="app-region-drag flex h-10 shrink-0 items-center gap-1 border-b border-border/50 bg-[var(--surface-background)] pl-[var(--oc-titlebar-left-inset,0.75rem)] pr-2"
       >
-        <div className="app-region-no-drag flex min-w-0 items-center gap-2 px-2">
+        {/* Window drag handle: the address form and every toolbar button are
+            `no-drag`, so the app name is the one grab area left in this strip.
+            It spans the full strip height so the whole corner is draggable. */}
+        <div
+          className="app-region-drag flex max-w-48 min-w-0 shrink-0 items-center gap-2 self-stretch px-2"
+        >
           {activeApp ? (
             <MiniAppIcon name={activeApp.name} url={activeApp.url} iconUrl={activeApp.iconUrl} className="size-5 rounded-md" />
           ) : (
@@ -387,11 +403,17 @@ export const MiniAppViewer: React.FC = () => {
         <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" disabled={!activeUrl} onClick={() => void openExternalUrl(activeUrl)} aria-label={t('miniApps.viewer.openExternal')}>
           <Icon name="external-link" className="size-3.5" />
         </Button>
+        <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" disabled={!useWebview || !activeApp} onClick={openActiveDevTools} aria-label={t('miniApps.viewer.openDevTools')}>
+          <Icon name="bug" className="size-3.5" />
+        </Button>
         <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" onClick={closeActiveApp} aria-label={t('miniApps.viewer.close')}>
           <Icon name="close" className="size-3.5" />
         </Button>
       </div>
-      <div className="relative min-h-0 flex-1 bg-background">
+      {/* `no-drag` so the drag regions of the chrome underneath this overlay
+          (header strip is 48px tall, the toolbar above is 40px) can never turn
+          the top of the mini app page into a dead, non-clickable band. */}
+      <div className="app-region-no-drag relative min-h-0 flex-1 bg-background">
         {apps.map((app) => (
           useWebview ? (
             <MiniAppWebview

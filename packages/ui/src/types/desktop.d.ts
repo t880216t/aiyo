@@ -20,6 +20,7 @@ declare global {
     getTitle(): string;
     isLoading(): boolean;
     getWebContentsId(): number;
+    openDevTools?(): void;
     setUserAgent?(userAgent: string): void;
     executeJavaScript(code: string, userGesture?: boolean): Promise<unknown>;
   }

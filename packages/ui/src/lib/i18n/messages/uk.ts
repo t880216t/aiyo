@@ -27,6 +27,7 @@ export const dict: Record<I18nKey, string> = {
   "miniApps.viewer.reload": "Оновити",
   "miniApps.viewer.address": "Адреса мініпрограми",
   "miniApps.viewer.openExternal": "Відкрити в зовнішньому браузері",
+  "miniApps.viewer.openDevTools": "Відкрити консоль мініпрограми",
   "miniApps.viewer.close": "Закрити мініпрограму",
   "miniApps.proxy.title": "Мережевий проксі",
   "miniApps.proxy.description": "Застосувати проксі до вебсторінок мініпрограм у desktop runtime.",

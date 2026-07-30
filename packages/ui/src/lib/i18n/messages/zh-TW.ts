@@ -27,6 +27,7 @@ export const dict: Record<I18nKey, string> = {
   'miniApps.viewer.reload': '重新整理',
   'miniApps.viewer.address': '小程式網址',
   'miniApps.viewer.openExternal': '在外部瀏覽器開啟',
+  'miniApps.viewer.openDevTools': '開啟小程式主控台',
   'miniApps.viewer.close': '關閉小程式',
   'miniApps.proxy.title': '網路代理',
   'miniApps.proxy.description': '在桌面端為小程式網頁套用代理。',

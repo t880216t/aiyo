@@ -28,6 +28,7 @@ export const dict: Record<I18nKey, string> = {
   'miniApps.viewer.reload': 'Odśwież',
   'miniApps.viewer.address': 'Adres miniaplikacji',
   'miniApps.viewer.openExternal': 'Otwórz w przeglądarce zewnętrznej',
+  'miniApps.viewer.openDevTools': 'Otwórz konsolę miniaplikacji',
   'miniApps.viewer.close': 'Zamknij miniaplikację',
   'miniApps.proxy.title': 'Proxy sieciowe',
   'miniApps.proxy.description': 'Zastosuj proxy do stron web miniaplikacji w środowisku desktop.',

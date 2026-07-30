@@ -26,6 +26,7 @@ export const dict = {
   'miniApps.viewer.reload': 'Recharger',
   'miniApps.viewer.address': 'Adresse de la mini-application',
   'miniApps.viewer.openExternal': 'Ouvrir dans le navigateur externe',
+  'miniApps.viewer.openDevTools': 'Ouvrir la console de la mini-application',
   'miniApps.viewer.close': 'Fermer la mini-application',
   'miniApps.proxy.title': 'Proxy réseau',
   'miniApps.proxy.description': 'Appliquer un proxy aux pages web des mini-applications dans l’environnement desktop.',

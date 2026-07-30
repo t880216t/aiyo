@@ -27,6 +27,7 @@ export const dict: Record<I18nKey, string> = {
   'miniApps.viewer.reload': '새로고침',
   'miniApps.viewer.address': '미니 앱 주소',
   'miniApps.viewer.openExternal': '외부 브라우저에서 열기',
+  'miniApps.viewer.openDevTools': '미니 앱 콘솔 열기',
   'miniApps.viewer.close': '미니 앱 닫기',
   'miniApps.proxy.title': '네트워크 프록시',
   'miniApps.proxy.description': '데스크톱 런타임에서 미니 앱 웹 페이지에 프록시를 적용합니다.',

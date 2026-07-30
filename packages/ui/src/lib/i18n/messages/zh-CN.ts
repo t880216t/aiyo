@@ -29,6 +29,7 @@ export const dict: Record<I18nKey, string> = {
   'miniApps.viewer.reload': '刷新',
   'miniApps.viewer.address': '小程序地址',
   'miniApps.viewer.openExternal': '在外部浏览器打开',
+  'miniApps.viewer.openDevTools': '打开小程序控制台',
   'miniApps.viewer.close': '关闭小程序',
   'miniApps.proxy.title': '网络代理',
   'miniApps.proxy.description': '在桌面端为小程序网页应用代理。',
