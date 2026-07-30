@@ -2550,6 +2550,7 @@ export const dict = {
   'updateDialog.actions.downloadUpdate': 'Download Update',
   'updateDialog.status.downloading': 'Downloading...',
   'updateDialog.actions.restartToUpdate': 'Restart to Update',
+  'updateDialog.actions.downloadDmg': 'Download DMG',
   'updateDialog.actions.updateNow': 'Update Now',
   'updateDialog.status.updating': 'Updating...',
   'updateDialog.error.updateFailed': 'Update failed',

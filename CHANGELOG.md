@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.12] - 2026-07-30
+
+- Desktop/macOS: replace the automatic restart-to-update flow with a Download DMG action for unsigned internal builds.
+
 ## [1.13.11] - 2026-07-29
 
 - Desktop: show the real restart/install error when applying a macOS update fails, instead of making the Restart to Update action appear unresponsive.

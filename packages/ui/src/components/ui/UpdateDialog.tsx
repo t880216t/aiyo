@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { ScrollableOverlay } from '@/components/ui/ScrollableOverlay';
 import { SimpleMarkdownRenderer } from '@/components/chat/MarkdownRenderer';
 import { Icon } from "@/components/icon/Icon";
@@ -214,6 +215,8 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
     : 0;
 
   const isWebRuntime = runtimeType === 'web';
+  const manualDownloadUrl = runtimeType === 'desktop' ? info?.manualDownloadUrl : undefined;
+  const usesManualDownload = typeof manualDownloadUrl === 'string' && manualDownloadUrl.length > 0;
   const updateCommand = info?.updateCommand || 'aiyo update';
 
   // Reset state when dialog closes
@@ -235,6 +238,12 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   const handleOpenExternal = useCallback(async (url: string) => {
     await openExternalUrl(url);
   }, []);
+
+  const handleManualDownload = useCallback(() => {
+    if (!manualDownloadUrl) return;
+    void handleOpenExternal(manualDownloadUrl);
+  }, [handleOpenExternal, manualDownloadUrl]);
+
   const handleWebUpdate = useCallback(async () => {
     setWebUpdateState('updating');
     setWebError(null);
@@ -437,7 +446,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
           )}
 
           {/* Desktop progress bar */}
-          {!isWebRuntime && downloading && (
+          {!isWebRuntime && !usesManualDownload && downloading && (
             <div className="space-y-2 mt-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t('updateDialog.status.downloadingPayload')}</span>
@@ -474,7 +483,20 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
 
           <div className="flex-1 flex justify-end">
             {/* Desktop Buttons */}
-            {!isWebRuntime && !downloaded && !downloading && (
+            {!isWebRuntime && usesManualDownload && (
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                onClick={handleManualDownload}
+                className="gap-2"
+              >
+                <Icon name="download" className="h-4 w-4" />
+                {t('updateDialog.actions.downloadDmg')}
+              </Button>
+            )}
+
+            {!isWebRuntime && !usesManualDownload && !downloaded && !downloading && (
               <button
                 onClick={onDownload}
                 className="flex items-center justify-center gap-2 px-5 py-2 rounded-md text-sm font-medium bg-[var(--primary-base)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity"
@@ -484,7 +506,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
               </button>
             )}
 
-            {!isWebRuntime && downloading && (
+            {!isWebRuntime && !usesManualDownload && downloading && (
               <button
                 disabled
                 className="flex items-center justify-center gap-2 px-5 py-2 rounded-md text-sm font-medium bg-[var(--primary-base)]/50 text-[var(--primary-foreground)] cursor-not-allowed"
@@ -494,7 +516,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
               </button>
             )}
 
-            {!isWebRuntime && downloaded && (
+            {!isWebRuntime && !usesManualDownload && downloaded && (
               <button
                 onClick={onRestart}
                 className="flex items-center justify-center gap-2 px-5 py-2 rounded-md text-sm font-medium bg-[var(--status-success)] text-white hover:opacity-90 transition-opacity"

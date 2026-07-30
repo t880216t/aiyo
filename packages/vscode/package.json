@@ -2,7 +2,7 @@
   "name": "aiyo",
   "displayName": "AiYo",
   "description": "%extension.description%",
-  "version": "1.13.11",
+  "version": "1.13.12",
   "publisher": "t880216t",
   "private": true,
   "repository": {

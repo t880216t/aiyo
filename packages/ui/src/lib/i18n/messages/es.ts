@@ -2516,6 +2516,7 @@ export const dict: Record<I18nKey, string> = {
   "updateDialog.actions.downloadUpdate": "Descargar actualización",
   "updateDialog.status.downloading": "Descargando...",
   "updateDialog.actions.restartToUpdate": "Reiniciar para actualizar",
+  "updateDialog.actions.downloadDmg": "Descargar DMG",
   "updateDialog.actions.updateNow": "Actualizar ahora",
   "updateDialog.status.updating": "Actualizando...",
   "updateDialog.error.updateFailed": "No se pudo actualizar",

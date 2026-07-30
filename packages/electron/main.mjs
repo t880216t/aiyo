@@ -3680,6 +3680,8 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
       const body =
         (typeof updateInfo?.releaseNotes === 'string' && updateInfo.releaseNotes.trim() ? updateInfo.releaseNotes : null) ||
         await parseRelevantChangelogNotes(currentVersion, nextVersion);
+      const { owner, repo } = parseGithubRepo();
+      const macArch = process.arch === 'arm64' ? 'arm64' : 'x64';
       state.pendingUpdate = available ? { version: nextVersion, electronUpdate: updateResult } : null;
       return {
         available,
@@ -3689,6 +3691,9 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
         date:
           (typeof updateInfo?.releaseDate === 'string' && updateInfo.releaseDate) ||
           null,
+        manualDownloadUrl: available && process.platform === 'darwin'
+          ? `https://github.com/${owner}/${repo}/releases/download/v${nextVersion}/AiYo-${nextVersion}-mac-${macArch}.dmg`
+          : undefined,
       };
     }
 

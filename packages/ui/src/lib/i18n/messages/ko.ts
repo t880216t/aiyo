@@ -2550,6 +2550,7 @@ export const dict: Record<I18nKey, string> = {
   'updateDialog.actions.downloadUpdate': '업데이트 다운로드',
   'updateDialog.status.downloading': '다운로드 중…',
   'updateDialog.actions.restartToUpdate': '업데이트를 위해 재시작',
+  'updateDialog.actions.downloadDmg': 'DMG 다운로드',
   'updateDialog.actions.updateNow': '지금 업데이트',
   'updateDialog.status.updating': '업데이트 중…',
   'updateDialog.error.updateFailed': '업데이트 실패',

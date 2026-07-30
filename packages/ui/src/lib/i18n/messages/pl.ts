@@ -2520,6 +2520,7 @@ export const dict: Record<I18nKey, string> = {
   'updateDialog.actions.copyCommand': 'Kopiuj polecenie',
   'updateDialog.actions.downloadUpdate': 'Pobierz aktualizację',
   'updateDialog.actions.restartToUpdate': 'Uruchom ponownie, aby zaktualizować',
+  'updateDialog.actions.downloadDmg': 'Pobierz DMG',
   'updateDialog.actions.updateNow': 'Aktualizuj teraz',
   'updateDialog.error.takingLonger': 'Aktualizacja trwa dłużej niż oczekiwano. Poczekaj chwilę i odśwież albo uruchom: aiyo update',
   'updateDialog.error.updateFailed': 'Aktualizacja nie powiodła się',

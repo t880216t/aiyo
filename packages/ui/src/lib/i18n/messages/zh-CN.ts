@@ -2518,6 +2518,7 @@ export const dict: Record<I18nKey, string> = {
   'updateDialog.actions.downloadUpdate': '下载更新',
   'updateDialog.status.downloading': '下载中...',
   'updateDialog.actions.restartToUpdate': '重启以更新',
+  'updateDialog.actions.downloadDmg': '下载 DMG',
   'updateDialog.actions.updateNow': '立即更新',
   'updateDialog.status.updating': '更新中...',
   'updateDialog.error.updateFailed': '更新失败',

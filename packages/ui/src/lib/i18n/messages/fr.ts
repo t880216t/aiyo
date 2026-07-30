@@ -2358,6 +2358,7 @@ export const dict = {
   'updateDialog.actions.downloadUpdate': 'Télécharger la mise à jour',
   'updateDialog.status.downloading': 'Téléchargement...',
   'updateDialog.actions.restartToUpdate': 'Redémarrer pour mettre à jour',
+  'updateDialog.actions.downloadDmg': 'Télécharger le DMG',
   'updateDialog.actions.updateNow': 'Mettre à jour maintenant',
   'updateDialog.changelog.title': 'Nouveautés',
   'updateDialog.status.updating': 'Mise à jour...',

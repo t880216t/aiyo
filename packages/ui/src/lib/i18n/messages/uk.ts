@@ -2516,6 +2516,7 @@ export const dict: Record<I18nKey, string> = {
   "updateDialog.actions.downloadUpdate": "Завантажити оновлення",
   "updateDialog.status.downloading": "Завантаження...",
   "updateDialog.actions.restartToUpdate": "Перезапустити, щоб оновити",
+  "updateDialog.actions.downloadDmg": "Завантажити DMG",
   "updateDialog.actions.updateNow": "Оновити зараз",
   "updateDialog.status.updating": "Оновлення...",
   "updateDialog.error.updateFailed": "Помилка оновлення",
