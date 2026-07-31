@@ -71,6 +71,49 @@ const waitForWebContentsId = (webview: WebviewElement): Promise<number | null> =
   })
 );
 
+const MINI_APP_CONTROLLED_POPUP_NAVIGATION_SCRIPT = `(() => {
+  if (window.__aiyoMiniAppPopupNavigationInstalled) return;
+  window.__aiyoMiniAppPopupNavigationInstalled = true;
+
+  const navigate = (rawUrl) => {
+    if (typeof rawUrl !== 'string' || rawUrl.length === 0) return false;
+    try {
+      const url = new URL(rawUrl, window.location.href);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+      window.location.assign(url.href);
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  };
+
+  const originalOpen = window.open.bind(window);
+  window.open = (url, target, features) => {
+    if (typeof url === 'string' && navigate(url)) return null;
+    if (url == null || url === '') return window;
+    return originalOpen(url, target, features);
+  };
+
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const anchor = target.closest('a[target="_blank"][href]');
+    if (!(anchor instanceof HTMLAnchorElement)) return;
+    if (!navigate(anchor.href)) return;
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
+
+  document.addEventListener('submit', (event) => {
+    if (event.defaultPrevented) return;
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    if (form.target !== '_blank') return;
+    form.target = '_self';
+  }, true);
+})()`;
+
 const MiniAppWebview: React.FC<{
   app: MiniApp;
   active: boolean;
@@ -126,17 +169,26 @@ const MiniAppWebview: React.FC<{
         void openExternalUrl(url);
       }
     };
+    const installControlledPopupNavigation = () => {
+      try {
+        webview.executeJavaScript?.(MINI_APP_CONTROLLED_POPUP_NAVIGATION_SCRIPT, true).catch(() => {});
+      } catch {
+        // webview may not be ready
+      }
+    };
 
     webview.addEventListener('did-start-loading', handleStartLoading);
     webview.addEventListener('did-stop-loading', handleStopLoading);
     webview.addEventListener('did-navigate', handleNavigate);
     webview.addEventListener('did-navigate-in-page', handleNavigate);
     webview.addEventListener('new-window', handleNewWindow);
+    webview.addEventListener('dom-ready', installControlledPopupNavigation);
 
     try {
       if (!webview.isLoading?.()) {
         onLoadingChange(app.id, false);
         syncUrl();
+        installControlledPopupNavigation();
       }
     } catch {
       onLoadingChange(app.id, false);
@@ -148,6 +200,7 @@ const MiniAppWebview: React.FC<{
       webview.removeEventListener('did-navigate', handleNavigate);
       webview.removeEventListener('did-navigate-in-page', handleNavigate);
       webview.removeEventListener('new-window', handleNewWindow);
+      webview.removeEventListener('dom-ready', installControlledPopupNavigation);
     };
   }, [app.id, onLoadingChange, onUrlChange]);
 
@@ -236,7 +289,7 @@ const MiniAppIframe: React.FC<{
     src={normalizeViewerUrl(url)}
     title={app.name}
     className={cn('absolute inset-0 h-full w-full border-0 bg-background', active ? 'block' : 'hidden')}
-    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
     allow="clipboard-read; clipboard-write; fullscreen"
     allowFullScreen
     onLoad={() => onLoadingChange(app.id, false)}
