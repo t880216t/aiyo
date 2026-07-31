@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.14] - 2026-07-31
+
+- Mini Apps: handle new-window links inside embedded mini app pages by routing `_blank`, `window.open`, and popup form submissions through controlled in-view navigation.
+
 ## [1.13.13] - 2026-07-30
 
 - Mini Apps: restore window dragging while a mini app is open by rendering the viewer overlay after the titlebar chrome, so its drag region is no longer overridden by the header/sidebar `no-drag` carves.
