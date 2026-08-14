@@ -2,8 +2,11 @@ import React from 'react';
 import { Icon } from '@/components/icon/Icon';
 import { MiniAppIcon } from '@/components/mini-apps/MiniAppIcon';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useI18n } from '@/lib/i18n';
-import { getMiniAppPartition, isMiniAppUrl, type MiniApp, type MiniAppProxySettings } from '@/lib/miniApps';
+import { useDeviceInfo } from '@/lib/device';
+import { useUIStore } from '@/stores/useUIStore';
+import { MINI_APP_PINNED_LIMIT, getMiniAppPartition, type MiniApp, type MiniAppProxySettings } from '@/lib/miniApps';
 import { openExternalUrl } from '@/lib/url';
 import { cn } from '@/lib/utils';
 import { useMiniAppRuntimeStore } from '@/stores/useMiniAppRuntimeStore';
@@ -296,24 +299,119 @@ const MiniAppIframe: React.FC<{
   />
 );
 
+// Pinned mini apps as a compact icon rail in the top-left of the viewer:
+// every pinned app is one click away — open it if it is not running yet,
+// switch to it otherwise. This is the in-viewer entry point that makes
+// switching between multiple mini apps possible without closing the current
+// one. The rail itself stays part of the window drag handle; only the buttons
+// are no-drag.
+const MiniAppRail: React.FC = () => {
+  const { t } = useI18n();
+  const isMobile = useUIStore((state) => state.isMobile);
+  const { isTablet } = useDeviceInfo();
+  const apps = useMiniAppsStore((state) => state.apps);
+  const openedApps = useMiniAppRuntimeStore((state) => state.openedApps);
+  const activeAppId = useMiniAppRuntimeStore((state) => state.activeAppId);
+  const switchApp = useMiniAppRuntimeStore((state) => state.switchApp);
+  const openApp = useMiniAppRuntimeStore((state) => state.openApp);
+  const closeApp = useMiniAppRuntimeStore((state) => state.closeApp);
+  const alwaysShowClose = isMobile || isTablet;
+
+  const pinnedApps = React.useMemo(
+    () => apps.filter((app) => app.pinned).slice(0, MINI_APP_PINNED_LIMIT),
+    [apps],
+  );
+
+  return (
+    <div
+      role="navigation"
+      aria-label={t('miniApps.title')}
+      className="app-region-drag flex min-w-0 flex-1 items-center gap-0.5 self-stretch overflow-x-auto px-1"
+    >
+      {pinnedApps.map((app) => {
+        const isActive = app.id === activeAppId;
+        const isOpen = openedApps.some((item) => item.id === app.id);
+        const handleAuxClick = isOpen ? (event: React.MouseEvent<HTMLButtonElement>) => {
+          // Middle-click closes the app, matching browser tab behavior.
+          if (event.button !== 1) return;
+          event.preventDefault();
+          event.stopPropagation();
+          closeApp(app.id);
+        } : undefined;
+        const handleMouseDown = isOpen ? (event: React.MouseEvent<HTMLButtonElement>) => {
+          // Prevent the browser's middle-click autoscroll affordance.
+          if (event.button === 1) event.preventDefault();
+        } : undefined;
+        return (
+          <Tooltip key={app.id}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => (isOpen ? switchApp(app.id) : openApp(app))}
+                onAuxClick={handleAuxClick}
+                onMouseDown={handleMouseDown}
+                aria-label={isOpen
+                  ? t('miniApps.viewer.switchTo', { name: app.name })
+                  : t('miniApps.actions.open', { name: app.name })}
+                aria-current={isActive ? 'true' : undefined}
+                className={cn(
+                  'app-region-no-drag group relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--interactive-focus-ring)]',
+                  isActive
+                    ? 'bg-interactive-selection text-interactive-selection-foreground'
+                    : 'text-muted-foreground hover:bg-interactive-hover/50 hover:text-foreground'
+                )}
+              >
+                <MiniAppIcon name={app.name} url={app.url} iconUrl={app.iconUrl} className="size-5 rounded-sm" />
+                {isOpen && !isActive ? (
+                  <span className="pointer-events-none absolute right-0.5 top-0.5 size-1.5 rounded-full bg-[var(--primary-base)]" aria-hidden />
+                ) : null}
+                {isOpen ? (
+                  <span
+                    role="button"
+                    tabIndex={-1}
+                    aria-label={t('miniApps.viewer.closeApp', { name: app.name })}
+                    title={t('miniApps.viewer.closeApp', { name: app.name })}
+                    className={cn(
+                      'absolute bottom-0.5 right-0.5 z-10 flex size-4 items-center justify-center rounded-[4px] bg-[var(--surface-elevated)] text-muted-foreground shadow-sm transition-opacity hover:text-foreground',
+                      alwaysShowClose ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                    )}
+                    onPointerDown={(event) => { event.stopPropagation(); }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      closeApp(app.id);
+                    }}
+                  >
+                    <Icon name="close" className="size-3" />
+                  </span>
+                ) : null}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={6}>
+              <p>{app.name}</p>
+            </TooltipContent>
+          </Tooltip>
+        );
+      })}
+    </div>
+  );
+};
+
+MiniAppRail.displayName = 'MiniAppRail';
+
 export const MiniAppViewer: React.FC = () => {
   const { t } = useI18n();
   const openedApps = useMiniAppRuntimeStore((state) => state.openedApps);
   const activeAppId = useMiniAppRuntimeStore((state) => state.activeAppId);
   const closeActiveApp = useMiniAppRuntimeStore((state) => state.closeActiveApp);
   const configuredApps = useMiniAppsStore((state) => state.apps);
+  const loadMiniApps = useMiniAppsStore((state) => state.load);
   const proxy = useMiniAppsStore((state) => state.proxy);
   const webviewRefs = React.useRef<Map<string, WebviewElement>>(new Map());
   const [loadingById, setLoadingById] = React.useState<Record<string, boolean>>({});
   const [urlById, setUrlById] = React.useState<Record<string, string>>({});
   const [reloadById, setReloadById] = React.useState<Record<string, number>>({});
-  const [addressInput, setAddressInput] = React.useState('');
 
-  const apps = React.useMemo(() => {
-    const sorted = [...openedApps];
-    sorted.sort((a, b) => a.id.localeCompare(b.id));
-    return sorted;
-  }, [openedApps]);
+  const apps = React.useMemo(() => [...openedApps], [openedApps]);
 
   const activeApp = activeAppId ? apps.find((app) => app.id === activeAppId) ?? null : null;
   const activeUrl = activeApp ? urlById[activeApp.id] || activeApp.url : '';
@@ -323,6 +421,11 @@ export const MiniAppViewer: React.FC = () => {
     () => getProxyFingerprint(proxy),
     [proxy],
   );
+
+  React.useEffect(() => {
+    if (!activeApp || configuredApps.length > 0) return;
+    void loadMiniApps();
+  }, [activeApp, configuredApps.length, loadMiniApps]);
 
   React.useEffect(() => {
     if (!useWebview || configuredApps.length === 0) return;
@@ -365,21 +468,6 @@ export const MiniAppViewer: React.FC = () => {
     setReloadById((current) => ({ ...current, [activeApp.id]: (current[activeApp.id] ?? 0) + 1 }));
   }, [activeApp, getActiveWebview, setLoading, useWebview]);
 
-  const navigateActive = React.useCallback((url: string) => {
-    if (!activeApp || !isMiniAppUrl(normalizeViewerUrl(url))) return;
-    const nextUrl = normalizeViewerUrl(url);
-    setLoading(activeApp.id, true);
-    if (useWebview) {
-      try {
-        getActiveWebview()?.loadURL(nextUrl);
-      } catch {
-        setLoading(activeApp.id, false);
-      }
-      return;
-    }
-    setCurrentUrl(activeApp.id, nextUrl);
-  }, [activeApp, getActiveWebview, setCurrentUrl, setLoading, useWebview]);
-
   const openActiveDevTools = React.useCallback(() => {
     if (!activeApp || !useWebview) return;
     const webview = getActiveWebview();
@@ -405,10 +493,6 @@ export const MiniAppViewer: React.FC = () => {
     setLoadingById((current) => current[activeApp.id] === undefined ? { ...current, [activeApp.id]: true } : current);
   }, [activeApp]);
 
-  React.useEffect(() => {
-    setAddressInput(activeUrl);
-  }, [activeApp?.id, activeUrl]);
-
   return (
     <div
       className={cn(
@@ -420,48 +504,32 @@ export const MiniAppViewer: React.FC = () => {
       <div
         className="app-region-drag flex h-10 shrink-0 items-center gap-1 border-b border-border/50 bg-[var(--surface-background)] pl-[var(--oc-titlebar-left-inset,0.75rem)] pr-2"
       >
-        {/* Window drag handle: the address form and every toolbar button are
-            `no-drag`, so the app name is the one grab area left in this strip.
-            It spans the full strip height so the whole corner is draggable. */}
-        <div
-          className="app-region-drag flex max-w-48 min-w-0 shrink-0 items-center gap-2 self-stretch px-2"
-        >
-          {activeApp ? (
-            <MiniAppIcon name={activeApp.name} url={activeApp.url} iconUrl={activeApp.iconUrl} className="size-5 rounded-md" />
-          ) : (
-            <Icon name="global" className="size-4 text-muted-foreground" />
-          )}
-          <span className="max-w-48 truncate typography-ui-label font-medium text-foreground">
-            {activeApp?.name ?? t('miniApps.title')}
-          </span>
+        {/* Pinned mini apps fill the top-left (the rail is a drag handle, only
+            its buttons are no-drag). Navigation and app utilities are grouped
+            on the right, leaving the middle of the strip draggable. */}
+        <MiniAppRail />
+        <div className="app-region-no-drag flex shrink-0 items-center gap-1 pl-1">
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={!useWebview || !activeApp} onClick={goBack} aria-label={t('miniApps.viewer.back')}>
+            <Icon name="arrow-left" className="size-3.5" />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={!useWebview || !activeApp} onClick={goForward} aria-label={t('miniApps.viewer.forward')}>
+            <Icon name="arrow-right" className="size-3.5" />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={!activeApp} onClick={reloadActive} aria-label={t('miniApps.viewer.reload')}>
+            <Icon name="refresh" className={cn('size-3.5', isLoading && 'animate-spin')} />
+          </Button>
         </div>
-        <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" disabled={!useWebview || !activeApp} onClick={goBack} aria-label={t('miniApps.viewer.back')}>
-          <Icon name="arrow-left" className="size-3.5" />
-        </Button>
-        <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" disabled={!useWebview || !activeApp} onClick={goForward} aria-label={t('miniApps.viewer.forward')}>
-          <Icon name="arrow-right" className="size-3.5" />
-        </Button>
-        <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" disabled={!activeApp} onClick={reloadActive} aria-label={t('miniApps.viewer.reload')}>
-          <Icon name="refresh" className={cn('size-3.5', isLoading && 'animate-spin')} />
-        </Button>
-        <form className="app-region-no-drag min-w-0 flex-1" onSubmit={(event) => { event.preventDefault(); navigateActive(addressInput); }}>
-          <input
-            name="url"
-            value={addressInput}
-            onChange={(event) => setAddressInput(event.target.value)}
-            className="h-7 w-full rounded-md border border-border/50 bg-[var(--surface-elevated)] px-2 typography-micro text-foreground outline-none focus:border-[var(--interactive-focus-ring)]"
-            aria-label={t('miniApps.viewer.address')}
-          />
-        </form>
-        <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" disabled={!activeUrl} onClick={() => void openExternalUrl(activeUrl)} aria-label={t('miniApps.viewer.openExternal')}>
-          <Icon name="external-link" className="size-3.5" />
-        </Button>
-        <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" disabled={!useWebview || !activeApp} onClick={openActiveDevTools} aria-label={t('miniApps.viewer.openDevTools')}>
-          <Icon name="bug" className="size-3.5" />
-        </Button>
-        <Button type="button" variant="ghost" size="sm" className="app-region-no-drag h-7 w-7 p-0" onClick={closeActiveApp} aria-label={t('miniApps.viewer.close')}>
-          <Icon name="close" className="size-3.5" />
-        </Button>
+        <div className="app-region-no-drag flex shrink-0 items-center gap-1 border-l border-border/50 pl-1">
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={!activeUrl} onClick={() => void openExternalUrl(activeUrl)} aria-label={t('miniApps.viewer.openExternal')}>
+            <Icon name="external-link" className="size-3.5" />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={!useWebview || !activeApp} onClick={openActiveDevTools} aria-label={t('miniApps.viewer.openDevTools')}>
+            <Icon name="bug" className="size-3.5" />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={closeActiveApp} aria-label={t('miniApps.viewer.minimize')}>
+            <Icon name="close" className="size-3.5" />
+          </Button>
+        </div>
       </div>
       {/* `no-drag` so the drag regions of the chrome underneath this overlay
           (header strip is 48px tall, the toolbar above is 40px) can never turn
