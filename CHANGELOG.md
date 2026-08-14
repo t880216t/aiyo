@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.13.15] - 2026-08-15
+
+- Mini Apps: redesign the embedded viewer for multi-app workflows — pinned mini apps become a top-left icon rail for one-click open/switch without closing the current one, closing a tab switches to the neighbor instead of dropping you back to chat, and the toolbar close action minimizes the viewer while every open app stays alive in the background.
+- Mini Apps: simplify viewer chrome by removing the top-left title and address bar; back/forward/reload and app actions (open externally, console, minimize) are grouped on the right.
+
 ## [1.13.14] - 2026-07-31
 
 - Mini Apps: handle new-window links inside embedded mini app pages by routing `_blank`, `window.open`, and popup form submissions through controlled in-view navigation.

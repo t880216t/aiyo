@@ -1,6 +1,6 @@
 {
   "name": "aiyo",
-  "version": "1.13.14",
+  "version": "1.13.15",
   "description": "AiYo monorepo workspace for web, ui, and desktop runtimes",
   "private": true,
   "type": "module",
